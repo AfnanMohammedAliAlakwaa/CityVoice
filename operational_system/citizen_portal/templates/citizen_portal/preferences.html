@@ -1,0 +1,224 @@
+<style>
+    body .account-success {
+        color: var(--cv-accent);
+        background: var(--cv-accent-soft);
+        border-color: var(--cv-accent-border);
+    }
+
+    html[data-cv-theme="dark"] body .account-success {
+        color: var(--cv-bright);
+        background: var(--cv-dark-soft);
+        border-color: var(--cv-bright);
+    }
+
+    .cv-theme-status {
+        margin: 12px 0;
+        color: var(--cv-accent);
+        font-size: 12px;
+        line-height: 1.9;
+    }
+
+    html[data-cv-theme="dark"] .cv-theme-status {
+        color: var(--cv-bright);
+    }
+
+    .cv-theme-status[data-error="true"] {
+        color: #b73742;
+    }
+
+    html[data-cv-theme="dark"]
+    .cv-theme-status[data-error="true"] {
+        color: #ffadb5;
+    }
+</style>
+
+<script>
+    (() => {
+        function setupPreferences() {
+            /*
+             * رسالة حفظ البيانات:
+             * تظهر بعد الحفظ وتختفي، ولا تتكرر عند تحديث الصفحة.
+             */
+            const successMessage = document.querySelector(
+                ".account-success"
+            );
+
+            if (successMessage) {
+                const navigation = performance.getEntriesByType(
+                    "navigation"
+                )[0];
+
+                const repeatedVisit =
+                    navigation?.type === "reload"
+                    || navigation?.type === "back_forward";
+
+                if (repeatedVisit) {
+                    successMessage.remove();
+                } else {
+                    successMessage.textContent = "تم التغيير بنجاح.";
+
+                    window.setTimeout(() => {
+                        successMessage.remove();
+                    }, 3000);
+                }
+
+                if (
+                    window.location.pathname
+                    === "{% url 'citizen_portal:account_saved' %}"
+                ) {
+                    window.history.replaceState(
+                        window.history.state,
+                        "",
+                        "{% url 'citizen_portal:account' %}"
+                    );
+                }
+            }
+
+            const options = Array.from(
+                document.querySelectorAll(
+                    'input[name="preferred_theme"]'
+                )
+            );
+
+            if (!options.length) return;
+
+            const form = options[0].closest("form");
+
+            const csrfToken = form?.querySelector(
+                'input[name="csrfmiddlewaretoken"]'
+            )?.value;
+
+            if (!csrfToken) return;
+
+            let savedTheme =
+                "{{ request.user.preferred_theme|default:'light'|escapejs }}";
+
+            let messageTimer;
+
+            const status = document.createElement("p");
+            status.className = "cv-theme-status";
+            status.setAttribute("role", "status");
+            status.setAttribute("aria-live", "polite");
+            status.hidden = true;
+
+            const container = options[0].closest(".account-theme");
+
+            if (container) {
+                container.insertAdjacentElement("afterend", status);
+            }
+
+            function showStatus(message, isError = false) {
+                window.clearTimeout(messageTimer);
+                status.hidden = false;
+                status.dataset.error = String(isError);
+                status.textContent = message;
+            }
+
+            function applyTheme(theme) {
+                window.cityVoiceApplyTheme?.(theme);
+
+                document.body.classList.toggle(
+                    "account-dark",
+                    theme === "dark"
+                );
+            }
+
+            options.forEach((option) => {
+                option.addEventListener("change", async () => {
+                    if (!option.checked) return;
+
+                    const selectedTheme = option.value;
+
+                    applyTheme(selectedTheme);
+                    showStatus("جارٍ الحفظ…");
+
+                    const buttons = Array.from(
+                        form.querySelectorAll(
+                            'button[type="submit"], input[type="submit"]'
+                        )
+                    );
+
+                    const previousStates = buttons.map(
+                        (button) => button.disabled
+                    );
+
+                    options.forEach((input) => {
+                        input.disabled = true;
+                    });
+
+                    buttons.forEach((button) => {
+                        button.disabled = true;
+                    });
+
+                    try {
+                        const response = await fetch(
+                            "{% url 'citizen_portal:save_theme' %}",
+                            {
+                                method: "POST",
+                                credentials: "same-origin",
+                                headers: {
+                                    "X-CSRFToken": csrfToken,
+                                    "Content-Type":
+                                        "application/x-www-form-urlencoded",
+                                    "Accept": "application/json"
+                                },
+                                body: new URLSearchParams({
+                                    theme: selectedTheme
+                                })
+                            }
+                        );
+
+                        if (!response.ok || response.redirected) {
+                            throw new Error("Save failed");
+                        }
+
+                        const result = await response.json();
+
+                        if (
+                            !result.ok
+                            || result.theme !== selectedTheme
+                        ) {
+                            throw new Error("Invalid response");
+                        }
+
+                        savedTheme = result.theme;
+                        showStatus("تم التغيير بنجاح.");
+
+                        messageTimer = window.setTimeout(() => {
+                            status.hidden = true;
+                        }, 3000);
+                    } catch (error) {
+                        options.forEach((input) => {
+                            input.checked = input.value === savedTheme;
+                        });
+
+                        applyTheme(savedTheme);
+
+                        showStatus(
+                            "تعذر الحفظ. حاولي مجددًا.",
+                            true
+                        );
+                    } finally {
+                        options.forEach((input) => {
+                            input.disabled = false;
+                        });
+
+                        buttons.forEach((button, index) => {
+                            button.disabled = previousStates[index];
+                        });
+                    }
+                });
+            });
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener(
+                "DOMContentLoaded",
+                setupPreferences,
+                { once: true }
+            );
+        } else {
+            setupPreferences();
+        }
+    })();
+</script>

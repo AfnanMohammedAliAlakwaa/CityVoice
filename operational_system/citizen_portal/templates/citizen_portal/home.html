@@ -1,0 +1,786 @@
+{% extends "citizen_portal/base.html" %}
+{% load static %}
+
+{% block title %}CityVoice | بوابة المواطن{% endblock %}
+{% block body_class %}cv-portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cv-portal {
+        margin: 0;
+        color: #293f33;
+        background: #eef3f0;
+        font-family: Tahoma, Arial, sans-serif;
+    }
+
+    .cv-portal *,
+    .cv-portal *::before,
+    .cv-portal *::after {
+        box-sizing: border-box;
+    }
+
+    .cv-portal .app-shell {
+        width: 100%;
+        max-width: 960px;
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin: 0 auto;
+        background: #f7f9f8;
+    }
+
+    .cv-portal .app-content {
+        padding: 0;
+    }
+
+    .cv-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 28px 36px;
+        background: var(--cv-accent-soft, #e8f5ee);
+        border-bottom: 1px solid #deece3;
+    }
+
+    .cv-heading p {
+        margin: 0 0 5px;
+        color: #788c80;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .cv-heading h1 {
+        margin: 0;
+        color: var(--cv-accent, #287e50);
+        font-size: 27px;
+        line-height: 1.5;
+    }
+
+    .cv-heading .cv-tagline {
+        margin-top: 9px;
+    }
+
+    .cv-logo {
+        display: block;
+        width: 115px;
+        height: auto;
+    }
+
+    .cv-main {
+        padding: 28px 36px 125px;
+    }
+
+    .cv-home-content {
+        width: 100%;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .cv-welcome,
+    .cv-page-heading {
+        margin-bottom: 23px;
+    }
+
+    .cv-welcome h2,
+    .cv-page-title {
+        margin: 0 0 7px;
+        font-size: 22px;
+        line-height: 1.6;
+    }
+
+    .cv-muted {
+        margin: 0;
+        color: #7b897f;
+        font-size: 13px;
+        line-height: 1.9;
+    }
+
+    .cv-icon {
+        display: block;
+        width: 24px;
+        height: 24px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .cv-new {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        min-height: 110px;
+        margin-bottom: 25px;
+        padding: 23px;
+        color: #ffffff;
+        background: var(--cv-accent, #287e50);
+        border-radius: 21px;
+        text-decoration: none;
+    }
+
+    .cv-new:hover {
+        color: #ffffff;
+        background: var(--cv-accent-hover, #206640);
+    }
+
+    .cv-plus {
+        display: grid;
+        place-items: center;
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.17);
+        border-radius: 50%;
+    }
+
+    .cv-new-copy {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .cv-new-copy strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 18px;
+        line-height: 1.6;
+    }
+
+    .cv-new-copy small {
+        display: block;
+        color: #ffffff;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .cv-section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .cv-section-heading h2,
+    .cv-summary h2,
+    .cv-panel h2 {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.7;
+    }
+
+    .cv-link,
+    .cv-back {
+        color: var(--cv-accent, #287e50);
+        font-size: 12px;
+        line-height: 1.8;
+        text-decoration: none;
+    }
+
+    .cv-link:hover,
+    .cv-back:hover {
+        text-decoration: underline;
+    }
+
+    .cv-back {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        margin-bottom: 14px;
+    }
+
+    .cv-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .cv-fold {
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e5ece7;
+        border-radius: 18px;
+        scroll-margin-top: 20px;
+    }
+
+    .cv-fold > summary {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 19px;
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .cv-fold > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .cv-fold > summary::marker {
+        content: "";
+    }
+
+    .cv-fold > summary:hover {
+        background: #fafcfb;
+    }
+
+    .cv-fold > summary:focus-visible,
+    .cv-collapse:focus-visible,
+    .cv-portal a:focus-visible {
+        outline: 3px solid #e8b633;
+        outline-offset: -3px;
+    }
+
+    .cv-document {
+        display: grid;
+        place-items: center;
+        align-self: flex-start;
+        flex: 0 0 40px;
+        width: 40px;
+        height: 40px;
+        color: var(--cv-accent, #287e50);
+        background: var(--cv-accent-soft, #e8f5ee);
+        border-radius: 50%;
+    }
+
+    .cv-card-copy {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .cv-reference {
+        display: block;
+        margin-bottom: 5px;
+        color: #829087;
+        font-size: 11px;
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+    }
+
+    .cv-service {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .cv-date {
+        display: block;
+        margin-bottom: 8px;
+        color: #829087;
+        font-size: 11px;
+        line-height: 1.8;
+    }
+
+    .cv-fold-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+        color: var(--cv-accent, #287e50);
+        font-size: 11px;
+    }
+
+    .cv-fold-action .cv-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .cv-fold[open] > summary .cv-fold-action .cv-icon {
+        transform: rotate(180deg);
+    }
+
+    .cv-open-label {
+        display: none;
+    }
+
+    .cv-fold[open] > summary .cv-open-label {
+        display: inline;
+    }
+
+    .cv-fold[open] > summary .cv-closed-label {
+        display: none;
+    }
+
+    .cv-status {
+        display: inline-block;
+        padding: 4px 10px;
+        color: #486752;
+        background: #edf3ef;
+        border-radius: 20px;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+
+    .cv-status--submitted,
+    .cv-status--under_review {
+        color: #8b6b20;
+        background: #fff4d6;
+    }
+
+    .cv-status--assigned,
+    .cv-status--in_progress {
+        color: #356a94;
+        background: #eaf2fc;
+    }
+
+    .cv-status--resolved,
+    .cv-status--closed {
+        color: #247849;
+        background: #e7f5ec;
+    }
+
+    .cv-status--rejected {
+        color: #a34d4d;
+        background: #fbecec;
+    }
+
+    .cv-fold-body {
+        padding: 22px;
+        border-top: 1px solid #e8eeea;
+    }
+
+    .cv-details {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+        margin: 0;
+    }
+
+    .cv-details > div {
+        min-width: 0;
+    }
+
+    .cv-details dt {
+        margin-bottom: 7px;
+        color: #7b8a80;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .cv-details dd {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .cv-wide {
+        grid-column: 1 / -1;
+    }
+
+    .cv-description {
+        white-space: pre-line;
+    }
+
+    .cv-photo {
+        display: block;
+        width: 100%;
+        max-height: 420px;
+        object-fit: contain;
+        margin-top: 10px;
+        background: #f5f7f5;
+        border-radius: 13px;
+    }
+
+    .cv-collapse {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 45px;
+        margin-top: 22px;
+        padding: 10px 15px;
+        color: var(--cv-accent, #287e50);
+        background: var(--cv-accent-soft, #e8f5ee);
+        border: 0;
+        border-radius: 11px;
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .cv-collapse .cv-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .cv-empty,
+    .cv-summary,
+    .cv-panel {
+        padding: 23px;
+        background: #ffffff;
+        border: 1px solid #e5ece7;
+        border-radius: 18px;
+    }
+
+    .cv-empty {
+        text-align: center;
+    }
+
+    .cv-empty strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .cv-empty p {
+        margin: 0;
+        color: #849087;
+        font-size: 12px;
+        line-height: 1.9;
+    }
+
+    .cv-summary {
+        margin-top: 23px;
+    }
+
+    .cv-summary h2 {
+        margin-bottom: 20px;
+    }
+
+    .cv-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .cv-summary-item {
+        min-width: 0;
+    }
+
+    .cv-summary-item + .cv-summary-item {
+        padding-right: 16px;
+        border-right: 1px solid #edf1ee;
+    }
+
+    .cv-summary-item span {
+        display: block;
+        margin-bottom: 9px;
+        color: #849087;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .cv-summary-item strong {
+        display: block;
+        color: var(--cv-accent, #287e50);
+        font-size: 26px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .cv-summary-item .cv-summary-text {
+        font-size: 12px;
+        line-height: 1.9;
+    }
+
+    .cv-nav {
+        position: fixed;
+        z-index: 50;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 10px 20px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        background: #ffffff;
+        border-top: 1px solid #e7eee9;
+    }
+
+    .cv-nav a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        min-height: 55px;
+        padding: 7px;
+        color: #849087;
+        border-radius: 13px;
+        font-size: 11px;
+        text-decoration: none;
+    }
+
+    .cv-nav a[aria-current="page"] {
+        color: var(--cv-accent, #287e50);
+        background: var(--cv-accent-soft, #e8f5ee);
+        font-weight: 700;
+    }
+
+    @media (max-width: 600px) {
+        .cv-header {
+            align-items: flex-start;
+            gap: 14px;
+            padding: 24px 19px;
+        }
+
+        .cv-heading h1 {
+            font-size: 23px;
+        }
+
+        .cv-heading p {
+            font-size: 11px;
+        }
+
+        .cv-logo {
+            width: 86px;
+            margin-top: 5px;
+        }
+
+        .cv-main {
+            padding: 23px 15px 125px;
+        }
+
+        .cv-new {
+            gap: 11px;
+            padding: 20px 15px;
+        }
+
+        .cv-new-copy strong {
+            font-size: 16px;
+        }
+
+        .cv-new-copy small {
+            font-size: 11px;
+        }
+
+        .cv-fold > summary {
+            gap: 10px;
+            padding: 16px;
+        }
+
+        .cv-fold-body {
+            padding: 18px;
+        }
+
+        .cv-details {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .cv-service {
+            font-size: 14px;
+        }
+
+        .cv-summary {
+            padding: 20px 17px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header %}
+<header class="cv-header">
+    <div class="cv-heading">
+        <p>خدمات المواطنين</p>
+        <h1>بلدية معين</h1>
+        <p class="cv-tagline">خدمات بلدية أقرب وأسهل للمواطن</p>
+    </div>
+
+    <a
+        href="{% url 'citizen_portal:home' %}"
+        aria-label="CityVoice — الرئيسية"
+    >
+        <img
+            src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+            alt="CityVoice"
+            class="cv-logo"
+        >
+    </a>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="cv-main">
+    <div class="cv-home-content">
+
+        {% if page == "home" %}
+            <section class="cv-welcome">
+                <h2>مرحبًا بك</h2>
+                <p class="cv-muted">كيف يمكننا مساعدتك اليوم؟</p>
+            </section>
+
+            <a
+                href="{% url 'citizen_portal:submit_complaint' %}"
+                class="cv-new"
+            >
+                <span class="cv-plus" aria-hidden="true">
+                    <svg class="cv-icon" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                </span>
+                <span class="cv-new-copy">
+                    <strong>إرسال شكوى جديدة</strong>
+                    <small>أبلغ عن مشكلة في إحدى الخدمات البلدية</small>
+                </span>
+            </a>
+
+            <div class="cv-section-heading">
+                <h2>آخر الشكاوى</h2>
+                <a
+                    href="{% url 'citizen_portal:complaint_list' %}"
+                    class="cv-link"
+                >
+                    عرض جميع الشكاوى
+                </a>
+            </div>
+
+        {% elif page == "complaints" %}
+            <div class="cv-page-heading">
+                <h2 class="cv-page-title">شكاواي</h2>
+                <p class="cv-muted">
+                    اضغط على الشكوى لعرض تفاصيلها أو طيّها.
+                </p>
+            </div>
+
+        {% elif page == "detail" %}
+            <a
+                href="{% url 'citizen_portal:complaint_list' %}"
+                class="cv-back"
+            >
+                العودة إلى شكاواي
+            </a>
+        {% endif %}
+
+        {% if page == "home" %}
+            {% for item in recent_complaints %}
+                {% include "citizen_portal/complaint_card.html" with item=item %}
+            {% empty %}
+                <div class="cv-empty">
+                    <strong>لا توجد شكاوى</strong>
+                    <p>ستظهر هنا بعد إرسال أول شكوى.</p>
+                </div>
+            {% endfor %}
+
+            <section class="cv-summary">
+                <h2>ملخص سريع</h2>
+                <div class="cv-summary-grid">
+                    <div class="cv-summary-item">
+                        <span>شكاوى حالية</span>
+                        {% if active_count %}
+                            <strong>{{ active_count }}</strong>
+                        {% else %}
+                            <strong class="cv-summary-text">
+                                لا توجد شكاوى حالية
+                            </strong>
+                        {% endif %}
+                    </div>
+                    <div class="cv-summary-item">
+                        <span>آخر شكوى مقدمة</span>
+                        <strong class="cv-summary-text">
+                            {% if latest_complaint %}
+                                <bdi>{{ latest_complaint.reference_number }}</bdi>
+                            {% else %}
+                                لا توجد شكاوى
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+            </section>
+
+        {% elif page == "complaints" %}
+            <div class="cv-list">
+                {% for item in complaints %}
+                    {% include "citizen_portal/complaint_card.html" with item=item %}
+                {% empty %}
+                    <div class="cv-empty">
+                        <strong>لا توجد شكاوى</strong>
+                        <p>
+                            <a
+                                href="{% url 'citizen_portal:submit_complaint' %}"
+                                class="cv-link"
+                            >
+                                إرسال شكوى جديدة
+                            </a>
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% elif page == "detail" %}
+            {% include "citizen_portal/complaint_card.html" with item=complaint expanded=True %}
+
+        {% elif page == "account" %}
+            <div class="cv-panel">
+                <h2>حسابي</h2>
+                <p class="cv-muted">
+                    <a
+                        href="{% url 'citizen_portal:account' %}"
+                        class="cv-link"
+                    >
+                        فتح إعدادات الحساب
+                    </a>
+                </p>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<nav class="cv-nav" aria-label="التنقل الرئيسي">
+    <a
+        href="{% url 'citizen_portal:home' %}"
+        {% if page == "home" %}aria-current="page"{% endif %}
+    >
+        <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m3 10 9-7 9 7"></path>
+            <path d="M5 9v12h14V9M9 21v-8h6v8"></path>
+        </svg>
+        <span>الرئيسية</span>
+    </a>
+
+    <a
+        href="{% url 'citizen_portal:complaint_list' %}"
+        {% if page == "complaints" or page == "detail" %}
+            aria-current="page"
+        {% endif %}
+    >
+        <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="3" width="14" height="18" rx="3"></rect>
+            <path d="M9 8h6M9 12h6M9 16h4"></path>
+        </svg>
+        <span>الشكاوى</span>
+    </a>
+
+    <a
+        href="{% url 'citizen_portal:account' %}"
+        {% if page == "account" %}aria-current="page"{% endif %}
+    >
+        <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"></circle>
+            <path d="M4 21v-2a8 8 0 0 1 16 0v2"></path>
+        </svg>
+        <span>حسابي</span>
+    </a>
+</nav>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-collapse-complaint]");
+
+        if (!button) return;
+
+        const card = button.closest("details");
+        const summary = card.querySelector("summary");
+
+        card.open = false;
+        summary.focus({ preventScroll: true });
+        card.scrollIntoView({
+            block: "nearest",
+            behavior: "auto"
+        });
+    });
+</script>
+{% endblock %}

@@ -4,14 +4,152 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>
-        {% block title %}CityVoice{% endblock %}
-    </title>
+    <title>{% block title %}CityVoice{% endblock %}</title>
+
+    <script>
+        (() => {
+            const palettes = {
+                green: {
+                    accent: "#287e50",
+                    hover: "#206640",
+                    background: "#f3faf5",
+                    outside: "#e5f1e9",
+                    header: "#e5f3e9",
+                    soft: "#edf7f0",
+                    field: "#fbfefc",
+                    border: "#d4e6da",
+                    text: "#263f30",
+                    muted: "#637d6b",
+                    bright: "#8dd9ad",
+                    darkSoft: "#243e30"
+                },
+                blue: {
+                    accent: "#2463b5",
+                    hover: "#1d5093",
+                    background: "#f3f8ff",
+                    outside: "#e5edf9",
+                    header: "#e5eefc",
+                    soft: "#edf4ff",
+                    field: "#fbfdff",
+                    border: "#d3e0f2",
+                    text: "#273a55",
+                    muted: "#627895",
+                    bright: "#9bc5ff",
+                    darkSoft: "#24364f"
+                },
+                red: {
+                    accent: "#b73742",
+                    hover: "#962c35",
+                    background: "#fff6f6",
+                    outside: "#f6e7e9",
+                    header: "#fbe8eb",
+                    soft: "#fdf0f2",
+                    field: "#fffafb",
+                    border: "#efd5da",
+                    text: "#4b2d33",
+                    muted: "#8e6b72",
+                    bright: "#ffadb5",
+                    darkSoft: "#482b33"
+                },
+                purple: {
+                    accent: "#7750ad",
+                    hover: "#60408d",
+                    background: "#faf6ff",
+                    outside: "#eee5f7",
+                    header: "#efe5fa",
+                    soft: "#f5effc",
+                    field: "#fdfbff",
+                    border: "#e3d6f0",
+                    text: "#3e3052",
+                    muted: "#806d97",
+                    bright: "#d1b0ff",
+                    darkSoft: "#382c49"
+                }
+            };
+
+            const root = document.documentElement;
+
+            window.cityVoiceApplyColor = (name) => {
+                const key = Object.prototype.hasOwnProperty.call(
+                    palettes, name
+                ) ? name : "green";
+
+                root.dataset.cvColor = key;
+
+                const palette = palettes[key];
+
+                const variables = {
+                    "--cv-accent": palette.accent,
+                    "--cv-accent-hover": palette.hover,
+                    "--cv-background": palette.background,
+                    "--cv-outside": palette.outside,
+                    "--cv-header": palette.header,
+                    "--cv-accent-soft": palette.soft,
+                    "--cv-field": palette.field,
+                    "--cv-border": palette.border,
+                    "--cv-accent-border": palette.border,
+                    "--cv-text": palette.text,
+                    "--cv-muted": palette.muted,
+                    "--cv-accent-ring": palette.accent + "26",
+                    "--cv-bright": palette.bright,
+                    "--cv-dark-soft": palette.darkSoft
+                };
+
+                Object.entries(variables).forEach(([name, value]) => {
+                    root.style.setProperty(name, value);
+                });
+            };
+
+            window.cityVoiceApplyTheme = (theme) => {
+                root.dataset.cvTheme = theme === "dark" ? "dark" : "light";
+            };
+
+            let color = "green";
+
+            try {
+                color = localStorage.getItem("cityvoice-color") || "green";
+            } catch (error) {
+                // استخدام اللون الافتراضي.
+            }
+
+            window.cityVoiceApplyColor(color);
+
+            // قراءة المظهر المحفوظ في حساب المستخدم.
+            window.cityVoiceApplyTheme(
+                "{{ request.user.preferred_theme|default:'light'|escapejs }}"
+            );
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const themeOptions = document.querySelectorAll(
+                    'input[name="preferred_theme"]'
+                );
+
+                function previewTheme() {
+                    const selected = document.querySelector(
+                        'input[name="preferred_theme"]:checked'
+                    );
+
+                    if (selected) {
+                        window.cityVoiceApplyTheme(selected.value);
+                    }
+                }
+
+                themeOptions.forEach((option) => {
+                    option.addEventListener("change", previewTheme);
+                });
+
+                if (themeOptions.length) {
+                    previewTheme();
+                }
+            });
+        })();
+    </script>
 
     <link
         rel="stylesheet"
@@ -19,41 +157,356 @@
     >
 
     {% block extra_css %}{% endblock %}
+
+    <style>
+        :root {
+            --primary: var(--cv-accent);
+            --primary-dark: var(--cv-accent-hover);
+            --primary-light: var(--cv-accent-soft);
+        }
+
+        /* الوضع الفاتح */
+        html[data-cv-theme="light"] body.cv-portal {
+            color-scheme: light;
+            color: var(--cv-text);
+            background: var(--cv-outside);
+        }
+
+        html[data-cv-theme="light"] body.cv-portal .app-shell {
+            background: var(--cv-background);
+        }
+
+        body:not(.account-dark) .cv-header {
+            background: var(--cv-header);
+            border-color: var(--cv-border);
+        }
+
+        body .cv-heading h1,
+        body .cv-link,
+        body .cv-back,
+        body .cv-text-link,
+        body .cv-summary-item strong {
+            color: var(--cv-accent);
+        }
+
+        body:not(.account-dark) .cv-heading p,
+        body:not(.account-dark) .account-help,
+        body:not(.account-dark) .cv-muted,
+        body:not(.account-dark) .cv-reference,
+        body:not(.account-dark) .cv-date,
+        body:not(.account-dark) .cv-details dt,
+        body:not(.account-dark) .cv-summary-item span,
+        body:not(.account-dark) .cv-empty p {
+            color: var(--cv-muted);
+        }
+
+        body:not(.account-dark) .account-card,
+        body:not(.account-dark) .cv-panel,
+        body:not(.account-dark) .cv-summary,
+        body:not(.account-dark) .cv-empty,
+        body:not(.account-dark) .cv-fold,
+        body:not(.account-dark) .cv-complaint {
+            color: var(--cv-text);
+            background: #ffffff;
+            border-color: var(--cv-border);
+        }
+
+        body:not(.account-dark) .account-card h3,
+        body:not(.account-dark) .account-field label,
+        body:not(.account-dark) .account-colors legend,
+        body:not(.account-dark) .cv-page-title,
+        body:not(.account-dark) .cv-welcome h2 {
+            color: var(--cv-text);
+        }
+
+        body:not(.account-dark) .account-field
+        input:not([type="checkbox"]):not([type="radio"]),
+        body:not(.account-dark) .account-field textarea {
+            color: var(--cv-text);
+            background: var(--cv-field);
+            border-color: var(--cv-border);
+        }
+
+        body .account-field input:focus,
+        body .account-field textarea:focus {
+            outline-color: var(--cv-accent);
+            border-color: var(--cv-accent);
+        }
+
+        body .cv-new,
+        body .account-save {
+            color: #ffffff;
+            background: var(--cv-accent);
+        }
+
+        body .cv-new:hover,
+        body .account-save:hover {
+            color: #ffffff;
+            background: var(--cv-accent-hover);
+        }
+
+        body .cv-document,
+        body .account-avatar-placeholder,
+        body .cv-collapse {
+            color: var(--cv-accent);
+            background: var(--cv-accent-soft);
+        }
+
+        body .account-avatar,
+        body .cv-fold-body,
+        body .cv-summary-item + .cv-summary-item {
+            border-color: var(--cv-border);
+        }
+
+        body:not(.account-dark) .cv-fold > summary:hover,
+        body:not(.account-dark) .cv-complaint:hover {
+            background: var(--cv-field);
+        }
+
+        body:not(.account-dark) .cv-photo {
+            background: var(--cv-background);
+        }
+
+        body:not(.account-dark) .color-choice span {
+            color: var(--cv-text);
+            background: #ffffff;
+            border-color: var(--cv-border);
+        }
+
+        body .color-choice input:checked + span {
+            color: var(--cv-accent);
+            background: var(--cv-accent-soft);
+            border-color: var(--cv-accent);
+        }
+
+        body input[type="radio"],
+        body input[type="checkbox"] {
+            accent-color: var(--cv-accent);
+        }
+
+        body:not(.account-dark) .cv-nav {
+            background: #ffffff;
+            border-color: var(--cv-border);
+        }
+
+        body:not(.account-dark) .cv-nav a {
+            color: var(--cv-muted);
+        }
+
+        body .cv-nav a[aria-current="page"] {
+            color: var(--cv-accent);
+            background: var(--cv-accent-soft);
+        }
+
+        body .account-field input[type="file"]::file-selector-button {
+            padding: 9px 13px;
+            color: var(--cv-accent);
+            background: var(--cv-accent-soft);
+            border: 1px solid var(--cv-border);
+            border-radius: 9px;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .cv-return-container {
+            padding: 20px 36px 0;
+        }
+
+        .cv-return-home {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 44px;
+            padding: 11px 17px;
+            color: var(--cv-accent);
+            background: var(--cv-accent-soft);
+            border: 1px solid var(--cv-border);
+            border-radius: 12px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .cv-return-home svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* الوضع الداكن المشترك */
+        html[data-cv-theme="dark"] {
+            color-scheme: dark;
+        }
+
+        html[data-cv-theme="dark"] body.cv-portal {
+            color: #e8edf4 !important;
+            background: #10151e !important;
+        }
+
+        html[data-cv-theme="dark"] body.cv-portal .app-shell {
+            color: #e8edf4 !important;
+            background: #171e29 !important;
+        }
+
+        html[data-cv-theme="dark"] body .cv-header {
+            background: var(--cv-dark-soft) !important;
+            border-color: #394454 !important;
+        }
+
+        html[data-cv-theme="dark"] body .account-card,
+        html[data-cv-theme="dark"] body .cv-panel,
+        html[data-cv-theme="dark"] body .cv-summary,
+        html[data-cv-theme="dark"] body .cv-empty,
+        html[data-cv-theme="dark"] body .cv-fold,
+        html[data-cv-theme="dark"] body .cv-complaint,
+        html[data-cv-theme="dark"] body .cv-nav {
+            color: #e8edf4 !important;
+            background: #222c3a !important;
+            border-color: #3b4758 !important;
+        }
+
+        html[data-cv-theme="dark"] body .cv-page-title,
+        html[data-cv-theme="dark"] body .cv-welcome h2,
+        html[data-cv-theme="dark"] body .account-card h3,
+        html[data-cv-theme="dark"] body .account-field label,
+        html[data-cv-theme="dark"] body .account-colors legend,
+        html[data-cv-theme="dark"] body .cv-service,
+        html[data-cv-theme="dark"] body .cv-section-heading h2 {
+            color: #e8edf4 !important;
+        }
+
+        html[data-cv-theme="dark"] body .cv-heading p,
+        html[data-cv-theme="dark"] body .cv-muted,
+        html[data-cv-theme="dark"] body .account-help,
+        html[data-cv-theme="dark"] body .cv-reference,
+        html[data-cv-theme="dark"] body .cv-date,
+        html[data-cv-theme="dark"] body .cv-details dt,
+        html[data-cv-theme="dark"] body .cv-summary-item span,
+        html[data-cv-theme="dark"] body .cv-empty p,
+        html[data-cv-theme="dark"] body .cv-nav a {
+            color: #b5c1d0 !important;
+        }
+
+        html[data-cv-theme="dark"] body .cv-heading h1,
+        html[data-cv-theme="dark"] body .cv-link,
+        html[data-cv-theme="dark"] body .cv-back,
+        html[data-cv-theme="dark"] body .cv-summary-item strong {
+            color: var(--cv-bright) !important;
+        }
+
+        html[data-cv-theme="dark"] body .account-field
+        input:not([type="checkbox"]):not([type="radio"]),
+        html[data-cv-theme="dark"] body .account-field textarea {
+            color: #e8edf4 !important;
+            background: #171e29 !important;
+            border-color: #4a586c !important;
+        }
+
+        html[data-cv-theme="dark"] body .cv-document,
+        html[data-cv-theme="dark"] body .cv-collapse,
+        html[data-cv-theme="dark"] body .account-avatar-placeholder,
+        html[data-cv-theme="dark"] body .cv-return-home,
+        html[data-cv-theme="dark"] body .cv-nav a[aria-current="page"] {
+            color: var(--cv-bright) !important;
+            background: var(--cv-dark-soft) !important;
+        }
+
+        html[data-cv-theme="dark"] body .cv-fold > summary:hover,
+        html[data-cv-theme="dark"] body .cv-complaint:hover {
+            background: #2a3647 !important;
+        }
+
+        html[data-cv-theme="dark"] body .cv-fold-body,
+        html[data-cv-theme="dark"] body .cv-summary-item + .cv-summary-item {
+            border-color: #3b4758 !important;
+        }
+
+        html[data-cv-theme="dark"] body .color-choice span {
+            color: #e8edf4 !important;
+            background: #171e29 !important;
+            border-color: #4a586c !important;
+        }
+
+        html[data-cv-theme="dark"] body .color-choice input:checked + span {
+            color: var(--cv-bright) !important;
+            background: var(--cv-dark-soft) !important;
+            border-color: var(--cv-bright) !important;
+        }
+
+        html[data-cv-theme="dark"] body .cv-photo {
+            background: #171e29 !important;
+        }
+
+        @media (max-width: 600px) {
+            .cv-return-container {
+                padding: 16px 15px 0;
+            }
+        }
+    </style>
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <div class="app-shell">
 
-        <header class="app-header">
-            <a
-                href="{% url 'citizen_portal:submit_complaint' %}"
-                class="brand-link"
-            >
-                <img
-                    src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
-                    alt="CityVoice"
-                    class="brand-logo"
+        {% block header %}
+            <header class="app-header">
+                <a
+                    href="{% url 'citizen_portal:home' %}"
+                    class="brand-link"
+                    aria-label="CityVoice — الرئيسية"
                 >
-            </a>
+                    <img
+                        src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                        alt="CityVoice"
+                        class="brand-logo"
+                    >
+                </a>
 
-            <div class="user-welcome">
-                <span>مرحبًا بك</span>
-                <strong>
-                    {{ request.user.first_name|default:request.user.username }}
-                </strong>
-            </div>
-        </header>
+                <div class="user-welcome">
+                    <span>مرحبًا بك</span>
+                    <strong>
+                        {{ request.user.first_name|default:request.user.username }}
+                    </strong>
+                </div>
+            </header>
+        {% endblock %}
 
         <main class="app-content">
+            {% if request.resolver_match.url_name == "complaint_list" or request.resolver_match.url_name == "complaint_detail" %}
+                <div class="cv-return-container">
+                    <a
+                        href="{% url 'citizen_portal:home' %}"
+                        class="cv-return-home"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m10 5 7 7-7 7M17 12H4"></path>
+                        </svg>
+                        <span>العودة إلى الصفحة الرئيسية</span>
+                    </a>
+                </div>
+            {% endif %}
+
             {% block content %}{% endblock %}
         </main>
 
-        <footer class="app-footer">
-            <p>CityVoice — صوتك يصنع مدينة أفضل</p>
-        </footer>
+        {% block footer %}
+            <footer class="app-footer">
+                <p>CityVoice — صوتك يصنع مدينة أفضل</p>
+            </footer>
+        {% endblock %}
 
     </div>
 
+         {% include "citizen_portal/greetings.html" %}
+
     {% block extra_js %}{% endblock %}
+
+    {% include "citizen_portal/preferences.html" %}
 </body>
 </html>

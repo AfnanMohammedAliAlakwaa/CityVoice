@@ -1,0 +1,98 @@
+<script>
+    (() => {
+        const firstName =
+            "{{ request.user.first_name|default:''|escapejs }}".trim();
+
+        const username =
+            "{{ request.user.username|default:''|escapejs }}".trim();
+
+        const displayName = firstName || username;
+
+        function updateGreeting() {
+            const welcome = document.querySelector(".cv-welcome");
+
+            if (!welcome) return;
+
+            const heading = welcome.querySelector("h2");
+            const description = welcome.querySelector(".cv-muted");
+
+            if (!heading) return;
+
+            const now = new Date();
+            const hour = now.getHours();
+
+            const timeGreeting = hour >= 4 && hour < 12
+                ? "صباح الخير"
+                : "مساء الخير";
+
+            heading.textContent = displayName
+                ? `${timeGreeting}، ${displayName}`
+                : timeGreeting;
+
+            let occasion = "";
+
+            try {
+                const formatter = new Intl.DateTimeFormat(
+                    "en-US-u-ca-islamic-umalqura-nu-latn",
+                    {
+                        month: "numeric",
+                        day: "numeric"
+                    }
+                );
+
+                if (
+                    formatter.resolvedOptions().calendar
+                    === "islamic-umalqura"
+                ) {
+                    const parts = formatter.formatToParts(now);
+
+                    const month = Number(
+                        parts.find(
+                            (part) => part.type === "month"
+                        )?.value
+                    );
+
+                    const day = Number(
+                        parts.find(
+                            (part) => part.type === "day"
+                        )?.value
+                    );
+
+                    if (month === 10 && day >= 1 && day <= 3) {
+                        occasion = "عيد فطر سعيد، وكل عام وأنت بخير.";
+                    } else if (
+                        month === 12 && day >= 10 && day <= 13
+                    ) {
+                        occasion = "عيد أضحى مبارك، وكل عام وأنت بخير.";
+                    } else if (month === 9) {
+                        occasion = "رمضان كريم، تقبّل الله طاعاتك.";
+                    }
+                }
+            } catch (error) {
+                // يستمر الترحيب اليومي إن لم يدعم المتصفح التقويم.
+            }
+
+            if (!occasion && now.getDay() === 5) {
+                occasion = "جمعة مباركة، نتمنى لك يومًا طيبًا.";
+            }
+
+            if (description) {
+                description.textContent =
+                    occasion || "كيف يمكننا مساعدتك اليوم؟";
+            }
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener(
+                "DOMContentLoaded",
+                updateGreeting,
+                { once: true }
+            );
+        } else {
+            updateGreeting();
+        }
+
+        // تحديث الترحيب إذا بقيت الصفحة مفتوحة.
+        window.setInterval(updateGreeting, 60000);
+    })();
+</script>
