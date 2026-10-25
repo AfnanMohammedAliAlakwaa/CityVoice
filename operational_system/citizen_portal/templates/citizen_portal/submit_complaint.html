@@ -1,0 +1,1279 @@
+{% extends "citizen_portal/base.html" %}
+
+{% block title %}تقديم بلاغ | CityVoice{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="wizard-intro">
+    <h1>تقديم بلاغ جديد</h1>
+    <p>أكمل المراحل الأربع لإرسال بلاغك إلى البلدية.</p>
+</section>
+
+<form
+    method="post"
+    enctype="multipart/form-data"
+    class="wizard-card"
+    id="complaint-form"
+>
+    {% csrf_token %}
+
+    {{ form.latitude }}
+    {{ form.longitude }}
+
+    <div class="wizard-progress">
+        <div class="progress-track">
+            <div
+                class="progress-fill"
+                id="progress-fill"
+            ></div>
+        </div>
+
+        <div class="progress-points">
+            <div
+                class="progress-point"
+                data-progress-step="1"
+            >
+                <span class="point-circle">1</span>
+                <span class="progress-label">
+                    نوع البلاغ
+                </span>
+            </div>
+
+            <div
+                class="progress-point"
+                data-progress-step="2"
+            >
+                <span class="point-circle">2</span>
+                <span class="progress-label">
+                    الوصف
+                </span>
+            </div>
+
+            <div
+                class="progress-point"
+                data-progress-step="3"
+            >
+                <span class="point-circle">3</span>
+                <span class="progress-label">
+                    الصورة
+                </span>
+            </div>
+
+            <div
+                class="progress-point"
+                data-progress-step="4"
+            >
+                <span class="point-circle">4</span>
+                <span class="progress-label">
+                    الموقع
+                </span>
+            </div>
+        </div>
+    </div>
+
+    {% if form.errors %}
+        <div class="step-message is-visible">
+            توجد بيانات تحتاج إلى مراجعة قبل إرسال البلاغ.
+        </div>
+    {% endif %}
+
+    <!-- المرحلة الأولى -->
+    <section
+        class="wizard-step"
+        data-step="1"
+    >
+        <div class="step-heading">
+            <span>المرحلة الأولى</span>
+            <h2>ما نوع المشكلة؟</h2>
+            <p>
+                اختر الخدمة البلدية ثم نوع المشكلة.
+            </p>
+        </div>
+
+        <div
+            class="step-message"
+            id="step-one-message"
+        >
+            يرجى اختيار الخدمة ونوع المشكلة.
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.service.id_for_label }}">
+                الخدمة البلدية
+                <span class="required-mark">*</span>
+            </label>
+
+            {{ form.service }}
+            {{ form.service.errors }}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.category.id_for_label }}">
+                نوع المشكلة
+                <span class="required-mark">*</span>
+            </label>
+
+            {{ form.category }}
+            {{ form.category.errors }}
+
+            <small class="field-help">
+                ستظهر أنواع المشكلات بعد اختيار الخدمة.
+            </small>
+        </div>
+
+        <div class="wizard-actions">
+            <button
+                type="button"
+                class="wizard-button next-button"
+                data-next="2"
+            >
+                التالي: وصف المشكلة
+            </button>
+        </div>
+    </section>
+
+    <!-- المرحلة الثانية -->
+    <section
+        class="wizard-step"
+        data-step="2"
+    >
+        <div class="step-heading">
+            <span>المرحلة الثانية</span>
+            <h2>صف المشكلة</h2>
+            <p>
+                اكتب وصفًا واضحًا لما حدث.
+            </p>
+        </div>
+
+        <div
+            class="step-message"
+            id="step-two-message"
+        >
+            يرجى كتابة وصف المشكلة.
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">
+                وصف المشكلة
+                <span class="required-mark">*</span>
+            </label>
+
+            {{ form.description }}
+            {{ form.description.errors }}
+
+            <small class="field-help">
+                اذكر تفاصيل تساعد البلدية على فهم المشكلة.
+            </small>
+        </div>
+
+        <div class="wizard-actions">
+            <button
+                type="button"
+                class="wizard-button back-button"
+                data-back="1"
+            >
+                السابق
+            </button>
+
+            <button
+                type="button"
+                class="wizard-button next-button"
+                data-next="3"
+            >
+                التالي: إضافة صورة
+            </button>
+        </div>
+    </section>
+
+    <!-- المرحلة الثالثة -->
+    <section
+        class="wizard-step"
+        data-step="3"
+    >
+        <div class="step-heading">
+            <span>المرحلة الثالثة</span>
+            <h2>التقط صورة للمشكلة</h2>
+            <p>
+                استخدم كاميرا الهاتف أو اختر صورة موجودة.
+            </p>
+        </div>
+
+        <div class="photo-capture-card">
+            <button
+                type="button"
+                class="photo-placeholder"
+                id="open-camera"
+            >
+                <span class="camera-symbol">＋</span>
+
+                <strong>
+                    التقط صورة للمشكلة
+                </strong>
+
+                <small>
+                    اضغط هنا لفتح كاميرا الهاتف
+                </small>
+            </button>
+
+            <input
+                type="file"
+                id="camera-input"
+                name="camera_photo"
+                accept="image/*"
+                capture="environment"
+                hidden
+            >
+
+            <img
+                id="photo-preview"
+                class="photo-preview"
+                alt="معاينة صورة البلاغ"
+            >
+
+            <div class="form-group photo-input-group">
+                {{ form.photo }}
+                {{ form.photo.errors }}
+            </div>
+        </div>
+
+        <div class="wizard-actions">
+            <button
+                type="button"
+                class="wizard-button back-button"
+                data-back="2"
+            >
+                السابق
+            </button>
+
+            <button
+                type="button"
+                class="wizard-button next-button"
+                data-next="4"
+            >
+                التالي: تحديد الموقع
+            </button>
+        </div>
+    </section>
+
+    <!-- المرحلة الرابعة -->
+    <section
+        class="wizard-step"
+        data-step="4"
+    >
+        <div class="step-heading">
+            <span>المرحلة الرابعة</span>
+            <h2>أين توجد المشكلة؟</h2>
+            <p>
+                حدد الموقع على الخريطة ثم أرسل البلاغ.
+            </p>
+        </div>
+
+        <div
+            class="step-message"
+            id="step-four-message"
+        >
+            يرجى تحديد موقع المشكلة على الخريطة.
+        </div>
+
+        <div class="location-card">
+            <div id="map"></div>
+
+            <div class="location-actions">
+                <button
+                    type="button"
+                    class="location-button"
+                    id="gps-button"
+                >
+                    تحديد موقعي الحالي
+                </button>
+            </div>
+
+            <p
+                class="location-status"
+                id="location-status"
+            >
+                اضغط على موقع المشكلة في الخريطة.
+            </p>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.address.id_for_label }}">
+                وصف العنوان
+            </label>
+
+            {{ form.address }}
+            {{ form.address.errors }}
+
+            <small class="field-help">
+                مثال: شارع الثلاثين، بجوار المدرسة.
+            </small>
+        </div>
+
+        <div class="wizard-actions">
+            <button
+                type="button"
+                class="wizard-button back-button"
+                data-back="3"
+            >
+                السابق
+            </button>
+
+            <button
+                type="button"
+                class="wizard-button final-submit"
+                id="open-review-dialog"
+            >
+                إرسال البلاغ
+            </button>
+        </div>
+    </section>
+</form>
+
+<!-- نافذة مراجعة وتأكيد البلاغ -->
+<div
+    class="review-dialog"
+    id="review-dialog"
+    aria-hidden="true"
+>
+    <div class="dialog-backdrop"></div>
+
+    <div
+        class="dialog-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+    >
+        <div class="dialog-header">
+            <div>
+                <span>الخطوة الأخيرة</span>
+                <h2 id="dialog-title">
+                    تأكيد البلاغ
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                class="dialog-close"
+                id="dialog-close"
+                aria-label="إغلاق"
+            >
+                ×
+            </button>
+        </div>
+
+        <p class="dialog-description">
+            راجع المعلومات التالية قبل تأكيد الإرسال.
+        </p>
+
+        <div class="dialog-photo-wrapper">
+            <img
+                id="dialog-photo"
+                class="dialog-photo"
+                alt="صورة البلاغ"
+            >
+
+            <div
+                class="dialog-photo-empty"
+                id="dialog-photo-empty"
+            >
+                لم تُرفق صورة
+            </div>
+        </div>
+
+        <div class="review-list">
+            <div class="review-item">
+                <span>الخدمة</span>
+                <strong id="review-service">—</strong>
+            </div>
+
+            <div class="review-item">
+                <span>نوع المشكلة</span>
+                <strong id="review-category">—</strong>
+            </div>
+
+            <div class="review-item">
+                <span>الوصف</span>
+                <strong id="review-description">—</strong>
+            </div>
+
+            <div class="review-item">
+                <span>العنوان</span>
+                <strong id="review-address">
+                    غير محدد
+                </strong>
+            </div>
+
+            <div class="review-item">
+                <span>الموقع</span>
+                <strong id="review-location">
+                    تم تحديده
+                </strong>
+            </div>
+        </div>
+
+        <div class="dialog-actions">
+            <button
+                type="button"
+                class="dialog-edit-button"
+                id="dialog-edit"
+            >
+                تعديل البيانات
+            </button>
+
+            <button
+                type="button"
+                class="dialog-confirm-button"
+                id="confirm-submit"
+            >
+                تأكيد وإرسال
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    const form =
+        document.getElementById("complaint-form");
+
+    const steps =
+        document.querySelectorAll(".wizard-step");
+
+    const progressPoints =
+        document.querySelectorAll(".progress-point");
+
+    const progressFill =
+        document.getElementById("progress-fill");
+
+    const serviceSelect =
+        document.getElementById("id_service");
+
+    const categorySelect =
+        document.getElementById("id_category");
+
+    const descriptionInput =
+        document.getElementById("id_description");
+
+    const photoInput =
+        document.getElementById("id_photo");
+
+    const cameraInput =
+        document.getElementById("camera-input");
+
+    const openCameraButton =
+        document.getElementById("open-camera");
+
+    const photoPreview =
+        document.getElementById("photo-preview");
+
+    const addressInput =
+        document.getElementById("id_address");
+
+    const latitudeInput =
+        document.getElementById("id_latitude");
+
+    const longitudeInput =
+        document.getElementById("id_longitude");
+
+    const reviewDialog =
+        document.getElementById("review-dialog");
+
+    const locationStatus =
+        document.getElementById("location-status");
+
+    const totalSteps = 4;
+
+    let currentStep = 1;
+    let photoPreviewUrl = null;
+    let automaticLocationAttempted = false;
+    let map = null;
+    let marker = null;
+
+    const initialStep =
+        {% if form.service.errors or form.category.errors %}
+            1
+        {% elif form.description.errors %}
+            2
+        {% elif form.photo.errors %}
+            3
+        {% elif form.latitude.errors or form.longitude.errors or form.address.errors %}
+            4
+        {% else %}
+            1
+        {% endif %};
+
+    function showStep(stepNumber) {
+        currentStep = stepNumber;
+
+        steps.forEach(function (step) {
+            const isCurrentStep =
+                Number(step.dataset.step) === currentStep;
+
+            step.classList.toggle(
+                "is-active",
+                isCurrentStep
+            );
+        });
+
+        progressPoints.forEach(function (point, index) {
+            const pointNumber = index + 1;
+            const circle =
+                point.querySelector(".point-circle");
+
+            point.classList.remove(
+                "is-active",
+                "is-complete"
+            );
+
+            if (pointNumber < currentStep) {
+                point.classList.add("is-complete");
+                circle.textContent = "✓";
+            } else {
+                circle.textContent = pointNumber;
+            }
+
+            if (pointNumber === currentStep) {
+                point.classList.add("is-active");
+            }
+        });
+
+        if (progressFill) {
+            const progressPercentage =
+                ((currentStep - 1) / (totalSteps - 1)) * 100;
+
+            progressFill.style.width =
+                `${progressPercentage}%`;
+        }
+
+        if (currentStep === 4) {
+            setTimeout(function () {
+                if (map) {
+                    map.invalidateSize();
+                }
+
+                if (
+                    latitudeInput &&
+                    !latitudeInput.value &&
+                    !automaticLocationAttempted
+                ) {
+                    automaticLocationAttempted = true;
+                    requestCurrentLocation();
+                }
+            }, 250);
+        }
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+    /*
+     * إظهار المرحلة فورًا حتى لو تعذر
+     * تحميل الخريطة لاحقًا.
+     */
+    showStep(initialStep);
+
+    function showValidationMessage(messageId, show) {
+        const message =
+            document.getElementById(messageId);
+
+        if (message) {
+            message.classList.toggle(
+                "is-visible",
+                show
+            );
+        }
+    }
+
+    function validateStep(stepNumber) {
+        let isValid = true;
+
+        if (stepNumber === 1) {
+            serviceSelect.classList.remove("is-invalid");
+            categorySelect.classList.remove("is-invalid");
+
+            if (!serviceSelect.value) {
+                serviceSelect.classList.add("is-invalid");
+                isValid = false;
+            }
+
+            if (!categorySelect.value) {
+                categorySelect.classList.add("is-invalid");
+                isValid = false;
+            }
+
+            showValidationMessage(
+                "step-one-message",
+                !isValid
+            );
+        }
+
+        if (stepNumber === 2) {
+            descriptionInput.classList.remove(
+                "is-invalid"
+            );
+
+            if (!descriptionInput.value.trim()) {
+                descriptionInput.classList.add(
+                    "is-invalid"
+                );
+
+                isValid = false;
+            }
+
+            showValidationMessage(
+                "step-two-message",
+                !isValid
+            );
+        }
+
+        if (stepNumber === 4) {
+            if (
+                !latitudeInput.value ||
+                !longitudeInput.value
+            ) {
+                isValid = false;
+            }
+
+            showValidationMessage(
+                "step-four-message",
+                !isValid
+            );
+        }
+
+        return isValid;
+    }
+
+    document
+        .querySelectorAll("[data-next]")
+        .forEach(function (button) {
+            button.addEventListener(
+                "click",
+                function () {
+                    if (validateStep(currentStep)) {
+                        showStep(
+                            Number(button.dataset.next)
+                        );
+                    }
+                }
+            );
+        });
+
+    document
+        .querySelectorAll("[data-back]")
+        .forEach(function (button) {
+            button.addEventListener(
+                "click",
+                function () {
+                    showStep(
+                        Number(button.dataset.back)
+                    );
+                }
+            );
+        });
+
+    /*
+     * تحميل أنواع المشكلة وفق الخدمة
+     */
+    const categoriesUrl =
+        "{% url 'citizen_portal:load_categories' %}";
+
+    const savedCategoryValue =
+        categorySelect.value;
+
+    async function loadServiceCategories(
+        serviceId,
+        selectedValue = ""
+    ) {
+        categorySelect.innerHTML =
+            '<option value="">---------</option>';
+
+        if (!serviceId) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${categoriesUrl}?service=${
+                    encodeURIComponent(serviceId)
+                }`,
+                {
+                    headers: {
+                        "X-Requested-With":
+                            "XMLHttpRequest"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+            }
+
+            const categories =
+                await response.json();
+
+            categories.forEach(function (category) {
+                const option =
+                    document.createElement("option");
+
+                option.value = category.id;
+                option.textContent = category.name_ar;
+
+                if (
+                    String(category.id) ===
+                    String(selectedValue)
+                ) {
+                    option.selected = true;
+                }
+
+                categorySelect.appendChild(option);
+            });
+
+            if (categories.length === 0) {
+                categorySelect.innerHTML =
+                    '<option value="">لا توجد أنواع لهذه الخدمة</option>';
+            }
+        } catch (error) {
+            console.error(
+                "Category loading error:",
+                error
+            );
+
+            categorySelect.innerHTML =
+                '<option value="">تعذر تحميل أنواع المشكلة</option>';
+        }
+    }
+
+    serviceSelect.addEventListener(
+        "change",
+        function () {
+            this.classList.remove("is-invalid");
+
+            loadServiceCategories(
+                this.value
+            );
+        }
+    );
+
+    categorySelect.addEventListener(
+        "change",
+        function () {
+            this.classList.remove("is-invalid");
+        }
+    );
+
+    /*
+     * تحميل الأنواع أيضًا إذا كانت الخدمة
+     * محددة مسبقًا بعد تحديث الصفحة.
+     */
+    if (serviceSelect.value) {
+        loadServiceCategories(
+            serviceSelect.value,
+            savedCategoryValue
+        );
+    }
+
+    descriptionInput.addEventListener(
+        "input",
+        function () {
+            this.classList.remove("is-invalid");
+        }
+    );
+
+    /*
+     * الكاميرا ومعاينة الصورة
+     */
+    function displaySelectedPhoto(file) {
+        if (!photoPreview || !openCameraButton) {
+            return;
+        }
+
+        if (photoPreviewUrl) {
+            URL.revokeObjectURL(photoPreviewUrl);
+        }
+
+        if (file) {
+            photoPreviewUrl =
+                URL.createObjectURL(file);
+
+            photoPreview.src = photoPreviewUrl;
+
+            photoPreview.classList.add(
+                "is-visible"
+            );
+
+            openCameraButton.classList.add(
+                "is-hidden"
+            );
+        } else {
+            photoPreview.removeAttribute("src");
+
+            photoPreview.classList.remove(
+                "is-visible"
+            );
+
+            openCameraButton.classList.remove(
+                "is-hidden"
+            );
+
+            photoPreviewUrl = null;
+        }
+    }
+
+    if (openCameraButton && cameraInput) {
+        openCameraButton.addEventListener(
+            "click",
+            function () {
+                cameraInput.click();
+            }
+        );
+    }
+
+    if (photoPreview && cameraInput) {
+        photoPreview.addEventListener(
+            "click",
+            function () {
+                cameraInput.click();
+            }
+        );
+    }
+
+    if (cameraInput) {
+        cameraInput.addEventListener(
+            "change",
+            function () {
+                if (this.files.length > 0) {
+                    if (photoInput) {
+                        photoInput.value = "";
+                    }
+
+                    displaySelectedPhoto(
+                        this.files[0]
+                    );
+                }
+            }
+        );
+    }
+
+    if (photoInput) {
+        photoInput.addEventListener(
+            "change",
+            function () {
+                if (this.files.length > 0) {
+                    if (cameraInput) {
+                        cameraInput.value = "";
+                    }
+
+                    displaySelectedPhoto(
+                        this.files[0]
+                    );
+                } else {
+                    displaySelectedPhoto(null);
+                }
+            }
+        );
+    }
+
+    /*
+     * الخريطة
+     */
+    function initializeMap() {
+        const mapElement =
+            document.getElementById("map");
+
+        if (
+            !mapElement ||
+            typeof L === "undefined"
+        ) {
+            if (locationStatus) {
+                locationStatus.textContent =
+                    "تعذر تحميل الخريطة. تحقق من اتصال الإنترنت ثم حدّث الصفحة.";
+            }
+
+            return;
+        }
+
+        map = L.map("map").setView(
+            [15.3694, 44.1910],
+            13
+        );
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap"
+            }
+        ).addTo(map);
+
+        map.on("click", function (event) {
+            setComplaintLocation(
+                event.latlng.lat,
+                event.latlng.lng
+            );
+        });
+
+        if (
+            latitudeInput.value &&
+            longitudeInput.value
+        ) {
+            setComplaintLocation(
+                parseFloat(latitudeInput.value),
+                parseFloat(longitudeInput.value)
+            );
+        }
+    }
+
+    function setComplaintLocation(
+        latitude,
+        longitude
+    ) {
+        if (!map) {
+            return;
+        }
+
+        latitudeInput.value = latitude;
+        longitudeInput.value = longitude;
+
+        if (marker) {
+            marker.setLatLng([
+                latitude,
+                longitude
+            ]);
+        } else {
+            marker = L.marker(
+                [latitude, longitude],
+                {
+                    draggable: true
+                }
+            ).addTo(map);
+
+            marker.on(
+                "dragend",
+                function (event) {
+                    const position =
+                        event.target.getLatLng();
+
+                    setComplaintLocation(
+                        position.lat,
+                        position.lng
+                    );
+                }
+            );
+        }
+
+        map.setView(
+            [latitude, longitude],
+            17
+        );
+
+        if (locationStatus) {
+            locationStatus.textContent =
+                "تم تحديد موقع المشكلة بنجاح.";
+        }
+
+        showValidationMessage(
+            "step-four-message",
+            false
+        );
+    }
+
+    function requestCurrentLocation() {
+        if (!locationStatus) {
+            return;
+        }
+
+        locationStatus.textContent =
+            "جارٍ تحديد موقعك الحالي تلقائيًا...";
+
+        if (!window.isSecureContext) {
+            locationStatus.textContent =
+                "التحديد التلقائي يحتاج اتصال HTTPS. يمكنك تحديد الموقع يدويًا من الخريطة أثناء التجربة المحلية.";
+
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            locationStatus.textContent =
+                "تحديد الموقع غير مدعوم في هذا الجهاز.";
+
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                setComplaintLocation(
+                    position.coords.latitude,
+                    position.coords.longitude
+                );
+
+                locationStatus.textContent =
+                    "تم تحديد موقعك الحالي تلقائيًا.";
+            },
+            function (error) {
+                if (error.code === 1) {
+                    locationStatus.textContent =
+                        "يرجى السماح للتطبيق بالوصول إلى موقعك.";
+                } else if (error.code === 2) {
+                    locationStatus.textContent =
+                        "تعذر الوصول إلى موقعك الحالي. اختر الموقع يدويًا من الخريطة.";
+                } else {
+                    locationStatus.textContent =
+                        "انتهت مهلة تحديد الموقع. حاول مرة أخرى أو اختر الموقع يدويًا.";
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+        );
+    }
+
+    const gpsButton =
+        document.getElementById("gps-button");
+
+    if (gpsButton) {
+        gpsButton.addEventListener(
+            "click",
+            requestCurrentLocation
+        );
+    }
+
+    initializeMap();
+
+    /*
+     * نافذة مراجعة البلاغ
+     */
+    function updateDialogDetails() {
+        const selectedService =
+            serviceSelect.options[
+                serviceSelect.selectedIndex
+            ];
+
+        const selectedCategory =
+            categorySelect.options[
+                categorySelect.selectedIndex
+            ];
+
+        document.getElementById(
+            "review-service"
+        ).textContent =
+            selectedService
+                ? selectedService.text
+                : "—";
+
+        document.getElementById(
+            "review-category"
+        ).textContent =
+            selectedCategory
+                ? selectedCategory.text
+                : "—";
+
+        document.getElementById(
+            "review-description"
+        ).textContent =
+            descriptionInput.value.trim() || "—";
+
+        document.getElementById(
+            "review-address"
+        ).textContent =
+            addressInput.value.trim() || "غير محدد";
+
+        document.getElementById(
+            "review-location"
+        ).textContent =
+            latitudeInput.value &&
+            longitudeInput.value
+                ? "تم تحديد الموقع بنجاح"
+                : "لم يتم تحديده";
+
+        const dialogPhoto =
+            document.getElementById(
+                "dialog-photo"
+            );
+
+        const emptyPhoto =
+            document.getElementById(
+                "dialog-photo-empty"
+            );
+
+        if (photoPreviewUrl) {
+            dialogPhoto.src =
+                photoPreviewUrl;
+
+            dialogPhoto.classList.add(
+                "is-visible"
+            );
+
+            emptyPhoto.classList.add(
+                "is-hidden"
+            );
+        } else {
+            dialogPhoto.removeAttribute("src");
+
+            dialogPhoto.classList.remove(
+                "is-visible"
+            );
+
+            emptyPhoto.classList.remove(
+                "is-hidden"
+            );
+        }
+    }
+
+    function openDialog() {
+        updateDialogDetails();
+
+        reviewDialog.classList.add(
+            "is-open"
+        );
+
+        reviewDialog.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add(
+            "dialog-open"
+        );
+
+        const finalPoint =
+            progressPoints[3];
+
+        finalPoint.classList.remove(
+            "is-active"
+        );
+
+        finalPoint.classList.add(
+            "is-complete"
+        );
+
+        finalPoint
+            .querySelector(".point-circle")
+            .textContent = "✓";
+    }
+
+    function closeDialog() {
+        reviewDialog.classList.remove(
+            "is-open"
+        );
+
+        reviewDialog.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        document.body.classList.remove(
+            "dialog-open"
+        );
+
+        showStep(4);
+    }
+
+    const openReviewButton =
+        document.getElementById(
+            "open-review-dialog"
+        );
+
+    const closeDialogButton =
+        document.getElementById(
+            "dialog-close"
+        );
+
+    const editDialogButton =
+        document.getElementById(
+            "dialog-edit"
+        );
+
+    const confirmSubmitButton =
+        document.getElementById(
+            "confirm-submit"
+        );
+
+    if (openReviewButton) {
+        openReviewButton.addEventListener(
+            "click",
+            function () {
+                if (validateStep(4)) {
+                    openDialog();
+                }
+            }
+        );
+    }
+
+    if (closeDialogButton) {
+        closeDialogButton.addEventListener(
+            "click",
+            closeDialog
+        );
+    }
+
+    if (editDialogButton) {
+        editDialogButton.addEventListener(
+            "click",
+            closeDialog
+        );
+    }
+
+    if (reviewDialog) {
+        reviewDialog.addEventListener(
+            "click",
+            function (event) {
+                if (
+                    event.target.classList.contains(
+                        "dialog-backdrop"
+                    )
+                ) {
+                    closeDialog();
+                }
+            }
+        );
+    }
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+            if (
+                event.key === "Escape" &&
+                reviewDialog &&
+                reviewDialog.classList.contains(
+                    "is-open"
+                )
+            ) {
+                closeDialog();
+            }
+        }
+    );
+
+    if (confirmSubmitButton) {
+        confirmSubmitButton.addEventListener(
+            "click",
+            function () {
+                this.disabled = true;
+
+                this.textContent =
+                    "جارٍ إرسال البلاغ...";
+
+                form.submit();
+            }
+        );
+    }
+</script>
+
+{% endblock %}

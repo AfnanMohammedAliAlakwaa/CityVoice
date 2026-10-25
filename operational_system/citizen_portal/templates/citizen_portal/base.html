@@ -1,0 +1,59 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}CityVoice{% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'citizen_portal/css/citizen.css' %}"
+    >
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <header class="app-header">
+            <a
+                href="{% url 'citizen_portal:submit_complaint' %}"
+                class="brand-link"
+            >
+                <img
+                    src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                    alt="CityVoice"
+                    class="brand-logo"
+                >
+            </a>
+
+            <div class="user-welcome">
+                <span>مرحبًا بك</span>
+                <strong>
+                    {{ request.user.first_name|default:request.user.username }}
+                </strong>
+            </div>
+        </header>
+
+        <main class="app-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="app-footer">
+            <p>CityVoice — صوتك يصنع مدينة أفضل</p>
+        </footer>
+
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
