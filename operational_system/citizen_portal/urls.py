@@ -1,11 +1,41 @@
 from django.urls import path
 
-from . import views
+from . import preference_views, views
 
 
 app_name = "citizen_portal"
 
 urlpatterns = [
+    path(
+        "",
+        views.home,
+        name="home",
+    ),
+    path(
+        "my-complaints/",
+        views.complaint_list,
+        name="complaint_list",
+    ),
+    path(
+        "my-complaints/<str:reference_number>/",
+        views.complaint_detail,
+        name="complaint_detail",
+    ),
+    path(
+        "my-account/",
+        views.account,
+        name="account",
+    ),
+    path(
+        "my-account/saved/",
+        views.account_saved,
+        name="account_saved",
+    ),
+    path(
+        "my-account/theme/",
+        preference_views.save_theme,
+        name="save_theme",
+    ),
     path(
         "complaints/new/",
         views.submit_complaint,

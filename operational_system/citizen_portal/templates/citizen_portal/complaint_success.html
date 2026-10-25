@@ -11,12 +11,14 @@
 
     <p>
         شكرًا لمساهمتك في تحسين خدمات المدينة.
-        يمكنك استخدام الرقم التالي لمتابعة حالة البلاغ.
+        يمكنك متابعة بلاغك باستخدام الرقم التالي.
     </p>
 
     <div class="reference-box">
         <span>الرقم المرجعي للبلاغ</span>
-        <strong>{{ complaint.reference_number }}</strong>
+        <strong>
+            <bdi>{{ complaint.reference_number }}</bdi>
+        </strong>
     </div>
 
     <p>
@@ -24,12 +26,35 @@
         <strong>{{ complaint.get_status_display }}</strong>
     </p>
 
-    <a
-        href="{% url 'citizen_portal:submit_complaint' %}"
-        class="primary-link"
+    <div
+        style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        "
     >
-        تقديم بلاغ آخر
-    </a>
+        <a
+            href="{% url 'citizen_portal:submit_complaint' %}"
+            class="primary-link"
+        >
+            تقديم بلاغ آخر
+        </a>
+
+        <a
+            href="{% url 'citizen_portal:complaint_detail' complaint.reference_number %}"
+            class="cv-return-home"
+        >
+            تحديث حالة البلاغ
+        </a>
+
+        <a
+            href="{% url 'citizen_portal:home' %}"
+            class="cv-return-home"
+        >
+            العودة إلى الصفحة الرئيسية
+        </a>
+    </div>
 </section>
 
 {% endblock %}

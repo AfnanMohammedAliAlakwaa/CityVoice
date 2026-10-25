@@ -1,0 +1,107 @@
+<details
+    class="cv-fold"
+    style="margin-bottom: 14px;"
+    {% if expanded %}open{% endif %}
+>
+    <summary>
+        <span class="cv-document" aria-hidden="true">
+            <svg class="cv-icon" viewBox="0 0 24 24">
+                <rect
+                    x="5"
+                    y="3"
+                    width="14"
+                    height="18"
+                    rx="3"
+                ></rect>
+                <path d="M9 8h6M9 12h6M9 16h4"></path>
+            </svg>
+        </span>
+
+        <span class="cv-card-copy">
+            <span class="cv-reference">
+                المرجع:
+                <bdi>{{ item.reference_number }}</bdi>
+            </span>
+
+            <strong class="cv-service">
+                {{ item.service.name_ar }}
+            </strong>
+
+            <time
+                class="cv-date"
+                datetime="{{ item.created_at|date:'c' }}"
+            >
+                {{ item.created_at|date:"Y/m/d" }}
+            </time>
+
+            <span class="cv-status cv-status--{{ item.status }}">
+                {{ item.get_status_display }}
+            </span>
+        </span>
+
+        <span class="cv-fold-action" aria-hidden="true">
+            <svg class="cv-icon" viewBox="0 0 24 24">
+                <path d="m6 9 6 6 6-6"></path>
+            </svg>
+        </span>
+    </summary>
+
+    <div class="cv-fold-body">
+        <dl class="cv-details">
+            <div>
+                <dt>تصنيف البلاغ</dt>
+                <dd>{{ item.category.name_ar }}</dd>
+            </div>
+
+            <div>
+                <dt>آخر تحديث</dt>
+                <dd>{{ item.updated_at|date:"Y/m/d — H:i" }}</dd>
+            </div>
+
+            <div>
+                <dt>الحي</dt>
+                <dd>{{ item.neighborhood|default:"غير محدد" }}</dd>
+            </div>
+
+            <div>
+                <dt>العنوان</dt>
+                <dd>{{ item.address|default:"غير مضاف" }}</dd>
+            </div>
+
+            <div class="cv-wide">
+                <dt>وصف البلاغ</dt>
+                <dd class="cv-description">{{ item.description }}</dd>
+            </div>
+
+            {% if item.photo %}
+                <div class="cv-wide">
+                    <dt>صورة البلاغ</dt>
+                    <dd>
+                        <img
+                            src="{{ item.photo.url }}"
+                            alt="الصورة المرفقة بالبلاغ"
+                            class="cv-photo"
+                            loading="lazy"
+                        >
+                    </dd>
+                </div>
+            {% endif %}
+        </dl>
+
+        <button
+            type="button"
+            class="cv-collapse"
+            data-collapse-complaint
+            aria-label="إغلاق تفاصيل الشكوى"
+            title="إغلاق التفاصيل"
+        >
+            <svg
+                class="cv-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <path d="m6 15 6-6 6 6"></path>
+            </svg>
+        </button>
+    </div>
+</details>
