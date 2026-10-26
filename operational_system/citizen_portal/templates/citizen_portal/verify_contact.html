@@ -1,0 +1,354 @@
+{% extends "citizen_portal/base.html" %}
+
+{% block title %}تأكيد البريد | CityVoice{% endblock %}
+{% block body_class %}cv-portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .verify-wrap {
+        max-width: 620px;
+        margin: 24px auto;
+        padding: 0 16px 32px;
+        font-family: Tahoma, Arial, sans-serif;
+        color: var(--cv-text, #263f30);
+    }
+
+    .verify-card {
+        padding: 26px;
+        margin-bottom: 16px;
+        background: #fff;
+        border: 1px solid var(--cv-border, #d4e6da);
+        border-radius: 18px;
+    }
+
+    .verify-card h1 {
+        margin: 0 0 14px;
+        font-size: 23px;
+        line-height: 1.6;
+    }
+
+    .verify-card h2 {
+        margin: 0 0 16px;
+        font-size: 18px;
+    }
+
+    .verify-card p {
+        font-size: 14px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .verify-card label {
+        display: block;
+        margin: 12px 0 8px;
+        font-size: 14px;
+    }
+
+    .verify-card input {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 48px;
+        padding: 12px;
+        border: 1px solid var(--cv-border, #d4e6da);
+        border-radius: 10px;
+        background: var(--cv-field, #fff);
+        color: inherit;
+        font: inherit;
+    }
+
+    .verify-card input:focus-visible {
+        outline: 2px solid var(--cv-accent, #287e50);
+        outline-offset: 3px;
+    }
+
+    .verify-card button {
+        width: 100%;
+        min-height: 48px;
+        margin-top: 16px;
+        padding: 12px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--cv-accent, #287e50);
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .verify-card button:disabled {
+        opacity: .6;
+        cursor: wait;
+    }
+
+    .verify-card a {
+        color: var(--cv-accent, #287e50);
+    }
+
+    .verify-error,
+    .verify-card .errorlist {
+        color: #b42338;
+        font-size: 14px;
+        line-height: 1.9;
+    }
+
+    .verify-error {
+        padding: 12px;
+        border-radius: 10px;
+        background: #fff0f2;
+    }
+
+    .verify-notice,
+    .verify-timer {
+        padding: 13px;
+        border-radius: 10px;
+        background: var(--cv-accent-soft, #edf7f0);
+        line-height: 1.9;
+    }
+
+    .verify-timer {
+        margin-top: 16px;
+        font-size: 14px;
+    }
+
+    .verify-timer p {
+        margin: 4px 0;
+    }
+
+    .verify-time {
+        display: inline-block;
+        direction: ltr;
+        font-weight: bold;
+        font-variant-numeric: tabular-nums;
+    }
+
+    html[data-cv-theme="dark"] .verify-card {
+        color: #e8edf4;
+        background: #222c3a;
+        border-color: #3b4758;
+    }
+
+    html[data-cv-theme="dark"] .verify-card input {
+        background: #171e29;
+        border-color: #4a586c;
+    }
+
+    html[data-cv-theme="dark"] .verify-notice,
+    html[data-cv-theme="dark"] .verify-timer {
+        background: var(--cv-dark-soft, #243e30);
+    }
+
+    html[data-cv-theme="dark"] .verify-error {
+        color: #ffb7c0;
+        background: #45252e;
+    }
+
+    @media (max-width: 480px) {
+        .verify-wrap {
+            margin-top: 16px;
+            padding: 0 12px 24px;
+        }
+
+        .verify-card {
+            padding: 20px 16px;
+        }
+
+        .verify-card h1 {
+            font-size: 21px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div
+    class="verify-wrap"
+    id="verification-page"
+    data-now="{% now 'U' %}"
+    data-sent="{{ request.user.email_challenge.last_sent_at|date:'U' }}"
+    data-expires="{{ request.user.email_challenge.expires_at|date:'U' }}"
+    data-blocked="{{ request.user.email_challenge.blocked_until|date:'U' }}"
+>
+    <section class="verify-card">
+        <h1>تأكيد وسيلة التواصل</h1>
+
+        <p>
+            أكّدي بريدك الإلكتروني لتتمكني من إرسال البلاغات.
+            لن نطلب رمزًا جديدًا مع كل بلاغ أو تسجيل دخول.
+        </p>
+
+        {% if request.user.has_verified_contact %}
+            <p class="verify-notice">
+                بريدك الحالي موثّق، ويبقى معتمدًا حتى تأكيد البريد الجديد.
+            </p>
+        {% endif %}
+
+        {% if sent and has_challenge %}
+            <p class="verify-notice" role="status">
+                قُبل طلب إرسال الرمز.
+                راجعي الوارد والرسائل غير المرغوب فيها،
+                وتأكدي من صحة عنوان البريد.
+            </p>
+        {% endif %}
+
+        {% if error %}
+            <p class="verify-error" role="alert">{{ error }}</p>
+        {% endif %}
+
+        <form
+            method="post"
+            action="{% url 'citizen_portal:verify_contact' %}"
+        >
+            {% csrf_token %}
+            <input type="hidden" name="action" value="send">
+
+            {{ email_form.email.label_tag }}
+            {{ email_form.email }}
+            {{ email_form.email.errors }}
+
+            <button type="submit" id="send-code-button">
+                {% if has_challenge %}
+                    إعادة إرسال رمز التحقق
+                {% else %}
+                    إرسال رمز التحقق
+                {% endif %}
+            </button>
+        </form>
+
+        <p id="resend-status" role="status"></p>
+        <p>يمكن طلب خمسة رموز كحد أقصى خلال الساعة.</p>
+    </section>
+
+    {% if has_challenge %}
+        <section class="verify-card">
+            <h2>أدخل رمز التحقق</h2>
+
+            <p>
+                البريد المطلوب تأكيده:
+                <strong><bdi>{{ pending_target }}</bdi></strong>
+            </p>
+
+            <div class="verify-timer">
+                <p>
+                    مضى على آخر طلب:
+                    <span class="verify-time" id="elapsed-time">00:00</span>
+                </p>
+                <p>
+                    صلاحية الرمز المتبقية:
+                    <span class="verify-time" id="remaining-time">05:00</span>
+                </p>
+            </div>
+
+            <p id="expiry-status" role="status"></p>
+
+            <form
+                method="post"
+                action="{% url 'citizen_portal:verify_contact' %}"
+            >
+                {% csrf_token %}
+                <input type="hidden" name="action" value="confirm">
+
+                {{ code_form.code.label_tag }}
+                {{ code_form.code }}
+                {{ code_form.code.errors }}
+
+                <button type="submit" id="confirm-code-button">
+                    تأكيد ومتابعة
+                </button>
+            </form>
+
+            <p>عند طلب رمز جديد، استخدم أحدث رمز فقط.</p>
+        </section>
+    {% endif %}
+
+    <section class="verify-card">
+        <a href="{% url 'citizen_portal:account' %}">
+            العودة إلى حسابي
+        </a>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const page = document.getElementById("verification-page");
+    if (!page) return;
+
+    const serverNow = Number(page.dataset.now) * 1000;
+    const startedAt = performance.now();
+
+    function timestamp(value) {
+        return value ? Number(value) * 1000 : 0;
+    }
+
+    const sentAt = timestamp(page.dataset.sent);
+    const expiresAt = timestamp(page.dataset.expires);
+    const blockedUntil = timestamp(page.dataset.blocked);
+
+    const sendButton = document.getElementById("send-code-button");
+    const sendLabel = sendButton.textContent.trim();
+    const resendStatus = document.getElementById("resend-status");
+    const elapsed = document.getElementById("elapsed-time");
+    const remaining = document.getElementById("remaining-time");
+    const expiryStatus = document.getElementById("expiry-status");
+    const confirmButton = document.getElementById("confirm-code-button");
+
+    function format(seconds) {
+        seconds = Math.max(0, seconds);
+        const minutes = Math.floor(seconds / 60);
+        const rest = seconds % 60;
+
+        return String(minutes).padStart(2, "0")
+            + ":"
+            + String(rest).padStart(2, "0");
+    }
+
+    function update() {
+        const now = serverNow + performance.now() - startedAt;
+        const retryAt = Math.max(
+            sentAt ? sentAt + 60000 : 0,
+            blockedUntil
+        );
+        const retrySeconds = Math.max(
+            0,
+            Math.ceil((retryAt - now) / 1000)
+        );
+
+        sendButton.disabled = retrySeconds > 0;
+
+        if (retrySeconds > 0) {
+            sendButton.textContent =
+                "يمكن إعادة الإرسال بعد " + format(retrySeconds);
+            resendStatus.textContent =
+                "انتظر انتهاء العدّاد قبل طلب رمز آخر.";
+        } else {
+            sendButton.textContent = sendLabel;
+            resendStatus.textContent =
+                "يمكنك الآن طلب إرسال الرمز.";
+        }
+
+        if (elapsed && sentAt) {
+            elapsed.textContent = format(
+                Math.floor((now - sentAt) / 1000)
+            );
+        }
+
+        if (remaining && expiresAt) {
+            const secondsLeft = Math.max(
+                0,
+                Math.ceil((expiresAt - now) / 1000)
+            );
+
+            remaining.textContent = format(secondsLeft);
+            confirmButton.disabled = secondsLeft === 0;
+
+            expiryStatus.textContent = secondsLeft === 0
+                ? "انتهت صلاحية الرمز. اطلب رمزًا جديدًا."
+                : "";
+        }
+    }
+
+    update();
+    setInterval(update, 1000);
+})();
+</script>
+{% endblock %}

@@ -1,6 +1,4 @@
-/* =========================================
-   CityVoice - Unified Authentication Card
-========================================= */
+/* CityVoice — تسجيل الدخول وإنشاء الحساب */
 
 :root {
     --green-dark: #185c3a;
@@ -17,16 +15,18 @@
     --muted: #6d7e74;
     --border: #d8e6dd;
 
-    --danger: #b3261e;
+    --danger: #a62929;
     --danger-soft: #fff1f0;
+    --danger-border: #efceca;
 }
 
-/* =========================================
-   General
-========================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
@@ -36,32 +36,26 @@ html {
 }
 
 body {
-    min-height: 100vh;
-    min-height: 100dvh;
-
     display: flex;
     align-items: center;
     justify-content: center;
 
+    min-height: 100vh;
+    min-height: 100dvh;
+
     padding: 18px;
 
-    overflow: hidden;
-
-    font-family:
-        Tahoma,
-        Arial,
-        "Segoe UI",
-        sans-serif;
+    font-family: Tahoma, Arial, "Segoe UI", sans-serif;
 
     background:
         radial-gradient(
             circle at 12% 16%,
-            rgba(47, 143, 91, 0.18),
+            rgba(47, 143, 91, 0.15),
             transparent 28%
         ),
         radial-gradient(
             circle at 88% 84%,
-            rgba(24, 92, 58, 0.13),
+            rgba(24, 92, 58, 0.1),
             transparent 27%
         ),
         linear-gradient(
@@ -71,42 +65,34 @@ body {
         );
 }
 
-/* =========================================
-   Unified card
-========================================= */
+/* البطاقة */
 
 .auth-wrapper {
     position: relative;
+    isolation: isolate;
 
     width: min(540px, 100%);
-    height: 590px;
+    height: 650px;
     max-height: calc(100dvh - 36px);
 
     overflow: hidden;
-
     direction: ltr;
 
     border: 1px solid rgba(24, 92, 58, 0.14);
-    border-radius: 30px;
+    border-radius: 28px;
 
-    background: rgba(255, 255, 255, 0.985);
+    background: var(--white);
 
     box-shadow:
-        0 30px 75px rgba(15, 79, 47, 0.17),
-        0 7px 20px rgba(15, 79, 47, 0.07);
+        0 25px 65px rgba(15, 79, 47, 0.14),
+        0 7px 20px rgba(15, 79, 47, 0.06);
 
-    transition:
-        height 0.45s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.3s ease;
+    transition: height 0.3s ease;
 }
-
-/* بطاقة إنشاء الحساب أطول بسبب عدد الحقول */
 
 .auth-wrapper.toggled {
-    height: 750px;
+    height: 850px;
 }
-
-/* الشريط الأخضر العلوي */
 
 .auth-wrapper::before {
     content: "";
@@ -127,36 +113,27 @@ body {
     );
 }
 
-/* زخرفة خضراء خفيفة داخل البطاقة */
-
 .auth-wrapper::after {
     content: "";
 
     position: absolute;
     top: -135px;
     right: -135px;
-    z-index: 0;
+    z-index: -1;
 
     width: 280px;
     height: 280px;
 
     border-radius: 50%;
 
-    background:
-        radial-gradient(
-            circle,
-            rgba(47, 143, 91, 0.12),
-            rgba(47, 143, 91, 0.025) 64%,
-            transparent 65%
-        );
+    background: radial-gradient(
+        circle,
+        rgba(47, 143, 91, 0.1),
+        transparent 68%
+    );
 
     pointer-events: none;
 }
-
-/*
-   إخفاء كل أجزاء التصميم المقسوم.
-   أصبحت الواجهة بطاقة واحدة فقط.
-*/
 
 .background-shape,
 .secondary-shape,
@@ -164,187 +141,129 @@ body {
     display: none !important;
 }
 
-/* =========================================
-   Form panels
-========================================= */
+/* لوحتا الدخول والتسجيل */
 
 .credentials-panel {
     position: absolute;
     inset: 0;
     z-index: 2;
 
+    display: flex;
+    flex-direction: column;
+
     width: 100%;
     height: 100%;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    padding: 38px 52px;
+    padding: 34px 46px;
 
     direction: rtl;
-
     background: transparent;
 
     overflow-x: hidden;
     overflow-y: auto;
 
     scrollbar-width: thin;
-    scrollbar-color:
-        rgba(47, 143, 91, 0.28)
-        transparent;
+    scrollbar-color: #b8d5c2 transparent;
 
     transition:
-        opacity 0.38s ease,
-        transform 0.45s ease,
-        visibility 0s linear;
+        opacity 0.25s ease,
+        transform 0.3s ease;
+}
+
+/* تمنع انكماش العناصر عند ظهور الأخطاء */
+.credentials-panel > * {
+    flex-shrink: 0;
 }
 
 .credentials-panel::-webkit-scrollbar {
     width: 5px;
 }
 
-.credentials-panel::-webkit-scrollbar-track {
-    background: transparent;
-}
-
 .credentials-panel::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: rgba(47, 143, 91, 0.25);
+    background: #b8d5c2;
+    border-radius: 20px;
 }
-
-/* تسجيل الدخول ظاهر أولًا */
 
 .credentials-panel.signin {
+    justify-content: flex-start;
     visibility: visible;
     opacity: 1;
     transform: translateX(0);
-
     pointer-events: auto;
 }
 
-/* إنشاء الحساب مخفي أولًا */
-
 .credentials-panel.signup {
     justify-content: flex-start;
-
     visibility: hidden;
     opacity: 0;
-    transform: translateX(35px);
-
+    transform: translateX(30px);
     pointer-events: none;
-
-    transition:
-        opacity 0.38s ease,
-        transform 0.45s ease,
-        visibility 0s linear 0.45s;
 }
-
-/* عند الانتقال إلى إنشاء الحساب */
 
 .auth-wrapper.toggled .credentials-panel.signin {
     visibility: hidden;
     opacity: 0;
-    transform: translateX(-35px);
-
+    transform: translateX(-30px);
     pointer-events: none;
-
-    transition:
-        opacity 0.38s ease,
-        transform 0.45s ease,
-        visibility 0s linear 0.45s;
 }
 
 .auth-wrapper.toggled .credentials-panel.signup {
     visibility: visible;
     opacity: 1;
     transform: translateX(0);
-
     pointer-events: auto;
-
-    transition:
-        opacity 0.38s ease,
-        transform 0.45s ease,
-        visibility 0s linear 0s;
 }
 
-/* إلغاء الحركات القديمة للعناصر */
-
 .credentials-panel .slide-element,
-.auth-wrapper.toggled
-.credentials-panel .slide-element {
+.auth-wrapper.toggled .credentials-panel .slide-element {
     opacity: 1;
     transform: none;
 }
 
-/* =========================================
-   Logo
-========================================= */
+/* الشعار */
 
-.mobile-brand {
-    position: relative;
-    z-index: 2;
-
-    display: block;
-
-    width: 180px;
-
-    margin: 0 auto 19px;
-    padding: 10px 15px;
-
-    border: 1px solid var(--border);
-    border-radius: 18px;
-
-    background: var(--white);
-
-    box-shadow:
-        0 10px 25px rgba(24, 92, 58, 0.1);
+.mobile-brand,
+.credentials-panel.signup .mobile-brand {
+    width: 165px;
+    margin: 0 auto 18px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .mobile-brand img {
     display: block;
-
     width: 100%;
     height: auto;
-    max-height: 72px;
-
+    max-height: 82px;
     object-fit: contain;
 }
 
 .credentials-panel.signup .mobile-brand {
-    width: 145px;
-
-    margin-bottom: 10px;
-    padding: 7px 12px;
+    width: 135px;
+    margin-bottom: 12px;
 }
 
-/* =========================================
-   Titles
-========================================= */
+/* العناوين */
 
 .panel-title {
-    position: relative;
-    z-index: 1;
-
     color: var(--text);
-
-    font-size: 34px;
-    font-weight: 900;
-    line-height: 1.3;
+    font-size: 31px;
+    font-weight: 800;
+    line-height: 1.5;
     text-align: center;
 }
 
 .panel-title::after {
     content: "";
-
     display: block;
 
     width: 44px;
     height: 4px;
 
-    margin: 11px auto 0;
-
-    border-radius: 999px;
+    margin: 9px auto 0;
+    border-radius: 20px;
 
     background: linear-gradient(
         90deg,
@@ -354,187 +273,154 @@ body {
 }
 
 .panel-description {
-    position: relative;
-    z-index: 1;
-
-    margin-top: 9px;
-    margin-bottom: 24px;
-
+    margin: 10px 0 23px;
     color: var(--muted);
-
     font-size: 13px;
-    line-height: 1.7;
+    line-height: 1.9;
     text-align: center;
 }
 
-.credentials-panel.signup {
-    padding-top: 27px;
-    padding-bottom: 25px;
-}
-
 .credentials-panel.signup .panel-title {
-    font-size: 29px;
+    font-size: 27px;
 }
 
 .credentials-panel.signup .panel-description {
-    margin-top: 6px;
-    margin-bottom: 13px;
+    margin-bottom: 18px;
 }
 
-/* =========================================
-   Forms
-========================================= */
+/* النماذج */
 
 .credentials-panel form {
     position: relative;
-    z-index: 2;
-
     width: 100%;
 }
 
-/* =========================================
-   Fields
-========================================= */
+/* الحقول */
 
-.field-wrapper {
+.field-wrapper,
+.credentials-panel.signup .field-wrapper {
     position: relative;
 
     width: 100%;
-    height: 54px;
+    height: auto;
 
+    padding-top: 23px;
     margin-bottom: 17px;
 
     direction: rtl;
 }
 
-.credentials-panel.signup .field-wrapper {
-    height: 47px;
-    margin-bottom: 11px;
-}
-
 .names-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 12px;
 
     width: 100%;
 }
 
 .names-row .field-wrapper {
-    margin-bottom: 11px;
+    min-width: 0;
 }
 
-.field-wrapper input {
+.field-wrapper input,
+.credentials-panel.signup .field-wrapper input,
+.names-row .field-wrapper input {
+    display: block;
+
     width: 100%;
-    height: 100%;
+    height: 49px;
 
-    padding: 21px 47px 7px 76px;
-
-    outline: none;
-
-    border: 1px solid var(--border);
-    border-radius: 14px;
+    padding: 0 45px 0 76px;
 
     color: var(--text);
-    background: var(--green-pale);
+    background: var(--white);
+
+    border: 1px solid #cfddd4;
+    border-radius: 11px;
 
     font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 500;
+
+    direction: rtl;
+    text-align: right;
 
     transition:
-        border-color 0.22s ease,
-        background-color 0.22s ease,
-        box-shadow 0.22s ease;
-}
-
-.credentials-panel.signup .field-wrapper input {
-    padding-top: 18px;
-    padding-bottom: 5px;
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .names-row .field-wrapper input {
-    padding-right: 15px;
-    padding-left: 15px;
+    padding-right: 13px;
+    padding-left: 13px;
+}
+
+.field-wrapper input[type="email"],
+.field-wrapper input[type="tel"] {
+    padding-right: 45px;
+    padding-left: 13px;
+    direction: ltr;
+    text-align: left;
 }
 
 .field-wrapper input:hover {
-    border-color: #bcd4c5;
+    border-color: #a9c8b4;
 }
 
 .field-wrapper input:focus {
+    outline: none;
     border-color: var(--green-main);
-    background: var(--white);
-
-    box-shadow:
-        0 0 0 4px rgba(47, 143, 91, 0.11);
+    box-shadow: 0 0 0 3px rgba(47, 143, 91, 0.12);
 }
 
-/* Labels */
+.field-wrapper input[aria-invalid="true"] {
+    border-color: var(--danger);
+}
 
-.field-wrapper label {
+/* عنوان الحقل ثابت فوقه */
+
+.field-wrapper label,
+.names-row .field-wrapper label,
+.field-wrapper input:focus ~ label,
+.field-wrapper.has-value label,
+.credentials-panel.signup .field-wrapper input:focus ~ label,
+.credentials-panel.signup .field-wrapper.has-value label {
     position: absolute;
-    top: 50%;
-    right: 47px;
 
-    transform: translateY(-50%);
+    top: 0;
+    right: 4px;
+
+    transform: none;
+
+    color: #365e49;
+
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 18px;
 
     pointer-events: none;
-
-    color: var(--muted);
-
-    font-size: 13px;
-    font-weight: 500;
-
-    transition:
-        top 0.2s ease,
-        color 0.2s ease,
-        font-size 0.2s ease;
 }
 
-.names-row .field-wrapper label {
-    right: 15px;
-}
-
-.field-wrapper input:focus ~ label,
-.field-wrapper.has-value label {
-    top: 11px;
-
-    color: var(--green-dark);
-
-    font-size: 9px;
-    font-weight: 800;
-}
-
-.credentials-panel.signup
-.field-wrapper
-input:focus ~ label,
-.credentials-panel.signup
-.field-wrapper.has-value
-label {
-    top: 9px;
-}
-
-/* Icons */
+/* الأيقونات */
 
 .field-icon {
     position: absolute;
-    top: 50%;
-    right: 16px;
 
-    width: 21px;
-    height: 21px;
+    top: 47.5px;
+    right: 15px;
+
+    width: 20px;
+    height: 20px;
 
     transform: translateY(-50%);
 
     color: var(--green-main);
-
     pointer-events: none;
-
-    transition: color 0.22s ease;
 }
 
 .field-icon svg {
+    display: block;
     width: 100%;
     height: 100%;
 
@@ -545,154 +431,151 @@ label {
     stroke-linejoin: round;
 }
 
-.field-wrapper input:focus ~ .field-icon {
-    color: var(--green-dark);
-}
-
-/* Autofill */
-
-.field-wrapper input:-webkit-autofill,
-.field-wrapper input:-webkit-autofill:hover,
-.field-wrapper input:-webkit-autofill:focus {
-    -webkit-text-fill-color: var(--text);
-
-    box-shadow:
-        0 0 0 1000px var(--green-pale) inset;
-
-    caret-color: var(--text);
-}
-
-/* =========================================
-   Password visibility button
-========================================= */
+/* زر إظهار كلمة المرور */
 
 .password-toggle {
     position: absolute;
-    top: 50%;
-    left: 11px;
+
+    top: 47.5px;
+    left: 10px;
 
     transform: translateY(-50%);
 
+    min-height: 30px;
     padding: 5px 9px;
-
-    border: 1px solid #c9e3d2;
-    border-radius: 9px;
 
     color: var(--green-dark);
     background: var(--green-soft);
 
+    border: 1px solid #c9e3d2;
+    border-radius: 9px;
+
     font-family: inherit;
-    font-size: 10px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 700;
 
     cursor: pointer;
-
-    transition:
-        color 0.2s ease,
-        background-color 0.2s ease,
-        border-color 0.2s ease;
 }
 
-.password-toggle:hover,
-.password-toggle:focus-visible {
+.password-toggle:hover {
     color: var(--white);
     background: var(--green-dark);
     border-color: var(--green-dark);
 }
 
-/* =========================================
-   Errors
-========================================= */
+/* رسائل الخطأ داخل تدفق الصفحة، وليس فوق الزر */
 
-.form-alert {
-    margin-bottom: 13px;
+.form-alert,
+.field-error,
+.credentials-panel .errorlist {
+    position: static;
+
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    margin: 9px 0 0;
     padding: 10px 12px;
 
-    border: 1px solid #efc3bf;
-    border-radius: 11px;
-
-    color: #8c2520;
+    color: var(--danger);
     background: var(--danger-soft);
 
-    font-size: 11px;
-    line-height: 1.6;
+    border: 1px solid var(--danger-border);
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.9;
+
+    text-align: start;
+    overflow-wrap: anywhere;
+    white-space: normal;
+
+    transform: none;
 }
 
-.field-error {
-    position: absolute;
-    top: calc(100% + 2px);
-    right: 5px;
-
-    color: var(--danger);
-
-    font-size: 9px;
-    line-height: 1.2;
+.form-alert {
+    margin: 0 0 18px;
 }
 
-/* =========================================
-   Primary button
-========================================= */
+.credentials-panel .errorlist {
+    list-style: none;
+}
+
+.field-error p,
+.field-error li,
+.form-alert p,
+.credentials-panel .errorlist li {
+    margin: 0;
+    line-height: 1.9;
+}
+
+.field-error p + p,
+.field-error li + li,
+.form-alert p + p,
+.credentials-panel .errorlist li + li {
+    margin-top: 6px;
+}
+
+/* إذا كانت قائمة الأخطاء داخل عنصر الخطأ */
+.field-error .errorlist,
+.form-alert .errorlist {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+/* الزر الرئيسي */
 
 .button-wrapper {
     width: 100%;
-
-    margin-top: 5px;
+    margin-top: 20px;
 }
 
 .submit-button {
-    width: 100%;
-    min-height: 51px;
-
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
 
-    border: none;
-    border-radius: 14px;
+    width: 100%;
+    min-height: 51px;
+
+    padding: 12px 16px;
 
     color: var(--white);
+
     background: linear-gradient(
         135deg,
         var(--green-dark),
         var(--green-main)
     );
 
-    box-shadow:
-        0 12px 25px rgba(24, 92, 58, 0.2);
+    border: 0;
+    border-radius: 13px;
+
+    box-shadow: 0 10px 22px rgba(24, 92, 58, 0.17);
 
     font-family: inherit;
     font-size: 15px;
-    font-weight: 900;
+    font-weight: 800;
 
     cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.25s ease,
-        background 0.25s ease;
 }
 
 .submit-button::before {
     display: none;
 }
 
-.submit-button:hover,
-.submit-button:focus-visible {
+.submit-button:hover {
     background: linear-gradient(
         135deg,
         var(--green-deep),
         #247b4d
     );
-
-    box-shadow:
-        0 15px 29px rgba(24, 92, 58, 0.28);
-
-    transform: translateY(-1px);
-}
-
-.submit-button:active {
-    transform: scale(0.99);
 }
 
 .submit-button svg {
@@ -706,66 +589,66 @@ label {
     stroke-linejoin: round;
 }
 
-/* =========================================
-   Login/register switch
-========================================= */
+button:focus-visible,
+.switch-link a:focus-visible {
+    outline: 3px solid #e8b633;
+    outline-offset: 3px;
+}
+
+/* التبديل بين الدخول والتسجيل */
 
 .switch-link {
-    margin-top: 17px;
-    padding: 10px 12px;
-
-    border-radius: 12px;
+    margin-top: 18px;
+    padding: 11px 12px;
 
     color: var(--muted);
     background: var(--green-pale);
 
+    border-radius: 11px;
+
     font-size: 12px;
-    line-height: 1.6;
+    line-height: 1.9;
     text-align: center;
 }
 
 .switch-link button {
     margin-right: 4px;
-
-    border: none;
+    padding: 4px;
 
     color: var(--green-dark);
     background: transparent;
 
+    border: 0;
+
     font-family: inherit;
     font-size: inherit;
-    font-weight: 900;
+    font-weight: 800;
 
     cursor: pointer;
-
-    transition: color 0.2s ease;
 }
 
-.switch-link button:hover,
-.switch-link button:focus-visible {
-    color: var(--green-main);
+/* تعبئة المتصفح التلقائية */
+
+.field-wrapper input:-webkit-autofill,
+.field-wrapper input:-webkit-autofill:hover,
+.field-wrapper input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text);
+    box-shadow: 0 0 0 1000px #ffffff inset;
+    caret-color: var(--text);
 }
 
-/* =========================================
-   Tablet and mobile
-========================================= */
+/* الهاتف */
 
 @media (max-width: 620px) {
     body {
         padding: 10px;
 
-        background:
-            radial-gradient(
-                circle at 12% 8%,
-                rgba(255, 255, 255, 0.15),
-                transparent 25%
-            ),
-            linear-gradient(
-                145deg,
-                var(--green-main),
-                var(--green-dark) 60%,
-                var(--green-deep)
-            );
+        background: linear-gradient(
+            145deg,
+            var(--green-main),
+            var(--green-dark) 65%,
+            var(--green-deep)
+        );
     }
 
     .auth-wrapper,
@@ -774,469 +657,81 @@ label {
         height: calc(100dvh - 20px);
         max-height: calc(100dvh - 20px);
 
-        border: none;
-        border-radius: 26px;
-
-        background: var(--white);
-
-        box-shadow:
-            0 20px 48px rgba(3, 42, 23, 0.27);
+        border: 0;
+        border-radius: 24px;
     }
 
     .credentials-panel,
     .credentials-panel.signup {
         padding:
-            max(22px, env(safe-area-inset-top))
+            max(25px, env(safe-area-inset-top))
             23px
-            max(22px, env(safe-area-inset-bottom));
-
-        scrollbar-width: none;
-    }
-
-    .credentials-panel::-webkit-scrollbar {
-        display: none;
-    }
-
-    .credentials-panel.signin {
-        justify-content: center;
-    }
-
-    .credentials-panel.signup {
-        justify-content: flex-start;
-
-        padding-top:
-            max(18px, env(safe-area-inset-top));
+            max(28px, env(safe-area-inset-bottom));
     }
 
     .mobile-brand {
-        width: 158px;
-
-        margin-bottom: 17px;
-        padding: 8px 13px;
-
-        border-radius: 16px;
+        width: 150px;
     }
 
     .credentials-panel.signup .mobile-brand {
         width: 125px;
-
-        margin-bottom: 7px;
-        padding: 5px 10px;
     }
 
     .panel-title {
-        font-size: 29px;
-    }
-
-    .panel-description {
-        margin-bottom: 21px;
+        font-size: 28px;
     }
 
     .credentials-panel.signup .panel-title {
         font-size: 25px;
     }
 
-    .credentials-panel.signup .panel-description {
-        margin-bottom: 9px;
+    .field-wrapper input,
+    .credentials-panel.signup .field-wrapper input {
+        font-size: 16px;
     }
 
-    .field-wrapper {
-        height: 51px;
-        margin-bottom: 14px;
-    }
-
-    .credentials-panel.signup .field-wrapper {
-        height: 44px;
-        margin-bottom: 9px;
-    }
-
-    .submit-button {
-        min-height: 49px;
-    }
-
-    .switch-link {
-        margin-top: 14px;
+    .field-error,
+    .form-alert,
+    .credentials-panel .errorlist {
+        font-size: 12px;
+        line-height: 1.9;
     }
 }
 
-/* =========================================
-   Phone 390px and smaller
-========================================= */
-
 @media (max-width: 390px) {
-    body {
-        padding: 8px;
-    }
-
-    .auth-wrapper,
-    .auth-wrapper.toggled {
-        height: calc(100dvh - 16px);
-        max-height: calc(100dvh - 16px);
-
-        border-radius: 23px;
-    }
-
     .credentials-panel,
     .credentials-panel.signup {
-        padding-right: 19px;
-        padding-left: 19px;
-    }
-
-    .mobile-brand {
-        width: 145px;
-
-        margin-bottom: 14px;
-    }
-
-    .panel-title {
-        font-size: 27px;
+        padding-right: 17px;
+        padding-left: 17px;
     }
 
     .names-row {
-        gap: 8px;
+        gap: 9px;
     }
 
-    .credentials-panel.signup .field-wrapper {
-        height: 42px;
-        margin-bottom: 8px;
+    .panel-title {
+        font-size: 26px;
+    }
+}
+
+@media (max-height: 550px) {
+    .credentials-panel,
+    .credentials-panel.signup {
+        padding-top: 22px;
     }
 
+    .mobile-brand,
     .credentials-panel.signup .mobile-brand {
         width: 115px;
-        margin-bottom: 5px;
-    }
-
-    .credentials-panel.signup .panel-title {
-        font-size: 23px;
-    }
-
-    .credentials-panel.signup .panel-description {
-        margin-top: 4px;
-        margin-bottom: 7px;
-    }
-
-    .credentials-panel.signup .submit-button {
-        min-height: 45px;
-    }
-
-    .credentials-panel.signup .switch-link {
-        margin-top: 10px;
+        margin-bottom: 12px;
     }
 }
-
-/* =========================================
-   Short screens
-========================================= */
-
-@media (max-height: 650px) {
-    .credentials-panel.signup .field-wrapper {
-        height: 41px;
-        margin-bottom: 8px;
-    }
-
-    .credentials-panel.signup .mobile-brand {
-        width: 108px;
-        margin-bottom: 5px;
-    }
-
-    .credentials-panel.signup .panel-title {
-        font-size: 22px;
-    }
-
-    .credentials-panel.signup .panel-description {
-        margin-bottom: 6px;
-    }
-
-    .credentials-panel.signup .submit-button {
-        min-height: 43px;
-    }
-}
-
-/* =========================================
-   Reduced motion
-========================================= */
 
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-    }
-}
-/* =========================================
-   Final refinements:
-   clean logo and professional fields
-========================================= */
-
-/* الشعار دون مربع أو خلفية */
-
-.mobile-brand,
-.credentials-panel.signup .mobile-brand {
-    width: 180px;
-
-    margin: 0 auto 17px;
-    padding: 0;
-
-    border: none;
-    border-radius: 0;
-
-    background: transparent;
-
-    box-shadow: none;
-}
-
-.mobile-brand img,
-.credentials-panel.signup .mobile-brand img {
-    display: block;
-
-    width: 100%;
-    height: auto;
-    max-height: 82px;
-
-    object-fit: contain;
-}
-
-.credentials-panel.signup .mobile-brand {
-    width: 140px;
-    margin-bottom: 9px;
-}
-
-/* أسماء الحقول تصبح فوق الحقول وليس داخلها */
-
-.field-wrapper,
-.credentials-panel.signup .field-wrapper,
-.names-row .field-wrapper {
-    height: auto;
-
-    padding-top: 20px;
-    margin-bottom: 13px;
-}
-
-/* شكل مربع الكتابة */
-
-.field-wrapper input,
-.credentials-panel.signup .field-wrapper input,
-.names-row .field-wrapper input {
-    width: 100%;
-    height: 48px;
-
-    padding: 0 46px 0 74px;
-
-    border: 1px solid #cfddd4;
-    border-radius: 10px;
-
-    color: #173c2a;
-    background: #ffffff;
-
-    font-family:
-        Tahoma,
-        Arial,
-        "Segoe UI",
-        sans-serif;
-
-    font-size: 15px;
-    font-weight: 500;
-
-    direction: rtl;
-    text-align: right;
-
-    line-height: normal;
-}
-
-/* حقول الاسم لا تحتوي على أيقونة */
-
-.names-row .field-wrapper input {
-    padding-right: 14px;
-    padding-left: 14px;
-
-    direction: rtl;
-    text-align: right;
-}
-
-/* البريد ورقم الهاتف يكتبان بصورة صحيحة من اليسار */
-
-.field-wrapper input[type="email"],
-.field-wrapper input[type="tel"] {
-    padding-right: 46px;
-    padding-left: 14px;
-
-    direction: ltr;
-    text-align: left;
-}
-
-/* التركيز على الحقل */
-
-.field-wrapper input:focus,
-.credentials-panel.signup .field-wrapper input:focus {
-    border-color: #2f8f5b;
-    background: #ffffff;
-
-    box-shadow:
-        0 0 0 3px rgba(47, 143, 91, 0.12);
-}
-
-/* عنوان الحقل ثابت فوقه */
-
-.field-wrapper label,
-.names-row .field-wrapper label,
-.field-wrapper input:focus ~ label,
-.field-wrapper.has-value label,
-.credentials-panel.signup
-.field-wrapper
-input:focus ~ label,
-.credentials-panel.signup
-.field-wrapper.has-value
-label {
-    top: 0;
-    right: 4px;
-
-    transform: none;
-
-    color: #365e49;
-
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 16px;
-}
-
-/* الأيقونة في منتصف مربع الإدخال */
-
-.field-icon {
-    top: 44px;
-    right: 15px;
-
-    width: 20px;
-    height: 20px;
-
-    color: #2f8f5b;
-}
-
-/* زر إظهار كلمة المرور */
-
-.password-toggle {
-    top: 44px;
-    left: 10px;
-}
-
-/* المسافة الخاصة بالأخطاء */
-
-.field-error {
-    top: calc(100% + 2px);
-}
-
-/* حجم إنشاء الحساب بعد تعديل الحقول */
-
-.auth-wrapper.toggled {
-    height: 790px;
-}
-
-.credentials-panel.signup {
-    padding-top: 22px;
-    padding-bottom: 22px;
-}
-
-.credentials-panel.signup .field-wrapper,
-.credentials-panel.signup
-.names-row .field-wrapper {
-    padding-top: 18px;
-    margin-bottom: 9px;
-}
-
-.credentials-panel.signup .field-wrapper input {
-    height: 45px;
-}
-
-.credentials-panel.signup .field-wrapper label,
-.credentials-panel.signup
-.field-wrapper
-input:focus ~ label,
-.credentials-panel.signup
-.field-wrapper.has-value
-label {
-    top: 0;
-
-    font-size: 11px;
-    line-height: 15px;
-}
-
-.credentials-panel.signup .field-icon,
-.credentials-panel.signup .password-toggle {
-    top: 40.5px;
-}
-
-/* =========================================
-   Phone adjustments
-========================================= */
-
-@media (max-width: 620px) {
-    .auth-wrapper.toggled {
-        height: calc(100dvh - 20px);
-        max-height: calc(100dvh - 20px);
-    }
-
-    .mobile-brand {
-        width: 160px;
-        margin-bottom: 15px;
-    }
-
-    .credentials-panel.signup .mobile-brand {
-        width: 125px;
-        margin-bottom: 7px;
-    }
-
-    .field-wrapper,
-    .credentials-panel.signup .field-wrapper,
-    .names-row .field-wrapper {
-        height: auto;
-
-        padding-top: 19px;
-        margin-bottom: 11px;
-    }
-
-    .field-wrapper input,
-    .credentials-panel.signup .field-wrapper input,
-    .names-row .field-wrapper input {
-        height: 46px;
-
-        font-size: 14px;
-    }
-
-    .field-icon,
-    .password-toggle {
-        top: 42px;
-    }
-
-    .credentials-panel.signup .field-icon,
-    .credentials-panel.signup .password-toggle {
-        top: 42px;
-    }
-}
-
-@media (max-width: 390px) {
-    .auth-wrapper.toggled {
-        height: calc(100dvh - 16px);
-        max-height: calc(100dvh - 16px);
-    }
-
-    .credentials-panel.signup .mobile-brand {
-        width: 112px;
-    }
-
-    .credentials-panel.signup .field-wrapper,
-    .credentials-panel.signup
-    .names-row .field-wrapper {
-        padding-top: 17px;
-        margin-bottom: 8px;
-    }
-
-    .credentials-panel.signup .field-wrapper input {
-        height: 42px;
-    }
-
-    .credentials-panel.signup .field-icon,
-    .credentials-panel.signup .password-toggle {
-        top: 38px;
+        transition: none !important;
+        animation: none !important;
     }
 }

@@ -1,505 +1,1413 @@
 {% extends "citizen_portal/base.html" %}
 
-{% block title %}تقديم بلاغ | CityVoice{% endblock %}
+{% block title %}تقديم شكوى | CityVoice{% endblock %}
+{% block body_class %}cv-portal{% endblock %}
 
 {% block extra_css %}
 <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 >
+
+<style>
+    .complaint-wizard {
+        --surface: #fff;
+        --field: #f8fbf9;
+        --text: #293f33;
+        --muted: #687d70;
+        --border: var(--cv-border, #dce9e0);
+        max-width: 700px;
+        margin: 24px auto;
+        padding: 0 16px 36px;
+        color: var(--text);
+        font-family: Tahoma, Arial, sans-serif;
+    }
+
+    html[data-cv-theme="dark"] .complaint-wizard {
+        --surface: #222c3a;
+        --field: #171f2b;
+        --text: #edf3ef;
+        --muted: #b1bfb7;
+        --border: #3b4758;
+    }
+
+    .complaint-wizard *,
+    .complaint-wizard *::before,
+    .complaint-wizard *::after {
+        box-sizing: border-box;
+    }
+
+    .complaint-wizard [hidden] {
+        display: none !important;
+    }
+
+    .cw-back {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        margin-bottom: 10px;
+        color: var(--cv-accent, #287e50);
+        font-size: 13px;
+        text-decoration: none;
+    }
+
+    .cw-card {
+        padding: 26px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--surface);
+    }
+
+    .cw-card h1 {
+        margin: 0 0 9px;
+        font-size: 23px;
+        line-height: 1.6;
+    }
+
+    .cw-card h2 {
+        margin: 0 0 9px;
+        font-size: 20px;
+        line-height: 1.7;
+    }
+
+    .cw-help {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.9;
+    }
+
+    .cw-progress {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+        margin: 24px 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .cw-progress li {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .cw-step-number {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        font-size: 14px;
+    }
+
+    .cw-progress li[aria-current="step"],
+    .cw-progress li.is-complete {
+        color: var(--cv-accent, #287e50);
+        font-weight: bold;
+    }
+
+    .cw-progress li[aria-current="step"] .cw-step-number,
+    .cw-progress li.is-complete .cw-step-number {
+        border-color: var(--cv-accent, #287e50);
+        background: var(--cv-accent, #287e50);
+        color: #fff;
+    }
+
+    .cw-field {
+        margin: 20px 0;
+    }
+
+    .cw-field label {
+        display: block;
+        margin-bottom: 9px;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .cw-field select,
+    .cw-field textarea,
+    .cw-field input:not([type="hidden"]):not([type="file"]) {
+        width: 100%;
+        min-height: 48px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--field);
+        color: var(--text);
+        font: inherit;
+        font-size: 14px;
+    }
+
+    .cw-field textarea {
+        min-height: 170px;
+        resize: vertical;
+        line-height: 1.9;
+    }
+
+    .cw-field small {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .cw-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .cw-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex: 1;
+        min-height: 47px;
+        padding: 12px 16px;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        background: var(--cv-accent, #287e50);
+        color: #fff;
+        font: inherit;
+        font-size: 14px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .cw-button-secondary {
+        border-color: var(--border);
+        background: var(--field);
+        color: var(--text);
+    }
+
+    .cw-button:disabled {
+        opacity: .6;
+        cursor: wait;
+    }
+
+    .cw-button svg,
+    .cw-photo-empty svg {
+        width: 23px;
+        height: 23px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .complaint-wizard button:focus-visible,
+    .complaint-wizard input:focus-visible,
+    .complaint-wizard select:focus-visible,
+    .complaint-wizard textarea:focus-visible,
+    .complaint-wizard a:focus-visible {
+        outline: 3px solid var(--cv-accent, #287e50);
+        outline-offset: 3px;
+    }
+
+    .cw-notice,
+    .cw-error,
+    .complaint-wizard .errorlist {
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .cw-notice {
+        background: var(--cv-accent-soft, #e8f5ee);
+        color: var(--text);
+    }
+
+    .cw-error,
+    .complaint-wizard .errorlist {
+        color: #a9283e;
+        background: #fff0f3;
+    }
+
+    html[data-cv-theme="dark"] .cw-notice {
+        background: var(--field);
+    }
+
+    html[data-cv-theme="dark"] .cw-error,
+    html[data-cv-theme="dark"] .errorlist {
+        background: #45252e;
+        color: #ffb7c0;
+    }
+
+    .cw-photo-stage {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: 260px;
+        overflow: hidden;
+        border: 1px dashed var(--border);
+        border-radius: 17px;
+        background: var(--field);
+    }
+
+    .cw-photo-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 13px;
+        padding: 30px 18px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 13px;
+        line-height: 1.9;
+    }
+
+    .cw-photo-empty span {
+        display: grid;
+        place-items: center;
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        color: var(--cv-accent, #287e50);
+        background: var(--cv-accent-soft, #e8f5ee);
+    }
+
+    .cw-photo-empty svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .cw-photo-stage video,
+    .cw-photo-stage img {
+        display: block;
+        width: 100%;
+        max-height: 430px;
+        object-fit: contain;
+    }
+
+    .cw-photo-stage video {
+        background: #111;
+    }
+
+    .cw-photo-stage.is-live::after {
+        content: "";
+        position: absolute;
+        inset: 22px;
+        border: 2px solid rgba(255,255,255,.8);
+        border-radius: 13px;
+        pointer-events: none;
+    }
+
+    .cw-shutter {
+        display: block;
+        width: 66px;
+        height: 66px;
+        margin: 16px auto;
+        border: 5px solid var(--surface);
+        border-radius: 50%;
+        outline: 2px solid var(--cv-accent, #287e50);
+        background: var(--cv-accent, #287e50);
+        cursor: pointer;
+    }
+
+    .cw-file-control input {
+        max-width: 100%;
+        margin-top: 10px;
+        font: inherit;
+        font-size: 13px;
+    }
+
+    .cw-remove {
+        display: block;
+        min-height: 44px;
+        margin: 10px auto 0;
+        padding: 8px 14px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .cw-map {
+        width: 100%;
+        height: 340px;
+        margin: 16px 0;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--field);
+        z-index: 0;
+    }
+
+    .cw-pin {
+        display: block;
+        width: 30px;
+        height: 30px;
+        border: 3px solid #fff;
+        border-radius: 50% 50% 50% 0;
+        background: var(--cv-accent, #287e50);
+        box-shadow: 0 2px 7px #0004;
+        transform: rotate(-45deg);
+    }
+
+    .cw-review {
+        margin-top: 18px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+    }
+
+    .cw-review-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin: 0;
+    }
+
+    .cw-review-list div {
+        min-width: 0;
+    }
+
+    .cw-review-list dt {
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .cw-review-list dd {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+        white-space: pre-line;
+    }
+
+    .cw-review-wide {
+        grid-column: 1 / -1;
+    }
+
+    .cw-review-image {
+        display: block;
+        width: 100%;
+        max-height: 220px;
+        margin: 16px 0;
+        border-radius: 12px;
+        object-fit: contain;
+        background: var(--field);
+    }
+
+    @media (max-width: 520px) {
+        .complaint-wizard {
+            margin: 15px auto;
+            padding: 0 12px 25px;
+        }
+
+        .cw-card {
+            padding: 20px 16px;
+        }
+
+        .cw-card h1 {
+            font-size: 21px;
+        }
+
+        .cw-progress li {
+            font-size: 11px;
+        }
+
+        .cw-map {
+            height: 310px;
+        }
+
+        .cw-review-list {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
+<div class="complaint-wizard">
+    <a href="{% url 'citizen_portal:home' %}" class="cw-back">
+        العودة إلى الرئيسية
+    </a>
 
-<section class="wizard-intro">
-    <h1>تقديم بلاغ جديد</h1>
-    <p>أكمل المراحل الأربع لإرسال بلاغك إلى البلدية.</p>
-</section>
+    <div class="cw-card">
+        <h1>تقديم شكوى جديدة</h1>
+        <p class="cw-help">أخبرنا بالمشكلة وحدد موقعها.</p>
 
-<form
-    method="post"
-    enctype="multipart/form-data"
-    class="wizard-card"
-    id="complaint-form"
->
-    {% csrf_token %}
+        <ol class="cw-progress" aria-label="مراحل تقديم الشكوى">
+            <li data-point="1">
+                <span class="cw-step-number">1</span>
+                <span>نوع المشكلة</span>
+            </li>
+            <li data-point="2">
+                <span class="cw-step-number">2</span>
+                <span>الوصف</span>
+            </li>
+            <li data-point="3">
+                <span class="cw-step-number">3</span>
+                <span>الصورة</span>
+            </li>
+            <li data-point="4">
+                <span class="cw-step-number">4</span>
+                <span>الموقع</span>
+            </li>
+        </ol>
 
-    {{ form.latitude }}
-    {{ form.longitude }}
-
-    <div class="wizard-progress">
-        <div class="progress-track">
-            <div
-                class="progress-fill"
-                id="progress-fill"
-            ></div>
-        </div>
-
-        <div class="progress-points">
-            <div
-                class="progress-point"
-                data-progress-step="1"
-            >
-                <span class="point-circle">1</span>
-                <span class="progress-label">
-                    نوع البلاغ
-                </span>
+        {% if form.errors %}
+            <div class="cw-error" role="alert">
+                راجع البيانات الموضحة أدناه.
+                {% if form.is_bound %}
+                    إذا اخترت صورة سابقًا، أعد اختيارها قبل الإرسال.
+                {% endif %}
+                {{ form.non_field_errors }}
+                {{ form.latitude.errors }}
+                {{ form.longitude.errors }}
+                {{ form.location.errors }}
             </div>
+        {% endif %}
 
-            <div
-                class="progress-point"
-                data-progress-step="2"
-            >
-                <span class="point-circle">2</span>
-                <span class="progress-label">
-                    الوصف
-                </span>
-            </div>
+        <p id="wizard-error" class="cw-error" role="alert" hidden></p>
 
-            <div
-                class="progress-point"
-                data-progress-step="3"
-            >
-                <span class="point-circle">3</span>
-                <span class="progress-label">
-                    الصورة
-                </span>
-            </div>
-
-            <div
-                class="progress-point"
-                data-progress-step="4"
-            >
-                <span class="point-circle">4</span>
-                <span class="progress-label">
-                    الموقع
-                </span>
-            </div>
-        </div>
-    </div>
-
-    {% if form.errors %}
-        <div class="step-message is-visible">
-            توجد بيانات تحتاج إلى مراجعة قبل إرسال البلاغ.
-        </div>
-    {% endif %}
-
-    <!-- المرحلة الأولى -->
-    <section
-        class="wizard-step"
-        data-step="1"
-    >
-        <div class="step-heading">
-            <span>المرحلة الأولى</span>
-            <h2>ما نوع المشكلة؟</h2>
-            <p>
-                اختر الخدمة البلدية ثم نوع المشكلة.
-            </p>
-        </div>
-
-        <div
-            class="step-message"
-            id="step-one-message"
+        <form
+            method="post"
+            enctype="multipart/form-data"
+            id="complaint-form"
+            novalidate
         >
-            يرجى اختيار الخدمة ونوع المشكلة.
-        </div>
+            {% csrf_token %}
+            {{ form.latitude }}
+            {{ form.longitude }}
 
-        <div class="form-group">
-            <label for="{{ form.service.id_for_label }}">
-                الخدمة البلدية
-                <span class="required-mark">*</span>
-            </label>
+            <section data-step="1">
+                <h2 tabindex="-1">ما نوع المشكلة؟</h2>
+                <p class="cw-help">اختر الخدمة ثم التصنيف المناسب.</p>
 
-            {{ form.service }}
-            {{ form.service.errors }}
-        </div>
+                <div class="cw-field">
+                    <label for="{{ form.service.id_for_label }}">
+                        الخدمة البلدية
+                    </label>
+                    {{ form.service }}
+                    {{ form.service.errors }}
+                </div>
 
-        <div class="form-group">
-            <label for="{{ form.category.id_for_label }}">
-                نوع المشكلة
-                <span class="required-mark">*</span>
-            </label>
+                <div class="cw-field">
+                    <label for="{{ form.category.id_for_label }}">
+                        نوع المشكلة
+                    </label>
+                    {{ form.category }}
+                    {{ form.category.errors }}
+                    <small id="category-status" role="status">
+                        تظهر التصنيفات بعد اختيار الخدمة.
+                    </small>
+                </div>
 
-            {{ form.category }}
-            {{ form.category.errors }}
+                <div class="cw-actions">
+                    <button type="button" class="cw-button" data-next>
+                        التالي
+                    </button>
+                </div>
+            </section>
 
-            <small class="field-help">
-                ستظهر أنواع المشكلات بعد اختيار الخدمة.
-            </small>
-        </div>
+            <section data-step="2" hidden>
+                <h2 tabindex="-1">صف المشكلة</h2>
+                <p class="cw-help">اكتب التفاصيل التي تساعد على معالجتها.</p>
 
-        <div class="wizard-actions">
-            <button
-                type="button"
-                class="wizard-button next-button"
-                data-next="2"
-            >
-                التالي: وصف المشكلة
-            </button>
-        </div>
-    </section>
+                <div class="cw-field">
+                    <label for="{{ form.description.id_for_label }}">
+                        وصف المشكلة
+                    </label>
+                    {{ form.description }}
+                    {{ form.description.errors }}
+                </div>
 
-    <!-- المرحلة الثانية -->
-    <section
-        class="wizard-step"
-        data-step="2"
-    >
-        <div class="step-heading">
-            <span>المرحلة الثانية</span>
-            <h2>صف المشكلة</h2>
-            <p>
-                اكتب وصفًا واضحًا لما حدث.
-            </p>
-        </div>
+                <div class="cw-actions">
+                    <button
+                        type="button"
+                        class="cw-button cw-button-secondary"
+                        data-back
+                    >السابق</button>
 
-        <div
-            class="step-message"
-            id="step-two-message"
-        >
-            يرجى كتابة وصف المشكلة.
-        </div>
+                    <button type="button" class="cw-button" data-next>
+                        التالي
+                    </button>
+                </div>
+            </section>
 
-        <div class="form-group">
-            <label for="{{ form.description.id_for_label }}">
-                وصف المشكلة
-                <span class="required-mark">*</span>
-            </label>
+            <section data-step="3" hidden>
+                <h2 tabindex="-1">صورة المشكلة</h2>
+                <p class="cw-help">
+                    التقط صورة واضحة أو اختر صورة من جهازك.
+                </p>
 
-            {{ form.description }}
-            {{ form.description.errors }}
+                <div class="cw-photo-stage" id="photo-stage">
+                    <div class="cw-photo-empty" id="photo-empty">
+                        <span aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M8 5 9.5 3h5L16 5h3a2 2 0 0 1 2 2v12H3V7a2 2 0 0 1 2-2Z"></path>
+                                <circle cx="12" cy="12" r="4"></circle>
+                            </svg>
+                        </span>
+                        <strong>أضف صورة توضح المشكلة</strong>
+                    </div>
 
-            <small class="field-help">
-                اذكر تفاصيل تساعد البلدية على فهم المشكلة.
-            </small>
-        </div>
+                    <video
+                        id="camera-video"
+                        autoplay
+                        muted
+                        playsinline
+                        aria-label="معاينة الكاميرا"
+                        hidden
+                    ></video>
 
-        <div class="wizard-actions">
-            <button
-                type="button"
-                class="wizard-button back-button"
-                data-back="1"
-            >
-                السابق
-            </button>
+                    <img
+                        id="photo-preview"
+                        alt="الصورة المختارة للشكوى"
+                        hidden
+                    >
+                </div>
 
-            <button
-                type="button"
-                class="wizard-button next-button"
-                data-next="3"
-            >
-                التالي: إضافة صورة
-            </button>
-        </div>
-    </section>
-
-    <!-- المرحلة الثالثة -->
-    <section
-        class="wizard-step"
-        data-step="3"
-    >
-        <div class="step-heading">
-            <span>المرحلة الثالثة</span>
-            <h2>التقط صورة للمشكلة</h2>
-            <p>
-                استخدم كاميرا الهاتف أو اختر صورة موجودة.
-            </p>
-        </div>
-
-        <div class="photo-capture-card">
-            <button
-                type="button"
-                class="photo-placeholder"
-                id="open-camera"
-            >
-                <span class="camera-symbol">＋</span>
-
-                <strong>
-                    التقط صورة للمشكلة
-                </strong>
-
-                <small>
-                    اضغط هنا لفتح كاميرا الهاتف
-                </small>
-            </button>
-
-            <input
-                type="file"
-                id="camera-input"
-                name="camera_photo"
-                accept="image/*"
-                capture="environment"
-                hidden
-            >
-
-            <img
-                id="photo-preview"
-                class="photo-preview"
-                alt="معاينة صورة البلاغ"
-            >
-
-            <div class="form-group photo-input-group">
-                {{ form.photo }}
-                {{ form.photo.errors }}
-            </div>
-        </div>
-
-        <div class="wizard-actions">
-            <button
-                type="button"
-                class="wizard-button back-button"
-                data-back="2"
-            >
-                السابق
-            </button>
-
-            <button
-                type="button"
-                class="wizard-button next-button"
-                data-next="4"
-            >
-                التالي: تحديد الموقع
-            </button>
-        </div>
-    </section>
-
-    <!-- المرحلة الرابعة -->
-    <section
-        class="wizard-step"
-        data-step="4"
-    >
-        <div class="step-heading">
-            <span>المرحلة الرابعة</span>
-            <h2>أين توجد المشكلة؟</h2>
-            <p>
-                حدد الموقع على الخريطة ثم أرسل البلاغ.
-            </p>
-        </div>
-
-        <div
-            class="step-message"
-            id="step-four-message"
-        >
-            يرجى تحديد موقع المشكلة على الخريطة.
-        </div>
-
-        <div class="location-card">
-            <div id="map"></div>
-
-            <div class="location-actions">
                 <button
                     type="button"
-                    class="location-button"
-                    id="gps-button"
+                    class="cw-shutter"
+                    id="capture-photo"
+                    aria-label="التقاط الصورة"
+                    hidden
+                ></button>
+
+                <div class="cw-actions">
+                    <button type="button" class="cw-button" id="open-camera">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M8 5 9.5 3h5L16 5h3a2 2 0 0 1 2 2v12H3V7a2 2 0 0 1 2-2Z"></path>
+                            <circle cx="12" cy="12" r="4"></circle>
+                        </svg>
+                        <span id="camera-label">فتح الكاميرا</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="cw-button cw-button-secondary"
+                        id="open-gallery"
+                        hidden
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+                            <circle cx="8" cy="8" r="1"></circle>
+                            <path d="m3 17 6-6 4 4 3-3 5 5"></path>
+                        </svg>
+                        المعرض
+                    </button>
+                </div>
+
+                <button
+                    type="button"
+                    class="cw-remove"
+                    id="cancel-camera"
+                    hidden
+                >إغلاق الكاميرا</button>
+
+                <button
+                    type="button"
+                    class="cw-remove"
+                    id="remove-photo"
+                    hidden
+                >إزالة الصورة</button>
+
+                <input
+                    type="file"
+                    id="camera-input"
+                    name="camera_photo"
+                    accept="image/*"
+                    capture="environment"
+                    hidden
                 >
-                    تحديد موقعي الحالي
-                </button>
-            </div>
 
-            <p
-                class="location-status"
-                id="location-status"
-            >
-                اضغط على موقع المشكلة في الخريطة.
-            </p>
-        </div>
+                <div class="cw-file-control" id="gallery-control">
+                    <label for="{{ form.photo.id_for_label }}">
+                        اختيار صورة من الجهاز
+                    </label>
+                    {{ form.photo }}
+                </div>
 
-        <div class="form-group">
-            <label for="{{ form.address.id_for_label }}">
-                وصف العنوان
-            </label>
+                {{ form.photo.errors }}
 
-            {{ form.address }}
-            {{ form.address.errors }}
+                <p id="camera-status" class="cw-help" role="status"></p>
 
-            <small class="field-help">
-                مثال: شارع الثلاثين، بجوار المدرسة.
-            </small>
-        </div>
+                <p class="cw-notice">
+                    وجّه الكاميرا نحو المشكلة وتجنب تصوير وجوه الأشخاص
+                    أو بياناتهم الشخصية.
+                </p>
 
-        <div class="wizard-actions">
-            <button
-                type="button"
-                class="wizard-button back-button"
-                data-back="3"
-            >
-                السابق
-            </button>
+                <div class="cw-actions">
+                    <button
+                        type="button"
+                        class="cw-button cw-button-secondary"
+                        data-back
+                    >السابق</button>
 
-            <button
-                type="button"
-                class="wizard-button final-submit"
-                id="open-review-dialog"
-            >
-                إرسال البلاغ
-            </button>
-        </div>
-    </section>
-</form>
+                    <button type="button" class="cw-button" data-next>
+                        التالي: الموقع
+                    </button>
+                </div>
+            </section>
 
-<!-- نافذة مراجعة وتأكيد البلاغ -->
-<div
-    class="review-dialog"
-    id="review-dialog"
-    aria-hidden="true"
->
-    <div class="dialog-backdrop"></div>
+            <section data-step="4" hidden>
+                <h2 tabindex="-1">تحديد موقع الشكوى</h2>
+                <p class="cw-help">
+                    اضغط على مكان المشكلة أو اسحب العلامة لتعديل الموقع.
+                </p>
 
-    <div
-        class="dialog-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="dialog-title"
-    >
-        <div class="dialog-header">
-            <div>
-                <span>الخطوة الأخيرة</span>
-                <h2 id="dialog-title">
-                    تأكيد البلاغ
-                </h2>
-            </div>
+                <button
+                    type="button"
+                    class="cw-button cw-button-secondary"
+                    id="gps-button"
+                >تحديد موقعي الحالي</button>
 
-            <button
-                type="button"
-                class="dialog-close"
-                id="dialog-close"
-                aria-label="إغلاق"
-            >
-                ×
-            </button>
-        </div>
+                <div
+                    id="complaint-map"
+                    class="cw-map"
+                    aria-label="خريطة اختيار موقع المشكلة"
+                ></div>
 
-        <p class="dialog-description">
-            راجع المعلومات التالية قبل تأكيد الإرسال.
-        </p>
+                <p id="location-status" class="cw-help" role="status">
+                    لم يتم تحديد موقع المشكلة بعد.
+                </p>
 
-        <div class="dialog-photo-wrapper">
-            <img
-                id="dialog-photo"
-                class="dialog-photo"
-                alt="صورة البلاغ"
-            >
+                <div class="cw-field">
+                    <label for="{{ form.address.id_for_label }}">
+                        وصف العنوان
+                    </label>
+                    {{ form.address }}
+                    {{ form.address.errors }}
+                    <small>مثال: شارع الثلاثين، بجوار المدرسة.</small>
+                </div>
 
-            <div
-                class="dialog-photo-empty"
-                id="dialog-photo-empty"
-            >
-                لم تُرفق صورة
-            </div>
-        </div>
+                <div class="cw-actions">
+                    <button
+                        type="button"
+                        class="cw-button cw-button-secondary"
+                        data-back
+                    >السابق</button>
 
-        <div class="review-list">
-            <div class="review-item">
-                <span>الخدمة</span>
-                <strong id="review-service">—</strong>
-            </div>
+                    <button
+                        type="button"
+                        class="cw-button"
+                        id="review-button"
+                    >تأكيد الموقع ومراجعة الشكوى</button>
+                </div>
 
-            <div class="review-item">
-                <span>نوع المشكلة</span>
-                <strong id="review-category">—</strong>
-            </div>
+                <section
+                    class="cw-review"
+                    id="review-section"
+                    aria-labelledby="review-title"
+                    hidden
+                >
+                    <h2 id="review-title" tabindex="-1">مراجعة الشكوى</h2>
 
-            <div class="review-item">
-                <span>الوصف</span>
-                <strong id="review-description">—</strong>
-            </div>
+                    <dl class="cw-review-list">
+                        <div>
+                            <dt>الخدمة</dt>
+                            <dd id="review-service"></dd>
+                        </div>
+                        <div>
+                            <dt>نوع المشكلة</dt>
+                            <dd id="review-category"></dd>
+                        </div>
+                        <div class="cw-review-wide">
+                            <dt>الوصف</dt>
+                            <dd id="review-description"></dd>
+                        </div>
+                        <div>
+                            <dt>العنوان</dt>
+                            <dd id="review-address"></dd>
+                        </div>
+                        <div>
+                            <dt>إحداثيات الموقع</dt>
+                            <dd><bdi id="review-location"></bdi></dd>
+                        </div>
+                    </dl>
 
-            <div class="review-item">
-                <span>العنوان</span>
-                <strong id="review-address">
-                    غير محدد
-                </strong>
-            </div>
+                    <img
+                        id="review-photo"
+                        class="cw-review-image"
+                        alt="صورة الشكوى قبل الإرسال"
+                        hidden
+                    >
 
-            <div class="review-item">
-                <span>الموقع</span>
-                <strong id="review-location">
-                    تم تحديده
-                </strong>
-            </div>
-        </div>
+                    <div class="cw-actions">
+                        <button
+                            type="button"
+                            class="cw-button cw-button-secondary"
+                            id="edit-button"
+                        >تعديل البيانات</button>
 
-        <div class="dialog-actions">
-            <button
-                type="button"
-                class="dialog-edit-button"
-                id="dialog-edit"
-            >
-                تعديل البيانات
-            </button>
-
-            <button
-                type="button"
-                class="dialog-confirm-button"
-                id="confirm-submit"
-            >
-                تأكيد وإرسال
-            </button>
-        </div>
+                        <button
+                            type="submit"
+                            class="cw-button"
+                            id="submit-button"
+                        >تأكيد وإرسال الشكوى</button>
+                    </div>
+                </section>
+            </section>
+        </form>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    const form =
-        document.getElementById("complaint-form");
+(function () {
+    "use strict";
 
-    const steps =
-        document.querySelectorAll(".wizard-step");
+    const form = document.getElementById("complaint-form");
+    const steps = Array.from(form.querySelectorAll("[data-step]"));
+    const points = Array.from(document.querySelectorAll("[data-point]"));
 
-    const progressPoints =
-        document.querySelectorAll(".progress-point");
+    const service = form.elements.namedItem("service");
+    const category = form.elements.namedItem("category");
+    const description = form.elements.namedItem("description");
+    const address = form.elements.namedItem("address");
+    const latitude = form.elements.namedItem("latitude");
+    const longitude = form.elements.namedItem("longitude");
+    const photoInput = form.querySelector('input[type="file"][name="photo"]');
 
-    const progressFill =
-        document.getElementById("progress-fill");
+    const cameraInput = document.getElementById("camera-input");
+    const video = document.getElementById("camera-video");
+    const preview = document.getElementById("photo-preview");
+    const photoEmpty = document.getElementById("photo-empty");
+    const stage = document.getElementById("photo-stage");
+    const captureButton = document.getElementById("capture-photo");
+    const openCameraButton = document.getElementById("open-camera");
+    const cameraLabel = document.getElementById("camera-label");
+    const cameraStatus = document.getElementById("camera-status");
+    const cancelCameraButton = document.getElementById("cancel-camera");
+    const removePhotoButton = document.getElementById("remove-photo");
+    const galleryButton = document.getElementById("open-gallery");
 
-    const serviceSelect =
-        document.getElementById("id_service");
-
-    const categorySelect =
-        document.getElementById("id_category");
-
-    const descriptionInput =
-        document.getElementById("id_description");
-
-    const photoInput =
-        document.getElementById("id_photo");
-
-    const cameraInput =
-        document.getElementById("camera-input");
-
-    const openCameraButton =
-        document.getElementById("open-camera");
-
-    const photoPreview =
-        document.getElementById("photo-preview");
-
-    const addressInput =
-        document.getElementById("id_address");
-
-    const latitudeInput =
-        document.getElementById("id_latitude");
-
-    const longitudeInput =
-        document.getElementById("id_longitude");
-
-    const reviewDialog =
-        document.getElementById("review-dialog");
-
-    const locationStatus =
-        document.getElementById("location-status");
-
-    const totalSteps = 4;
+    const errorBox = document.getElementById("wizard-error");
+    const review = document.getElementById("review-section");
+    const reviewPhoto = document.getElementById("review-photo");
+    const locationStatus = document.getElementById("location-status");
+    const gpsButton = document.getElementById("gps-button");
+    const submitButton = document.getElementById("submit-button");
+    const categoryStatus = document.getElementById("category-status");
 
     let currentStep = 1;
-    let photoPreviewUrl = null;
-    let automaticLocationAttempted = false;
+    let stream = null;
+    let cameraVersion = 0;
+    let cameraBusy = false;
+    let previewUrl = "";
     let map = null;
     let marker = null;
+    let categoriesRequest = null;
+    let categoriesLoading = false;
+    let sending = false;
+
+    function showError(message) {
+        errorBox.textContent = message;
+        errorBox.hidden = !message;
+
+        if (message) {
+            errorBox.scrollIntoView({ block: "nearest" });
+        }
+    }
+
+    function hideReview() {
+        review.hidden = true;
+    }
+
+    function stopCamera() {
+        cameraVersion += 1;
+
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+
+        video.srcObject = null;
+        video.hidden = true;
+        captureButton.hidden = true;
+        cancelCameraButton.hidden = true;
+        stage.classList.remove("is-live");
+        cameraBusy = false;
+        openCameraButton.disabled = false;
+        photoEmpty.hidden = Boolean(previewUrl);
+        preview.hidden = !previewUrl;
+    }
+
+    function showStep(number, moveFocus = true) {
+        if (currentStep === 3 && number !== 3) {
+            stopCamera();
+        }
+
+        currentStep = number;
+        hideReview();
+        showError("");
+
+        steps.forEach(step => {
+            step.hidden = Number(step.dataset.step) !== number;
+        });
+
+        points.forEach(point => {
+            const value = Number(point.dataset.point);
+            point.classList.toggle("is-complete", value < number);
+            point.querySelector(".cw-step-number").textContent =
+                value < number ? "✓" : String(value);
+
+            if (value === number) {
+                point.setAttribute("aria-current", "step");
+            } else {
+                point.removeAttribute("aria-current");
+            }
+        });
+
+        if (number === 4) {
+            initializeMap();
+            requestAnimationFrame(() => {
+                if (map) map.invalidateSize();
+            });
+        }
+
+        if (moveFocus) {
+            steps[number - 1].querySelector("h2").focus({
+                preventScroll: true
+            });
+            form.scrollIntoView({ block: "start", behavior: "smooth" });
+        }
+    }
+
+    function validLocation() {
+        if (!latitude.value.trim() || !longitude.value.trim()) return false;
+
+        const lat = Number(latitude.value);
+        const lng = Number(longitude.value);
+
+        return Number.isFinite(lat) && Number.isFinite(lng)
+            && lat >= -90 && lat <= 90
+            && lng >= -180 && lng <= 180;
+    }
+
+    function validateStep(number) {
+        if (number === 1) {
+            if (categoriesLoading) {
+                showError("انتظر اكتمال تحميل أنواع المشكلة.");
+                return false;
+            }
+
+            if (!service.value || !category.value) {
+                showError("اختر الخدمة البلدية ونوع المشكلة.");
+                (!service.value ? service : category).focus();
+                return false;
+            }
+        }
+
+        if (number === 2) {
+            if (!description.value.trim()) {
+                showError("اكتب وصفًا للمشكلة.");
+                description.focus();
+                return false;
+            }
+
+            if (!description.checkValidity()) {
+                description.reportValidity();
+                return false;
+            }
+        }
+
+        if (number === 3 && cameraBusy) {
+            showError("انتظر اكتمال التقاط الصورة أو أغلق الكاميرا.");
+            return false;
+        }
+
+        if (number === 4) {
+            if (!validLocation()) {
+                showError("حدد موقع المشكلة على الخريطة أولًا.");
+                return false;
+            }
+
+            if (address && !address.checkValidity()) {
+                address.reportValidity();
+                return false;
+            }
+        }
+
+        showError("");
+        return true;
+    }
+
+    form.querySelectorAll("[data-next]").forEach(button => {
+        button.addEventListener("click", () => {
+            if (validateStep(currentStep)) showStep(currentStep + 1);
+        });
+    });
+
+    form.querySelectorAll("[data-back]").forEach(button => {
+        button.addEventListener("click", () => showStep(currentStep - 1));
+    });
+
+    // تصنيفات الخدمة، مع منع عرض نتيجة طلب قديم.
+    async function loadCategories(selectedValue = "") {
+        if (categoriesRequest) categoriesRequest.abort();
+
+        const controller = new AbortController();
+        categoriesRequest = controller;
+
+        category.replaceChildren(new Option("اختر نوع المشكلة", ""));
+        category.disabled = true;
+        categoriesLoading = false;
+
+        if (!service.value) {
+            categoryStatus.textContent = "اختر الخدمة أولًا.";
+            return;
+        }
+
+        categoriesLoading = true;
+        categoryStatus.textContent = "جارٍ تحميل أنواع المشكلة...";
+
+        try {
+            const url = new URL(
+                "{% url 'citizen_portal:load_categories' %}",
+                window.location.origin
+            );
+            url.searchParams.set("service", service.value);
+
+            const response = await fetch(url, {
+                signal: controller.signal,
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            });
+
+            if (!response.ok) throw new Error("Loading failed");
+
+            const data = await response.json();
+            if (!Array.isArray(data)) throw new Error("Invalid response");
+            if (categoriesRequest !== controller) return;
+
+            data.forEach(item => {
+                const option = new Option(item.name_ar, String(item.id));
+                option.selected = String(item.id) === String(selectedValue);
+                category.add(option);
+            });
+
+            category.disabled = data.length === 0;
+            categoryStatus.textContent = data.length
+                ? "اختر التصنيف الأقرب للمشكلة."
+                : "لا توجد تصنيفات لهذه الخدمة.";
+        } catch (error) {
+            if (error.name === "AbortError") return;
+            categoryStatus.textContent =
+                "تعذر تحميل التصنيفات. أعد اختيار الخدمة للمحاولة.";
+        } finally {
+            if (categoriesRequest === controller) {
+                categoriesLoading = false;
+            }
+        }
+    }
+
+    service.addEventListener("change", () => {
+        hideReview();
+        loadCategories();
+    });
+
+    if (service.value && category.options.length <= 1) {
+        loadCategories(category.value);
+    }
+
+    // معاينة الصورة المختارة.
+    function displayPhoto(file) {
+        stopCamera();
+        hideReview();
+
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = file ? URL.createObjectURL(file) : "";
+
+        if (previewUrl) {
+            preview.src = previewUrl;
+        } else {
+            preview.removeAttribute("src");
+        }
+
+        preview.hidden = !previewUrl;
+        photoEmpty.hidden = Boolean(previewUrl);
+        removePhotoButton.hidden = !previewUrl;
+        cameraLabel.textContent = previewUrl ? "إعادة التصوير" : "فتح الكاميرا";
+    }
+
+    function acceptPhoto(input, otherInput) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        if (file.type && !file.type.startsWith("image/")) {
+            input.value = "";
+            cameraStatus.textContent = "اختر ملف صورة صالحًا.";
+            return;
+        }
+
+        if (otherInput) otherInput.value = "";
+        displayPhoto(file);
+        cameraStatus.textContent = "تم اختيار الصورة. يمكنك استبدالها أو إزالتها.";
+    }
+
+    cameraInput.addEventListener("change", () => {
+        acceptPhoto(cameraInput, photoInput);
+    });
+
+    if (photoInput) {
+        photoInput.accept = "image/*";
+
+        document.getElementById("gallery-control").hidden = true;
+        galleryButton.hidden = false;
+
+        galleryButton.addEventListener("click", () => {
+            stopCamera();
+            photoInput.click();
+        });
+
+        photoInput.addEventListener("change", () => {
+            acceptPhoto(photoInput, cameraInput);
+        });
+    }
+
+    removePhotoButton.addEventListener("click", () => {
+        cameraInput.value = "";
+        if (photoInput) photoInput.value = "";
+        displayPhoto(null);
+        cameraStatus.textContent = "تمت إزالة الصورة.";
+    });
+
+    cancelCameraButton.addEventListener("click", () => {
+        stopCamera();
+        cameraStatus.textContent = "تم إغلاق الكاميرا.";
+    });
+
+    // الهاتف قد يستخدم كاميرته الأصلية عند تعذر المعاينة المباشرة.
+    openCameraButton.addEventListener("click", async () => {
+        if (
+            !window.isSecureContext ||
+            !navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia ||
+            typeof DataTransfer === "undefined"
+        ) {
+            cameraStatus.textContent =
+                "استخدم نافذة الجهاز لالتقاط صورة أو اختيارها.";
+            cameraInput.click();
+            return;
+        }
+
+        stopCamera();
+        const version = cameraVersion;
+        cameraBusy = true;
+        openCameraButton.disabled = true;
+        cameraStatus.textContent = "جارٍ فتح الكاميرا...";
+
+        let acquiredStream = null;
+
+        try {
+            acquiredStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { ideal: "environment" },
+                    width: { ideal: 1600 },
+                    height: { ideal: 1200 }
+                },
+                audio: false
+            });
+
+            if (version !== cameraVersion || currentStep !== 3) {
+                acquiredStream.getTracks().forEach(track => track.stop());
+                return;
+            }
+
+            stream = acquiredStream;
+            video.srcObject = stream;
+            video.hidden = false;
+            preview.hidden = true;
+            photoEmpty.hidden = true;
+
+            await video.play();
+
+            if (version !== cameraVersion) return;
+
+            stage.classList.add("is-live");
+            captureButton.hidden = false;
+            cancelCameraButton.hidden = false;
+            cameraStatus.textContent =
+                "وجّه الكاميرا إلى المشكلة، ثم اضغط الزر الدائري.";
+        } catch (error) {
+            if (acquiredStream) {
+                acquiredStream.getTracks().forEach(track => track.stop());
+            }
+
+            if (version !== cameraVersion) return;
+            stopCamera();
+
+            cameraStatus.textContent =
+                error.name === "NotAllowedError"
+                ? "لم يُسمح بالكاميرا. يمكنك السماح لها من المتصفح أو اختيار صورة من المعرض."
+                : "تعذر فتح المعاينة. يمكنك استخدام المعرض أو زر الكاميرا مرة أخرى.";
+
+            // استبدال الزر بمنتقي الجهاز كخيار بديل.
+            if (error.name !== "NotAllowedError") {
+                cameraStatus.textContent +=
+                    " قد لا تتوفر كاميرا متصلة بهذا الجهاز.";
+            }
+        } finally {
+            if (version === cameraVersion) {
+                cameraBusy = false;
+                openCameraButton.disabled = false;
+            }
+        }
+    });
+
+    captureButton.addEventListener("click", () => {
+        if (!stream || !video.videoWidth || cameraBusy) return;
+
+        const version = cameraVersion;
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, 1600 / video.videoWidth);
+
+        canvas.width = Math.round(video.videoWidth * scale);
+        canvas.height = Math.round(video.videoHeight * scale);
+
+        const context = canvas.getContext("2d");
+        if (!context) {
+            cameraStatus.textContent = "تعذر التقاط الصورة. استخدم المعرض.";
+            return;
+        }
+
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        cameraBusy = true;
+        captureButton.disabled = true;
+
+        canvas.toBlob(blob => {
+            captureButton.disabled = false;
+
+            if (version !== cameraVersion || currentStep !== 3) return;
+            cameraBusy = false;
+
+            if (!blob) {
+                cameraStatus.textContent = "تعذر التقاط الصورة. حاول مجددًا.";
+                return;
+            }
+
+            try {
+                const transfer = new DataTransfer();
+                transfer.items.add(
+                    new File([blob], "complaint-photo.jpg", {
+                        type: "image/jpeg"
+                    })
+                );
+
+                cameraInput.files = transfer.files;
+                if (photoInput) photoInput.value = "";
+                displayPhoto(cameraInput.files[0]);
+                cameraStatus.textContent = "تم التقاط الصورة بنجاح.";
+            } catch (error) {
+                stopCamera();
+                cameraStatus.textContent =
+                    "تعذر إرفاق الصورة من المعاينة. اخترها من المعرض.";
+            }
+        }, "image/jpeg", 0.9);
+    });
+
+    // الخريطة: لا نطلب الموقع تلقائيًا قبل ضغط المستخدم.
+    function initializeMap() {
+        if (map) return;
+
+        if (typeof L === "undefined") {
+            locationStatus.textContent =
+                "تعذر تحميل الخريطة. تحقق من الإنترنت ثم حدّث الصفحة.";
+            return;
+        }
+
+        map = L.map("complaint-map").setView([15.3694, 44.1910], 13);
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(map);
+
+        map.on("click", event => {
+            setLocation(event.latlng.lat, event.latlng.lng);
+        });
+
+        if (validLocation()) {
+            setLocation(Number(latitude.value), Number(longitude.value));
+            map.setView([Number(latitude.value), Number(longitude.value)], 17);
+        }
+    }
+
+    function setLocation(lat, lng) {
+        latitude.value = lat.toFixed(7);
+        longitude.value = lng.toFixed(7);
+        hideReview();
+
+        if (map) {
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+            } else {
+                marker = L.marker([lat, lng], {
+                    draggable: true,
+                    icon: L.divIcon({
+                        className: "",
+                        html: '<span class="cw-pin"></span>',
+                        iconSize: [30, 38],
+                        iconAnchor: [15, 36]
+                    })
+                }).addTo(map);
+
+                marker.on("dragend", () => {
+                    const point = marker.getLatLng();
+                    setLocation(point.lat, point.lng);
+                });
+            }
+        }
+
+        locationStatus.textContent =
+            "تم اختيار الموقع. يمكنك سحب العلامة أو اختيار نقطة أخرى.";
+        showError("");
+    }
+
+    gpsButton.addEventListener("click", () => {
+        if (!window.isSecureContext || !navigator.geolocation) {
+            locationStatus.textContent =
+                "تحديد الموقع غير متاح هنا. اختر النقطة يدويًا من الخريطة.";
+            return;
+        }
+
+        gpsButton.disabled = true;
+        locationStatus.textContent = "جارٍ تحديد موقعك...";
+
+        navigator.geolocation.getCurrentPosition(position => {
+            gpsButton.disabled = false;
+
+            setLocation(
+                position.coords.latitude,
+                position.coords.longitude
+            );
+
+            if (map) {
+                map.setView(
+                    [position.coords.latitude, position.coords.longitude],
+                    17
+                );
+            }
+
+            locationStatus.textContent =
+                "تم تحديد موقعك بدقة تقريبية "
+                + Math.round(position.coords.accuracy)
+                + " متر. تأكد أن العلامة عند مكان المشكلة.";
+        }, error => {
+            gpsButton.disabled = false;
+            locationStatus.textContent = error.code === 1
+                ? "لم يُسمح بالموقع. يمكنك اختياره يدويًا من الخريطة."
+                : "تعذر تحديد موقعك. حاول مجددًا أو اختر النقطة يدويًا.";
+        }, {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        });
+    });
+
+    function selectedText(select) {
+        return select.options[select.selectedIndex]?.textContent || "—";
+    }
+
+    function updateReview() {
+        document.getElementById("review-service").textContent =
+            selectedText(service);
+
+        document.getElementById("review-category").textContent =
+            selectedText(category);
+
+        document.getElementById("review-description").textContent =
+            description.value.trim();
+
+        document.getElementById("review-address").textContent =
+            address.value.trim() || "لم يُكتب وصف للعنوان";
+
+        document.getElementById("review-location").textContent =
+            Number(latitude.value).toFixed(6)
+            + ", "
+            + Number(longitude.value).toFixed(6);
+
+        reviewPhoto.hidden = !previewUrl;
+
+        if (previewUrl) {
+            reviewPhoto.src = previewUrl;
+        } else {
+            reviewPhoto.removeAttribute("src");
+        }
+    }
+
+    document.getElementById("review-button").addEventListener("click", () => {
+        if (!validateStep(4)) return;
+
+        updateReview();
+        review.hidden = false;
+        document.getElementById("review-title").focus({
+            preventScroll: true
+        });
+        review.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+
+    document.getElementById("edit-button").addEventListener("click", () => {
+        hideReview();
+        showStep(1);
+    });
+
+    form.addEventListener("input", hideReview);
+    form.addEventListener("change", hideReview);
+
+    form.addEventListener("submit", event => {
+        if (sending) {
+            event.preventDefault();
+            return;
+        }
+
+        for (let number = 1; number <= 4; number += 1) {
+            if (!validateStep(number)) {
+                event.preventDefault();
+                const message = errorBox.textContent;
+                showStep(number);
+                showError(message);
+                return;
+            }
+        }
+
+        if (review.hidden) {
+            event.preventDefault();
+            showStep(4);
+            showError("راجع الشكوى واضغط تأكيد الموقع قبل الإرسال.");
+            return;
+        }
+
+        sending = true;
+        stopCamera();
+        submitButton.disabled = true;
+        submitButton.textContent = "جارٍ إرسال الشكوى...";
+    });
+
+    window.addEventListener("pagehide", stopCamera);
+
+    window.addEventListener("pageshow", () => {
+        sending = false;
+        submitButton.disabled = false;
+        submitButton.textContent = "تأكيد وإرسال الشكوى";
+    });
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stopCamera();
+    });
 
     const initialStep =
         {% if form.service.errors or form.category.errors %}
@@ -508,775 +1416,13 @@
             2
         {% elif form.photo.errors %}
             3
-        {% elif form.latitude.errors or form.longitude.errors or form.address.errors %}
+        {% elif form.latitude.errors or form.longitude.errors or form.address.errors or form.location.errors %}
             4
         {% else %}
             1
         {% endif %};
 
-    function showStep(stepNumber) {
-        currentStep = stepNumber;
-
-        steps.forEach(function (step) {
-            const isCurrentStep =
-                Number(step.dataset.step) === currentStep;
-
-            step.classList.toggle(
-                "is-active",
-                isCurrentStep
-            );
-        });
-
-        progressPoints.forEach(function (point, index) {
-            const pointNumber = index + 1;
-            const circle =
-                point.querySelector(".point-circle");
-
-            point.classList.remove(
-                "is-active",
-                "is-complete"
-            );
-
-            if (pointNumber < currentStep) {
-                point.classList.add("is-complete");
-                circle.textContent = "✓";
-            } else {
-                circle.textContent = pointNumber;
-            }
-
-            if (pointNumber === currentStep) {
-                point.classList.add("is-active");
-            }
-        });
-
-        if (progressFill) {
-            const progressPercentage =
-                ((currentStep - 1) / (totalSteps - 1)) * 100;
-
-            progressFill.style.width =
-                `${progressPercentage}%`;
-        }
-
-        if (currentStep === 4) {
-            setTimeout(function () {
-                if (map) {
-                    map.invalidateSize();
-                }
-
-                if (
-                    latitudeInput &&
-                    !latitudeInput.value &&
-                    !automaticLocationAttempted
-                ) {
-                    automaticLocationAttempted = true;
-                    requestCurrentLocation();
-                }
-            }, 250);
-        }
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-    }
-
-    /*
-     * إظهار المرحلة فورًا حتى لو تعذر
-     * تحميل الخريطة لاحقًا.
-     */
-    showStep(initialStep);
-
-    function showValidationMessage(messageId, show) {
-        const message =
-            document.getElementById(messageId);
-
-        if (message) {
-            message.classList.toggle(
-                "is-visible",
-                show
-            );
-        }
-    }
-
-    function validateStep(stepNumber) {
-        let isValid = true;
-
-        if (stepNumber === 1) {
-            serviceSelect.classList.remove("is-invalid");
-            categorySelect.classList.remove("is-invalid");
-
-            if (!serviceSelect.value) {
-                serviceSelect.classList.add("is-invalid");
-                isValid = false;
-            }
-
-            if (!categorySelect.value) {
-                categorySelect.classList.add("is-invalid");
-                isValid = false;
-            }
-
-            showValidationMessage(
-                "step-one-message",
-                !isValid
-            );
-        }
-
-        if (stepNumber === 2) {
-            descriptionInput.classList.remove(
-                "is-invalid"
-            );
-
-            if (!descriptionInput.value.trim()) {
-                descriptionInput.classList.add(
-                    "is-invalid"
-                );
-
-                isValid = false;
-            }
-
-            showValidationMessage(
-                "step-two-message",
-                !isValid
-            );
-        }
-
-        if (stepNumber === 4) {
-            if (
-                !latitudeInput.value ||
-                !longitudeInput.value
-            ) {
-                isValid = false;
-            }
-
-            showValidationMessage(
-                "step-four-message",
-                !isValid
-            );
-        }
-
-        return isValid;
-    }
-
-    document
-        .querySelectorAll("[data-next]")
-        .forEach(function (button) {
-            button.addEventListener(
-                "click",
-                function () {
-                    if (validateStep(currentStep)) {
-                        showStep(
-                            Number(button.dataset.next)
-                        );
-                    }
-                }
-            );
-        });
-
-    document
-        .querySelectorAll("[data-back]")
-        .forEach(function (button) {
-            button.addEventListener(
-                "click",
-                function () {
-                    showStep(
-                        Number(button.dataset.back)
-                    );
-                }
-            );
-        });
-
-    /*
-     * تحميل أنواع المشكلة وفق الخدمة
-     */
-    const categoriesUrl =
-        "{% url 'citizen_portal:load_categories' %}";
-
-    const savedCategoryValue =
-        categorySelect.value;
-
-    async function loadServiceCategories(
-        serviceId,
-        selectedValue = ""
-    ) {
-        categorySelect.innerHTML =
-            '<option value="">---------</option>';
-
-        if (!serviceId) {
-            return;
-        }
-
-        try {
-            const response = await fetch(
-                `${categoriesUrl}?service=${
-                    encodeURIComponent(serviceId)
-                }`,
-                {
-                    headers: {
-                        "X-Requested-With":
-                            "XMLHttpRequest"
-                    }
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    `HTTP ${response.status}`
-                );
-            }
-
-            const categories =
-                await response.json();
-
-            categories.forEach(function (category) {
-                const option =
-                    document.createElement("option");
-
-                option.value = category.id;
-                option.textContent = category.name_ar;
-
-                if (
-                    String(category.id) ===
-                    String(selectedValue)
-                ) {
-                    option.selected = true;
-                }
-
-                categorySelect.appendChild(option);
-            });
-
-            if (categories.length === 0) {
-                categorySelect.innerHTML =
-                    '<option value="">لا توجد أنواع لهذه الخدمة</option>';
-            }
-        } catch (error) {
-            console.error(
-                "Category loading error:",
-                error
-            );
-
-            categorySelect.innerHTML =
-                '<option value="">تعذر تحميل أنواع المشكلة</option>';
-        }
-    }
-
-    serviceSelect.addEventListener(
-        "change",
-        function () {
-            this.classList.remove("is-invalid");
-
-            loadServiceCategories(
-                this.value
-            );
-        }
-    );
-
-    categorySelect.addEventListener(
-        "change",
-        function () {
-            this.classList.remove("is-invalid");
-        }
-    );
-
-    /*
-     * تحميل الأنواع أيضًا إذا كانت الخدمة
-     * محددة مسبقًا بعد تحديث الصفحة.
-     */
-    if (serviceSelect.value) {
-        loadServiceCategories(
-            serviceSelect.value,
-            savedCategoryValue
-        );
-    }
-
-    descriptionInput.addEventListener(
-        "input",
-        function () {
-            this.classList.remove("is-invalid");
-        }
-    );
-
-    /*
-     * الكاميرا ومعاينة الصورة
-     */
-    function displaySelectedPhoto(file) {
-        if (!photoPreview || !openCameraButton) {
-            return;
-        }
-
-        if (photoPreviewUrl) {
-            URL.revokeObjectURL(photoPreviewUrl);
-        }
-
-        if (file) {
-            photoPreviewUrl =
-                URL.createObjectURL(file);
-
-            photoPreview.src = photoPreviewUrl;
-
-            photoPreview.classList.add(
-                "is-visible"
-            );
-
-            openCameraButton.classList.add(
-                "is-hidden"
-            );
-        } else {
-            photoPreview.removeAttribute("src");
-
-            photoPreview.classList.remove(
-                "is-visible"
-            );
-
-            openCameraButton.classList.remove(
-                "is-hidden"
-            );
-
-            photoPreviewUrl = null;
-        }
-    }
-
-    if (openCameraButton && cameraInput) {
-        openCameraButton.addEventListener(
-            "click",
-            function () {
-                cameraInput.click();
-            }
-        );
-    }
-
-    if (photoPreview && cameraInput) {
-        photoPreview.addEventListener(
-            "click",
-            function () {
-                cameraInput.click();
-            }
-        );
-    }
-
-    if (cameraInput) {
-        cameraInput.addEventListener(
-            "change",
-            function () {
-                if (this.files.length > 0) {
-                    if (photoInput) {
-                        photoInput.value = "";
-                    }
-
-                    displaySelectedPhoto(
-                        this.files[0]
-                    );
-                }
-            }
-        );
-    }
-
-    if (photoInput) {
-        photoInput.addEventListener(
-            "change",
-            function () {
-                if (this.files.length > 0) {
-                    if (cameraInput) {
-                        cameraInput.value = "";
-                    }
-
-                    displaySelectedPhoto(
-                        this.files[0]
-                    );
-                } else {
-                    displaySelectedPhoto(null);
-                }
-            }
-        );
-    }
-
-    /*
-     * الخريطة
-     */
-    function initializeMap() {
-        const mapElement =
-            document.getElementById("map");
-
-        if (
-            !mapElement ||
-            typeof L === "undefined"
-        ) {
-            if (locationStatus) {
-                locationStatus.textContent =
-                    "تعذر تحميل الخريطة. تحقق من اتصال الإنترنت ثم حدّث الصفحة.";
-            }
-
-            return;
-        }
-
-        map = L.map("map").setView(
-    [15.3694, 44.1910],
-    17
-);
-
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors"
-    }
-).addTo(map);
-
-/* اختيار الموقع يدويًا */
-map.on("click", function (event) {
-    setComplaintLocation(
-        event.latlng.lat,
-        event.latlng.lng
-    );
-});
-
-/* إظهار الموقع المحفوظ إن وجد */
-if (
-    latitudeInput.value &&
-    longitudeInput.value
-) {
-    setComplaintLocation(
-        parseFloat(latitudeInput.value),
-        parseFloat(longitudeInput.value)
-    );
-}
-}
-
-    function setComplaintLocation(
-        latitude,
-        longitude
-    ) {
-        if (!map) {
-            return;
-        }
-
-        latitudeInput.value = latitude;
-        longitudeInput.value = longitude;
-
-        if (marker) {
-            marker.setLatLng([
-                latitude,
-                longitude
-            ]);
-        } else {
-            marker = L.marker(
-                [latitude, longitude],
-                {
-                    draggable: true
-                }
-            ).addTo(map);
-
-            marker.on(
-                "dragend",
-                function (event) {
-                    const position =
-                        event.target.getLatLng();
-
-                    setComplaintLocation(
-                        position.lat,
-                        position.lng
-                    );
-                }
-            );
-        }
-
-        map.setView(
-            [latitude, longitude],
-            17
-        );
-
-        if (locationStatus) {
-            locationStatus.textContent =
-                "تم تحديد موقع المشكلة بنجاح.";
-        }
-
-        showValidationMessage(
-            "step-four-message",
-            false
-        );
-    }
-
-    function requestCurrentLocation() {
-        if (!locationStatus) {
-            return;
-        }
-
-        locationStatus.textContent =
-            "جارٍ تحديد موقعك الحالي تلقائيًا...";
-
-        if (!window.isSecureContext) {
-            locationStatus.textContent =
-                "التحديد التلقائي يحتاج اتصال HTTPS. يمكنك تحديد الموقع يدويًا من الخريطة أثناء التجربة المحلية.";
-
-            return;
-        }
-
-        if (!navigator.geolocation) {
-            locationStatus.textContent =
-                "تحديد الموقع غير مدعوم في هذا الجهاز.";
-
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            function (position) {
-                setComplaintLocation(
-                    position.coords.latitude,
-                    position.coords.longitude
-                );
-
-                locationStatus.textContent =
-                    "تم تحديد موقعك الحالي تلقائيًا.";
-            },
-            function (error) {
-                if (error.code === 1) {
-                    locationStatus.textContent =
-                        "يرجى السماح للتطبيق بالوصول إلى موقعك.";
-                } else if (error.code === 2) {
-                    locationStatus.textContent =
-                        "تعذر الوصول إلى موقعك الحالي. اختر الموقع يدويًا من الخريطة.";
-                } else {
-                    locationStatus.textContent =
-                        "انتهت مهلة تحديد الموقع. حاول مرة أخرى أو اختر الموقع يدويًا.";
-                }
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 0
-            }
-        );
-    }
-
-    const gpsButton =
-        document.getElementById("gps-button");
-
-    if (gpsButton) {
-        gpsButton.addEventListener(
-            "click",
-            requestCurrentLocation
-        );
-    }
-
-    initializeMap();
-requestCurrentLocation();
-
-    /*
-     * نافذة مراجعة البلاغ
-     */
-    function updateDialogDetails() {
-        const selectedService =
-            serviceSelect.options[
-                serviceSelect.selectedIndex
-            ];
-
-        const selectedCategory =
-            categorySelect.options[
-                categorySelect.selectedIndex
-            ];
-
-        document.getElementById(
-            "review-service"
-        ).textContent =
-            selectedService
-                ? selectedService.text
-                : "—";
-
-        document.getElementById(
-            "review-category"
-        ).textContent =
-            selectedCategory
-                ? selectedCategory.text
-                : "—";
-
-        document.getElementById(
-            "review-description"
-        ).textContent =
-            descriptionInput.value.trim() || "—";
-
-        document.getElementById(
-            "review-address"
-        ).textContent =
-            addressInput.value.trim() || "غير محدد";
-
-        document.getElementById(
-            "review-location"
-        ).textContent =
-            latitudeInput.value &&
-            longitudeInput.value
-                ? "تم تحديد الموقع بنجاح"
-                : "لم يتم تحديده";
-
-        const dialogPhoto =
-            document.getElementById(
-                "dialog-photo"
-            );
-
-        const emptyPhoto =
-            document.getElementById(
-                "dialog-photo-empty"
-            );
-
-        if (photoPreviewUrl) {
-            dialogPhoto.src =
-                photoPreviewUrl;
-
-            dialogPhoto.classList.add(
-                "is-visible"
-            );
-
-            emptyPhoto.classList.add(
-                "is-hidden"
-            );
-        } else {
-            dialogPhoto.removeAttribute("src");
-
-            dialogPhoto.classList.remove(
-                "is-visible"
-            );
-
-            emptyPhoto.classList.remove(
-                "is-hidden"
-            );
-        }
-    }
-
-    function openDialog() {
-        updateDialogDetails();
-
-        reviewDialog.classList.add(
-            "is-open"
-        );
-
-        reviewDialog.setAttribute(
-            "aria-hidden",
-            "false"
-        );
-
-        document.body.classList.add(
-            "dialog-open"
-        );
-
-        const finalPoint =
-            progressPoints[3];
-
-        finalPoint.classList.remove(
-            "is-active"
-        );
-
-        finalPoint.classList.add(
-            "is-complete"
-        );
-
-        finalPoint
-            .querySelector(".point-circle")
-            .textContent = "✓";
-    }
-
-    function closeDialog() {
-        reviewDialog.classList.remove(
-            "is-open"
-        );
-
-        reviewDialog.setAttribute(
-            "aria-hidden",
-            "true"
-        );
-
-        document.body.classList.remove(
-            "dialog-open"
-        );
-
-        showStep(4);
-    }
-
-    const openReviewButton =
-        document.getElementById(
-            "open-review-dialog"
-        );
-
-    const closeDialogButton =
-        document.getElementById(
-            "dialog-close"
-        );
-
-    const editDialogButton =
-        document.getElementById(
-            "dialog-edit"
-        );
-
-    const confirmSubmitButton =
-        document.getElementById(
-            "confirm-submit"
-        );
-
-    if (openReviewButton) {
-        openReviewButton.addEventListener(
-            "click",
-            function () {
-                if (validateStep(4)) {
-                    openDialog();
-                }
-            }
-        );
-    }
-
-    if (closeDialogButton) {
-        closeDialogButton.addEventListener(
-            "click",
-            closeDialog
-        );
-    }
-
-    if (editDialogButton) {
-        editDialogButton.addEventListener(
-            "click",
-            closeDialog
-        );
-    }
-
-    if (reviewDialog) {
-        reviewDialog.addEventListener(
-            "click",
-            function (event) {
-                if (
-                    event.target.classList.contains(
-                        "dialog-backdrop"
-                    )
-                ) {
-                    closeDialog();
-                }
-            }
-        );
-    }
-
-    document.addEventListener(
-        "keydown",
-        function (event) {
-            if (
-                event.key === "Escape" &&
-                reviewDialog &&
-                reviewDialog.classList.contains(
-                    "is-open"
-                )
-            ) {
-                closeDialog();
-            }
-        }
-    );
-
-    if (confirmSubmitButton) {
-        confirmSubmitButton.addEventListener(
-            "click",
-            function () {
-                this.disabled = true;
-
-                this.textContent =
-                    "جارٍ إرسال البلاغ...";
-
-                form.submit();
-            }
-        );
-    }
+    showStep(initialStep, false);
+})();
 </script>
-
 {% endblock %}

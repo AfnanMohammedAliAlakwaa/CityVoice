@@ -50,5 +50,77 @@ class User(AbstractUser):
         verbose_name="المظهر",
     )
 
+    verified_email = models.EmailField(
+        blank=True,
+        null=True,
+        unique=True,
+        editable=False,
+    )
+
+    email_verified_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+    )
+
+    pending_email = models.EmailField(
+        blank=True,
+        editable=False,
+    )
+
+    @property
+    def has_verified_contact(self):
+        return bool(
+            self.email_verified_at
+            and self.verified_email
+            and self.email
+            and self.verified_email == self.email.strip().lower()
+        )
+
     def __str__(self):
         return self.username
+
+
+class EmailVerification(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="email_challenge",
+    )
+
+    target = models.EmailField(
+        blank=True,
+    )
+
+    code_hash = models.CharField(
+        max_length=256,
+        blank=True,
+    )
+
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    attempts = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    last_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    window_started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    send_count = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    blocked_until = models.DateTimeField(
+        null=True,
+        blank=True,
+    )

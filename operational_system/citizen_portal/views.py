@@ -1,8 +1,10 @@
 from django.contrib.auth import (
+    get_user_model,
     login as auth_login,
     logout as auth_logout,
 )
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import (
     get_object_or_404,
@@ -12,6 +14,7 @@ from django.shortcuts import (
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from accounts.models import EmailVerification
 from complaints.models import Complaint
 from municipal_services.models import ServiceCategory
 
@@ -47,23 +50,29 @@ def citizen_auth(request):
     next_url = get_safe_next_url(request)
 
     login_form = CitizenLoginForm(
-    request=request,
-    prefix="login",
-)
+        request=request,
+        prefix="login",
+    )
+
     registration_form = CitizenRegistrationForm(
-    prefix="register",
-)
+        prefix="register",
+    )
 
     if request.method == "POST":
         if action == "register":
             registration_form = CitizenRegistrationForm(
-    request.POST,
-    prefix="register",
-)
+                request.POST,
+                prefix="register",
+            )
 
             if registration_form.is_valid():
                 user = registration_form.save()
                 auth_login(request, user)
+
+                if not user.has_verified_contact:
+                    return redirect(
+                        "citizen_portal:verify_contact"
+                    )
 
                 return redirect(
                     next_url or "citizen_portal:home"
@@ -71,6 +80,7 @@ def citizen_auth(request):
 
         else:
             action = "login"
+
             login_form = CitizenLoginForm(
                 request=request,
                 data=request.POST,
@@ -83,13 +93,16 @@ def citizen_auth(request):
                 if user.role != user.Role.CITIZEN:
                     login_form.add_error(
                         None,
-                        (
-                            "هذا الحساب غير مخصص لتطبيق "
-                            "المواطن."
-                        ),
+                        "هذا الحساب غير مخصص لتطبيق المواطن.",
                     )
+
                 else:
                     auth_login(request, user)
+
+                    if not user.has_verified_contact:
+                        return redirect(
+                            "citizen_portal:verify_contact"
+                        )
 
                     return redirect(
                         next_url or "citizen_portal:home"
@@ -128,6 +141,11 @@ def citizen_complaints(user):
 
 @login_required
 def home(request):
+    if not request.user.has_verified_contact:
+        return redirect(
+            "citizen_portal:verify_contact"
+        )
+
     complaints = citizen_complaints(request.user)
 
     active_statuses = [
@@ -160,7 +178,9 @@ def complaint_list(request):
         "citizen_portal/home.html",
         {
             "page": "complaints",
-            "complaints": citizen_complaints(request.user),
+            "complaints": citizen_complaints(
+                request.user
+            ),
         },
     )
 
@@ -184,18 +204,65 @@ def complaint_detail(request, reference_number):
 
 @login_required
 def account(request):
-    if request.method == "POST":
-        form = CitizenAccountForm(
-            request.POST,
-            request.FILES,
-            instance=request.user,
-        )
+    User = get_user_model()
 
-        if form.is_valid():
-            form.save()
-            return redirect(
-                "citizen_portal:account_saved"
+    if request.method == "POST":
+        with transaction.atomic():
+            user = (
+                User.objects.select_for_update()
+                .get(pk=request.user.pk)
             )
+
+            original_email = user.email
+
+            form = CitizenAccountForm(
+                request.POST,
+                request.FILES,
+                instance=user,
+            )
+
+            if form.is_valid():
+                candidate_email = (
+                    form.cleaned_data.get("email", "")
+                )
+
+                profile = form.save(commit=False)
+
+                # يبقى البريد القديم حتى تأكيد الجديد.
+                profile.email = original_email
+
+                needs_verification = bool(
+                    candidate_email
+                ) and (
+                    candidate_email
+                    != original_email.strip().lower()
+                    or not user.has_verified_contact
+                )
+
+                if needs_verification:
+                    profile.pending_email = candidate_email
+                else:
+                    profile.pending_email = ""
+
+                profile.save()
+
+                # إلغاء الرمز إذا تغيّر البريد المطلوب تأكيده.
+                EmailVerification.objects.filter(
+                    user=user
+                ).exclude(
+                    target=profile.pending_email
+                ).update(
+                    code_hash=""
+                )
+
+                if needs_verification:
+                    return redirect(
+                        "citizen_portal:verify_contact"
+                    )
+
+                return redirect(
+                    "citizen_portal:account_saved"
+                )
 
     else:
         form = CitizenAccountForm(
@@ -230,6 +297,12 @@ def account_saved(request):
 
 @login_required
 def submit_complaint(request):
+    # التحقق في الخادم حتى عند إرسال POST مباشرة.
+    if not request.user.has_verified_contact:
+        return redirect(
+            "citizen_portal:verify_contact"
+        )
+
     if request.method == "POST":
         uploaded_files = request.FILES.copy()
         camera_photo = uploaded_files.get(
@@ -267,10 +340,7 @@ def submit_complaint(request):
 
 
 @login_required
-def complaint_success(
-    request,
-    reference_number,
-):
+def complaint_success(request, reference_number):
     complaint = get_object_or_404(
         Complaint,
         reference_number=reference_number,

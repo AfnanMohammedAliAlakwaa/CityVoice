@@ -151,3 +151,4 @@ MEDIA_ROOT = BASE_DIR / "media"
 LOGIN_URL = "citizen_portal:auth"
 LOGIN_REDIRECT_URL = "citizen_portal:home"
 LOGOUT_REDIRECT_URL = "citizen_portal:auth"
+from .contact_email_settings import *  # CityVoice contact verification
