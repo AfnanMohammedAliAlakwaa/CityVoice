@@ -909,35 +909,37 @@
         }
 
         map = L.map("map").setView(
-            [15.3694, 44.1910],
-            13
-        );
+    [15.3694, 44.1910],
+    17
+);
 
-        L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            {
-                maxZoom: 19,
-                attribution: "&copy; OpenStreetMap"
-            }
-        ).addTo(map);
-
-        map.on("click", function (event) {
-            setComplaintLocation(
-                event.latlng.lat,
-                event.latlng.lng
-            );
-        });
-
-        if (
-            latitudeInput.value &&
-            longitudeInput.value
-        ) {
-            setComplaintLocation(
-                parseFloat(latitudeInput.value),
-                parseFloat(longitudeInput.value)
-            );
-        }
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
     }
+).addTo(map);
+
+/* اختيار الموقع يدويًا */
+map.on("click", function (event) {
+    setComplaintLocation(
+        event.latlng.lat,
+        event.latlng.lng
+    );
+});
+
+/* إظهار الموقع المحفوظ إن وجد */
+if (
+    latitudeInput.value &&
+    longitudeInput.value
+) {
+    setComplaintLocation(
+        parseFloat(latitudeInput.value),
+        parseFloat(longitudeInput.value)
+    );
+}
+}
 
     function setComplaintLocation(
         latitude,
@@ -1056,6 +1058,7 @@
     }
 
     initializeMap();
+requestCurrentLocation();
 
     /*
      * نافذة مراجعة البلاغ
