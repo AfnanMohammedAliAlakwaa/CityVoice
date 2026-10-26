@@ -428,6 +428,81 @@
             grid-template-columns: minmax(0, 1fr);
         }
     }
+        /* تقليل الفراغ أعلى النموذج */
+    .complaint-wizard {
+        margin-top: 12px;
+    }
+
+    .complaint-wizard .cw-card {
+        padding-top: 22px;
+    }
+
+    /* مراحل متصلة من اليمين إلى اليسار */
+    .cw-progress {
+        direction: rtl;
+        gap: 0;
+        margin: 24px 0 28px;
+        isolation: isolate;
+    }
+
+    .cw-progress li {
+        position: relative;
+        gap: 10px;
+        min-width: 0;
+        padding: 0 3px;
+    }
+
+    /* خط يصل مركز كل دائرة بالدائرة التالية */
+    .cw-progress li:not(:last-child)::before {
+        content: "";
+        position: absolute;
+        top: 18px;
+        right: 50%;
+        width: 100%;
+        height: 3px;
+        background: var(--border, #dce9e0);
+        z-index: -1;
+    }
+
+    .cw-progress li.is-complete::before {
+        background: var(--cv-accent, #287e50);
+    }
+
+    .cw-step-number {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        border: 2px solid var(--border, #dce9e0);
+        background: var(--surface, #fff);
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .cw-progress li[aria-current="step"] .cw-step-number {
+        border-color: var(--cv-accent, #287e50);
+        background: var(--cv-accent, #287e50);
+        color: #fff;
+        box-shadow:
+            0 0 0 4px var(--surface, #fff),
+            0 0 0 6px var(--cv-accent-soft, #e8f5ee);
+    }
+
+    .cw-progress li.is-complete .cw-step-number {
+        border-color: var(--cv-accent, #287e50);
+        background: var(--cv-accent, #287e50);
+        color: #fff;
+    }
+
+    @media (max-width: 520px) {
+        .cw-progress {
+            margin: 22px 0 26px;
+        }
+
+        .cw-progress li {
+            font-size: 11px;
+        }
+    }
 </style>
 {% endblock %}
 

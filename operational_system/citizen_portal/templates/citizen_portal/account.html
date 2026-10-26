@@ -5,75 +5,31 @@
 {% block extra_css %}
 {{ block.super }}
 <style>
+    .account-stack,
     .account-form {
         display: grid;
-        gap: 22px;
+        gap: 20px;
     }
 
     .account-card {
         padding: 24px;
-        background: #ffffff;
-        border: 1px solid #e5ece7;
+        background: var(--list-surface, #fff);
+        color: var(--list-text, #293f33);
+        border: 1px solid var(--list-border, #dce9e0);
         border-radius: 18px;
     }
 
     .account-card h3 {
         margin: 0 0 20px;
-        color: #263c30;
-        font-size: 16px;
-        line-height: 1.7;
-    }
-
-    .account-fields {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 20px;
-    }
-
-    .account-field {
-        min-width: 0;
-    }
-
-    .account-field-wide {
-        grid-column: 1 / -1;
-    }
-
-    .account-field label {
-        display: block;
-        margin-bottom: 8px;
-        color: #405b49;
-        font-size: 13px;
+        font-size: 17px;
         line-height: 1.8;
-    }
-
-    .account-field input:not([type="checkbox"]):not([type="radio"]),
-    .account-field textarea {
-        width: 100%;
-        min-height: 46px;
-        padding: 12px;
-        color: #263c30;
-        background: #fbfdfb;
-        border: 1px solid #dce5df;
-        border-radius: 11px;
-        font: inherit;
-        font-size: 13px;
-    }
-
-    .account-field textarea {
-        resize: vertical;
-    }
-
-    .account-field input:focus,
-    .account-field textarea:focus {
-        outline: 2px solid var(--cv-accent);
-        outline-offset: 2px;
     }
 
     .account-avatar-row {
         display: flex;
         align-items: center;
-        gap: 18px;
-        margin-bottom: 22px;
+        gap: 16px;
+        margin-bottom: 24px;
     }
 
     .account-avatar,
@@ -86,26 +42,169 @@
 
     .account-avatar {
         object-fit: cover;
-        border: 2px solid #dce5df;
+        border: 2px solid var(--list-border, #dce9e0);
     }
 
     .account-avatar-placeholder {
         display: grid;
         place-items: center;
-        color: var(--cv-accent);
-        background: var(--cv-accent-soft);
+        color: var(--cv-accent, #287e50);
+        background: var(--cv-accent-soft, #e8f5ee);
     }
 
     .account-avatar-placeholder svg {
-        width: 35px;
-        height: 35px;
+        width: 34px;
+        height: 34px;
+    }
+
+    .account-username {
+        overflow-wrap: anywhere;
+        font-size: 17px;
+        line-height: 1.8;
     }
 
     .account-help {
         margin: 8px 0 0;
-        color: #7b8a80;
+        color: var(--list-muted, #687d70);
         font-size: 12px;
         line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .account-data,
+    .account-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin: 0;
+    }
+
+    .account-data > div {
+        min-width: 0;
+        padding: 14px;
+        border: 1px solid var(--list-border, #dce9e0);
+        border-radius: 12px;
+        background: var(--list-background, #f6faf7);
+    }
+
+    .account-data dt {
+        margin-bottom: 7px;
+        color: var(--list-muted, #687d70);
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .account-data dd {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+        white-space: pre-line;
+    }
+
+    .account-wide {
+        grid-column: 1 / -1;
+    }
+
+    .account-field {
+        min-width: 0;
+    }
+
+    .account-field > label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    .account-field input:not([type="checkbox"]):not([type="radio"]),
+    .account-field textarea {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 47px;
+        padding: 12px;
+        color: var(--list-text, #293f33);
+        background: var(--list-background, #f6faf7);
+        border: 1px solid var(--list-border, #dce9e0);
+        border-radius: 11px;
+        font: inherit;
+        font-size: 13px;
+    }
+
+    .account-field textarea {
+        min-height: 110px;
+        resize: vertical;
+        line-height: 1.9;
+    }
+
+    .account-fieldset {
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .account-fieldset legend {
+        margin-bottom: 18px;
+        padding: 0;
+        font-size: 17px;
+        font-weight: bold;
+    }
+
+    .account-field input:focus-visible,
+    .account-field textarea:focus-visible,
+    .account-button:focus-visible {
+        outline: 3px solid var(--cv-accent, #287e50);
+        outline-offset: 3px;
+    }
+
+    .account-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 22px;
+    }
+
+    .account-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 48px;
+        padding: 12px 16px;
+        border: 1px solid var(--cv-accent, #287e50);
+        border-radius: 12px;
+        color: #fff;
+        background: var(--cv-accent, #287e50);
+        font: inherit;
+        font-size: 14px;
+        line-height: 1.8;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .account-button-secondary {
+        color: var(--cv-accent, #287e50);
+        background: var(--list-surface, #fff);
+    }
+
+    .account-logout {
+        color: #b73742;
+        background: var(--list-surface, #fff);
+        border-color: #b73742;
+    }
+
+    html[data-cv-theme="dark"] .account-logout {
+        color: #ffb7c0;
+        border-color: #d77b88;
+    }
+
+    .account-button .cv-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
     }
 
     .account-errors,
@@ -115,19 +214,33 @@
         color: #a43c3c;
         background: #fff0f0;
         border-radius: 10px;
-        font-size: 12px;
+        font-size: 13px;
         line-height: 1.9;
+    }
+
+    html[data-cv-theme="dark"] .account-errors,
+    html[data-cv-theme="dark"] .account-field .errorlist {
+        color: #ffb7c0;
+        background: #45252e;
     }
 
     .account-success {
         margin-bottom: 20px;
         padding: 15px 18px;
-        color: #236e45;
-        background: #e8f5ee;
-        border: 1px solid #cce5d5;
+        color: var(--list-text, #293f33);
+        background: var(--cv-accent-soft, #e8f5ee);
+        border: 1px solid var(--list-border, #dce9e0);
         border-radius: 12px;
         font-size: 13px;
-        line-height: 1.8;
+        line-height: 1.9;
+    }
+
+    html[data-cv-theme="dark"] .account-success {
+        background: var(--list-surface, #222c3a);
+    }
+
+    .account-theme {
+        margin-bottom: 18px;
     }
 
     .account-theme label {
@@ -135,8 +248,13 @@
         align-items: center;
         gap: 9px;
         min-height: 44px;
-        margin: 0 0 8px 18px;
+        margin-inline-end: 18px;
         cursor: pointer;
+    }
+
+    .account-theme > label {
+        display: block;
+        font-size: 13px;
     }
 
     .account-colors {
@@ -149,8 +267,7 @@
     }
 
     .account-colors legend {
-        margin-bottom: 14px;
-        color: #405b49;
+        margin-bottom: 13px;
         font-size: 13px;
     }
 
@@ -172,7 +289,7 @@
         align-items: center;
         gap: 9px;
         padding: 12px 6px;
-        border: 2px solid #e5ece7;
+        border: 2px solid var(--list-border, #dce9e0);
         border-radius: 12px;
         font-size: 12px;
     }
@@ -185,95 +302,23 @@
     }
 
     .color-choice input:checked + span {
-        border-color: var(--cv-accent);
-        font-weight: 700;
+        border-color: var(--cv-accent, #287e50);
+        font-weight: bold;
     }
 
     .color-choice input:focus-visible + span {
-        outline: 3px solid #e8b633;
+        outline: 3px solid var(--cv-accent, #287e50);
         outline-offset: 3px;
     }
 
-    .account-save {
-        width: 100%;
-        min-height: 49px;
-        padding: 13px 20px;
-        color: #ffffff;
-        background: var(--cv-accent);
-        border: 0;
-        border-radius: 12px;
-        font: inherit;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-    .account-save:focus-visible {
-        outline: 3px solid #e8b633;
-        outline-offset: 4px;
-    }
-
-    .cv-portal.account-dark {
-        color-scheme: dark;
-        color: #e0eae3;
-        background: #142019;
-    }
-
-    .account-dark .app-shell {
-        background: #19271f;
-    }
-
-    body.account-dark .cv-header {
-        background: #20342a;
-        border-color: #344a3c;
-    }
-
-    body.account-dark .cv-heading h1,
-    .account-dark .cv-page-title,
-    .account-dark .account-card h3,
-    .account-dark .account-field label,
-    .account-dark .account-colors legend {
-        color: #e0eae3;
-    }
-
-    .account-dark .cv-muted,
-    .account-dark .cv-heading p,
-    .account-dark .account-help {
-        color: #b1c0b6;
-    }
-
-    .account-dark .account-card,
-    .account-dark .cv-nav {
-        background: #223329;
-        border-color: #3b4f41;
-    }
-
-    .account-dark .account-field input:not([type="checkbox"]):not([type="radio"]),
-    .account-dark .account-field textarea {
-        color: #e0eae3;
-        background: #19271f;
-        border-color: #49614f;
-    }
-
-    .account-dark .cv-nav a {
-        color: #b1c0b6;
-    }
-
-    .account-dark .color-choice span {
-        border-color: #53645a;
-    }
-
-    .account-dark .color-choice input:checked + span {
-        border-color: #e0eae3;
-    }
-
     @media (max-width: 600px) {
-        .account-fields {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
         .account-card {
             padding: 20px 16px;
+        }
+
+        .account-data,
+        .account-fields {
+            grid-template-columns: minmax(0, 1fr);
         }
 
         .account-colors {
@@ -288,8 +333,10 @@
     <div class="cv-home-content">
 
         <div class="cv-page-heading">
-            <h2 class="cv-page-title">حسابي</h2>
-            <p class="cv-muted">بياناتك وتفضيلاتك في مكان واحد.</p>
+            <div>
+                <h2 class="cv-page-title">حسابي</h2>
+                <p class="cv-muted">بياناتك وإعدادات التطبيق.</p>
+            </div>
         </div>
 
         {% if saved %}
@@ -298,37 +345,23 @@
             </div>
         {% endif %}
 
-        <form
-            method="post"
-            action="{% url 'citizen_portal:account' %}"
-            enctype="multipart/form-data"
-            class="account-form"
-            id="account-form"
-        >
-            {% csrf_token %}
+        <div class="account-stack">
 
-            {% if form.errors %}
-                <div class="account-errors" role="alert">
-                    لم تُحفظ التغييرات. راجع الملاحظات أسفل الحقول.
-                    {{ form.non_field_errors }}
-                </div>
-            {% endif %}
-
-            <section class="account-card">
-                <h3>البيانات الشخصية</h3>
-
+            <!-- عرض البيانات -->
+            <section
+                class="account-card"
+                id="account-display"
+                {% if form.errors or request.GET.edit == "1" %}hidden{% endif %}
+            >
                 <div class="account-avatar-row">
                     {% if request.user.avatar %}
                         <img
                             src="{{ request.user.avatar.url }}"
-                            alt="الصورة الشخصية الحالية"
+                            alt="الصورة الشخصية"
                             class="account-avatar"
                         >
                     {% else %}
-                        <span
-                            class="account-avatar-placeholder"
-                            aria-hidden="true"
-                        >
+                        <span class="account-avatar-placeholder" aria-hidden="true">
                             <svg class="cv-icon" viewBox="0 0 24 24">
                                 <circle cx="12" cy="8" r="4"></circle>
                                 <path d="M4 21v-2a8 8 0 0 1 16 0v2"></path>
@@ -337,136 +370,261 @@
                     {% endif %}
 
                     <div>
-                        <strong>{{ request.user.username }}</strong>
-                        <p class="account-help">اسم المستخدم</p>
-                    </div>
-                </div>
-
-                <div class="account-fields">
-                    <div class="account-field">
-                        {{ form.first_name.label_tag }}
-                        {{ form.first_name }}
-                        {{ form.first_name.errors }}
-                    </div>
-
-                    <div class="account-field">
-                        {{ form.last_name.label_tag }}
-                        {{ form.last_name }}
-                        {{ form.last_name.errors }}
-                    </div>
-
-                    <div class="account-field">
-                        {{ form.phone_number.label_tag }}
-                        {{ form.phone_number }}
-                        {{ form.phone_number.errors }}
-                    </div>
-
-                    <div class="account-field">
-                        {{ form.email.label_tag }}
-                        {{ form.email }}
-                        {{ form.email.errors }}
-                    </div>
-
-                    <div class="account-field account-field-wide">
-                        {{ form.avatar.label_tag }}
-                        {{ form.avatar }}
-                        {{ form.avatar.errors }}
+                        <strong class="account-username">
+                            {{ request.user.get_full_name|default:request.user.username }}
+                        </strong>
                         <p class="account-help">
-                            JPG أو PNG أو WEBP، حتى 5 ميجابايت.
+                            <bdi>{{ request.user.username }}</bdi>
                         </p>
                     </div>
                 </div>
-            </section>
 
-            <section class="account-card">
-                <h3>العنوان</h3>
+                <h3>بيانات الحساب</h3>
 
-                <div class="account-fields">
-                    <div class="account-field account-field-wide">
-                        {{ form.neighborhood_name.label_tag }}
-                        {{ form.neighborhood_name }}
-                        {{ form.neighborhood_name.errors }}
+                <dl class="account-data">
+                    <div>
+                        <dt>الاسم الأول</dt>
+                        <dd>{{ request.user.first_name|default:"—" }}</dd>
                     </div>
 
-                    <div class="account-field account-field-wide">
-                        {{ form.default_address.label_tag }}
-                        {{ form.default_address }}
-                        {{ form.default_address.errors }}
+                    <div>
+                        <dt>اسم العائلة</dt>
+                        <dd>{{ request.user.last_name|default:"—" }}</dd>
                     </div>
+
+                    <div>
+                        <dt>رقم الهاتف</dt>
+                        <dd><bdi>{{ request.user.phone_number|default:"—" }}</bdi></dd>
+                    </div>
+
+                    <div>
+                        <dt>البريد الإلكتروني</dt>
+                        <dd><bdi>{{ request.user.email|default:"—" }}</bdi></dd>
+                    </div>
+
+                    <div class="account-wide">
+                        <dt>الحي</dt>
+                        <dd>{{ request.user.neighborhood_name|default:"—" }}</dd>
+                    </div>
+
+                    <div class="account-wide">
+                        <dt>العنوان</dt>
+                        <dd>{{ request.user.default_address|default:"—" }}</dd>
+                    </div>
+                </dl>
+
+                {% if request.user.pending_email %}
+                    <p class="account-help">
+                        البريد الجديد بانتظار التأكيد:
+                        <bdi>{{ request.user.pending_email }}</bdi>
+                        —
+                        <a
+                            href="{% url 'citizen_portal:verify_contact' %}"
+                            class="cv-link"
+                        >إكمال التحقق</a>
+                    </p>
+                {% endif %}
+
+                <div class="account-actions">
+                    <a
+                        href="{% url 'citizen_portal:account' %}?edit=1"
+                        class="account-button account-button-secondary"
+                        id="edit-account"
+                        aria-controls="account-editor"
+                    >
+                        <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15Z"></path>
+                        </svg>
+                        تعديل البيانات
+                    </a>
                 </div>
             </section>
 
-            <section class="account-card">
-                <h3>المظهر والألوان</h3>
+            <form
+                method="post"
+                action="{% url 'citizen_portal:account' %}"
+                enctype="multipart/form-data"
+                class="account-form"
+                id="account-form"
+            >
+                {% csrf_token %}
 
-                <div class="account-field account-theme">
-                    {{ form.preferred_theme.label_tag }}
-                    {{ form.preferred_theme }}
-                    {{ form.preferred_theme.errors }}
-                </div>
+                <!-- حقول التعديل -->
+                <section
+                    class="account-card"
+                    id="account-editor"
+                    {% if not form.errors and request.GET.edit != "1" %}hidden{% endif %}
+                >
+                    {% if form.errors %}
+                        <div class="account-errors" role="alert">
+                            لم تُحفظ التغييرات. راجع الملاحظات أسفل الحقول.
+                            {{ form.non_field_errors }}
+                            {{ form.preferred_theme.errors }}
+                        </div>
+                    {% endif %}
 
-                <fieldset class="account-colors">
-                    <legend>لون الواجهة</legend>
+                    <fieldset
+                        class="account-fieldset"
+                        id="profile-fields"
+                        {% if not form.errors and request.GET.edit != "1" %}disabled{% endif %}
+                    >
+                        <legend id="editor-title" tabindex="-1">
+                            تعديل البيانات
+                        </legend>
 
-                    <label class="color-choice">
-                        <input
-                            type="radio"
-                            name="interface_color"
-                            value="green"
-                            checked
+                        <div class="account-fields">
+                            <div class="account-field">
+                                {{ form.first_name.label_tag }}
+                                {{ form.first_name }}
+                                {{ form.first_name.errors }}
+                            </div>
+
+                            <div class="account-field">
+                                {{ form.last_name.label_tag }}
+                                {{ form.last_name }}
+                                {{ form.last_name.errors }}
+                            </div>
+
+                            <div class="account-field">
+                                {{ form.phone_number.label_tag }}
+                                {{ form.phone_number }}
+                                {{ form.phone_number.errors }}
+                            </div>
+
+                            <div class="account-field">
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
+                                {{ form.email.errors }}
+                                <p class="account-help">
+                                    عند تغيير البريد، نرسل رمزًا لتأكيد البريد الجديد.
+                                </p>
+                            </div>
+
+                            <div class="account-field account-wide">
+                                {{ form.avatar.label_tag }}
+                                {{ form.avatar }}
+                                {{ form.avatar.errors }}
+                                <p class="account-help">
+                                    JPG أو PNG أو WEBP، حتى 5 ميجابايت.
+                                </p>
+                            </div>
+
+                            <div class="account-field account-wide">
+                                {{ form.neighborhood_name.label_tag }}
+                                {{ form.neighborhood_name }}
+                                {{ form.neighborhood_name.errors }}
+                            </div>
+
+                            <div class="account-field account-wide">
+                                {{ form.default_address.label_tag }}
+                                {{ form.default_address }}
+                                {{ form.default_address.errors }}
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="account-actions">
+                        <button
+                            type="submit"
+                            class="account-button"
+                            id="save-account"
                         >
-                        <span>
-                            <i style="--swatch: #287e50" aria-hidden="true"></i>
-                            أخضر
-                        </span>
-                    </label>
+                            حفظ التغييرات
+                        </button>
 
-                    <label class="color-choice">
-                        <input
-                            type="radio"
-                            name="interface_color"
-                            value="blue"
+                        <a
+                            href="{% url 'citizen_portal:account' %}"
+                            class="account-button account-button-secondary"
+                            id="cancel-edit"
                         >
-                        <span>
-                            <i style="--swatch: #2463b5" aria-hidden="true"></i>
-                            أزرق
-                        </span>
-                    </label>
+                            إلغاء
+                        </a>
+                    </div>
+                </section>
 
-                    <label class="color-choice">
-                        <input
-                            type="radio"
-                            name="interface_color"
-                            value="red"
-                        >
-                        <span>
-                            <i style="--swatch: #b73742" aria-hidden="true"></i>
-                            أحمر
-                        </span>
-                    </label>
+                <!-- المظهر متاح دون الدخول إلى تعديل البيانات -->
+                <section class="account-card">
+                    <h3>المظهر والألوان</h3>
 
-                    <label class="color-choice">
-                        <input
-                            type="radio"
-                            name="interface_color"
-                            value="purple"
-                        >
-                        <span>
-                            <i style="--swatch: #7750ad" aria-hidden="true"></i>
-                            بنفسجي
-                        </span>
-                    </label>
-                </fieldset>
+                    <div class="account-theme">
+                        {{ form.preferred_theme.label_tag }}
+                        {{ form.preferred_theme }}
+                    </div>
 
-                <p class="account-help" id="color-status" role="status">
-                    يُحفظ اللون تلقائيًا في هذا المتصفح.
-                </p>
-            </section>
+                    <fieldset class="account-colors">
+                        <legend>لون الواجهة</legend>
 
-            <button type="submit" class="account-save">
-                حفظ التغييرات
-            </button>
-        </form>
+                        <label class="color-choice">
+                            <input
+                                type="radio"
+                                name="interface_color"
+                                value="green"
+                                checked
+                            >
+                            <span>
+                                <i style="--swatch:#287e50" aria-hidden="true"></i>
+                                أخضر
+                            </span>
+                        </label>
+
+                        <label class="color-choice">
+                            <input
+                                type="radio"
+                                name="interface_color"
+                                value="blue"
+                            >
+                            <span>
+                                <i style="--swatch:#2463b5" aria-hidden="true"></i>
+                                أزرق
+                            </span>
+                        </label>
+
+                        <label class="color-choice">
+                            <input
+                                type="radio"
+                                name="interface_color"
+                                value="red"
+                            >
+                            <span>
+                                <i style="--swatch:#b73742" aria-hidden="true"></i>
+                                أحمر
+                            </span>
+                        </label>
+
+                        <label class="color-choice">
+                            <input
+                                type="radio"
+                                name="interface_color"
+                                value="purple"
+                            >
+                            <span>
+                                <i style="--swatch:#7750ad" aria-hidden="true"></i>
+                                بنفسجي
+                            </span>
+                        </label>
+                    </fieldset>
+
+                    <p class="account-help" id="color-status" role="status">
+                        يُحفظ اللون تلقائيًا في هذا المتصفح.
+                    </p>
+                </section>
+            </form>
+
+            <!-- نموذج مستقل لتسجيل الخروج -->
+            <form
+                method="post"
+                action="{% url 'citizen_portal:logout' %}"
+            >
+                {% csrf_token %}
+                <button type="submit" class="account-button account-logout">
+                    <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 4H4v16h5M10 12h11m-4-4 4 4-4 4"></path>
+                    </svg>
+                    تسجيل الخروج
+                </button>
+            </form>
+
+        </div>
     </div>
 </div>
 
@@ -502,54 +660,116 @@
 
 {% block extra_js %}
 <script>
-    (() => {
-        const themeOptions = document.querySelectorAll(
-            'input[name="preferred_theme"]'
-        );
+(function () {
+    const form = document.getElementById("account-form");
+    const display = document.getElementById("account-display");
+    const editor = document.getElementById("account-editor");
+    const fields = document.getElementById("profile-fields");
+    const editButton = document.getElementById("edit-account");
+    const cancelButton = document.getElementById("cancel-edit");
+    const editorTitle = document.getElementById("editor-title");
 
-        const colorOptions = document.querySelectorAll(
-            'input[name="interface_color"]'
-        );
+    const initialValues = new Map();
 
-        function updateTheme() {
-            const selected = document.querySelector(
-                'input[name="preferred_theme"]:checked'
-            );
+    fields.querySelectorAll("input, textarea, select").forEach(field => {
+        initialValues.set(field, {
+            value: field.value,
+            checked: field.checked
+        });
+    });
 
-            document.body.classList.toggle(
-                "account-dark",
-                selected?.value === "dark"
-            );
+    editButton.addEventListener("click", event => {
+        event.preventDefault();
+
+        display.hidden = true;
+        editor.hidden = false;
+        fields.disabled = false;
+
+        editorTitle.focus({ preventScroll: true });
+        editor.scrollIntoView({
+            block: "start",
+            behavior: "smooth"
+        });
+    });
+
+    cancelButton.addEventListener("click", event => {
+        // عند وجود أخطاء من الخادم، نعيد تحميل البيانات المحفوظة.
+        if (editor.querySelector(".account-errors")) return;
+
+        event.preventDefault();
+
+        initialValues.forEach((initial, field) => {
+            if (field.type === "file") {
+                field.value = "";
+            } else {
+                field.value = initial.value;
+            }
+
+            if (field.type === "checkbox" || field.type === "radio") {
+                field.checked = initial.checked;
+            }
+        });
+
+        fields.disabled = true;
+        editor.hidden = true;
+        display.hidden = false;
+
+        // إزالة edit من الرابط إذا فُتحت الصفحة به.
+        const url = new URL(window.location.href);
+        url.searchParams.delete("edit");
+
+        try {
+            history.replaceState(null, "", url);
+        } catch (error) {
+            // لا يؤثر تعذر تحديث الرابط على إلغاء التعديل.
         }
 
-        const currentColor = document.documentElement.dataset.cvColor;
-
-        colorOptions.forEach((option) => {
-            option.checked = option.value === currentColor;
-
-            option.addEventListener("change", () => {
-                window.cityVoiceApplyColor(option.value);
-
-                const status = document.getElementById("color-status");
-
-                try {
-                    localStorage.setItem(
-                        "cityvoice-color",
-                        option.value
-                    );
-                    status.textContent = "تم حفظ لون الواجهة.";
-                } catch (error) {
-                    status.textContent =
-                        "تم تطبيق اللون، لكن تعذر حفظه في المتصفح.";
-                }
-            });
+        editButton.focus({ preventScroll: true });
+        display.scrollIntoView({
+            block: "start",
+            behavior: "smooth"
         });
+    });
 
-        themeOptions.forEach((option) => {
-            option.addEventListener("change", updateTheme);
+    form.addEventListener("submit", event => {
+        if (editor.hidden || fields.disabled) {
+            event.preventDefault();
+        }
+    });
+
+    // يبقى حفظ المظهر التلقائي مسؤولية preferences.html الموجود في base.
+    // نحافظ على اسم preferred_theme حتى يعمل معه كما كان.
+    const colorOptions = document.querySelectorAll(
+        'input[name="interface_color"]'
+    );
+    const colorStatus = document.getElementById("color-status");
+
+    const currentColor =
+        document.documentElement.dataset.cvColor || "green";
+
+    colorOptions.forEach(option => {
+        option.checked = option.value === currentColor;
+
+        option.addEventListener("change", () => {
+            if (!option.checked) return;
+
+            if (typeof window.cityVoiceApplyColor !== "function") {
+                colorStatus.textContent =
+                    "تعذر تطبيق اللون. حدّث الصفحة وحاول مجددًا.";
+                return;
+            }
+
+            window.cityVoiceApplyColor(option.value);
+
+            try {
+                localStorage.setItem("cityvoice-color", option.value);
+                colorStatus.textContent = "تم حفظ لون الواجهة.";
+            } catch (error) {
+                colorStatus.textContent =
+                    "تم تطبيق اللون، لكن تعذر حفظه في المتصفح.";
+            }
         });
-
-        updateTheme();
-    })();
+    });
+})();
 </script>
 {% endblock %}

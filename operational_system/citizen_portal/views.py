@@ -4,15 +4,13 @@ from django.contrib.auth import (
     logout as auth_logout,
 )
 from django.contrib.auth.decorators import login_required
+from django.core import signing
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import (
-    get_object_or_404,
-    redirect,
-    render,
-)
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.models import EmailVerification
 from complaints.models import Complaint
@@ -24,6 +22,62 @@ from .account_forms import (
     CitizenRegistrationForm,
 )
 from .forms import CitizenComplaintForm
+
+
+LAST_USER_COOKIE = "cityvoice_last_username"
+LAST_USER_SALT = "citizen_portal.last_username"
+LAST_USER_MAX_AGE = 60 * 60 * 24 * 365
+
+
+def remember_username(request, response, username):
+    # المعلومة المحفوظة اسم المستخدم فقط.
+    # هذا الملف لا يمنح صلاحية الدخول إلى الحساب.
+    value = signing.dumps(
+        username,
+        salt=LAST_USER_SALT,
+    )
+
+    response.set_cookie(
+        LAST_USER_COOKIE,
+        value,
+        max_age=LAST_USER_MAX_AGE,
+        httponly=True,
+        secure=request.is_secure(),
+        samesite="Lax",
+        path="/",
+    )
+
+    return response
+
+
+def get_remembered_username(request):
+    value = request.COOKIES.get(LAST_USER_COOKIE)
+
+    if not value:
+        return ""
+
+    try:
+        username = signing.loads(
+            value,
+            salt=LAST_USER_SALT,
+            max_age=LAST_USER_MAX_AGE,
+        )
+    except (signing.BadSignature, ValueError, TypeError):
+        return ""
+
+    if not isinstance(username, str):
+        return ""
+
+    User = get_user_model()
+
+    # لا نعرض حسابًا محذوفًا أو معطّلًا.
+    user = User.objects.filter(
+        username=username,
+        is_active=True,
+        role=User.Role.CITIZEN,
+    ).first()
+
+    return user.get_username() if user else ""
 
 
 def get_safe_next_url(request):
@@ -42,23 +96,120 @@ def get_safe_next_url(request):
     return None
 
 
-def citizen_auth(request):
-    if request.user.is_authenticated:
-        return redirect("citizen_portal:home")
+def show_account_choice(request, username, next_url):
+    response = render(
+        request,
+        "citizen_portal/account_choice.html",
+        {
+            "remembered_username": username,
+            "next_url": next_url or "",
+        },
+    )
 
-    action = request.POST.get("action", "login")
+    return remember_username(
+        request,
+        response,
+        username,
+    )
+
+
+def complete_citizen_login(request, user, next_url):
+    auth_login(request, user)
+
+    if not user.has_verified_contact:
+        response = redirect(
+            "citizen_portal:verify_contact"
+        )
+    else:
+        response = redirect(
+            next_url or "citizen_portal:home"
+        )
+
+    return remember_username(
+        request,
+        response,
+        user.get_username(),
+    )
+
+
+@never_cache
+@require_http_methods(["GET", "POST"])
+def citizen_auth(request):
     next_url = get_safe_next_url(request)
+
+    if request.user.is_authenticated:
+        remembered_username = request.user.get_username()
+    else:
+        remembered_username = get_remembered_username(request)
+
+    choice = (
+        request.POST.get("account_choice")
+        if request.method == "POST"
+        else None
+    )
+
+    explicit_mode = (
+        request.GET.get("mode")
+        if request.method == "GET"
+        else None
+    )
+
+    if choice in {"login", "register"}:
+        # اختيار أحد الزرين يفتح النموذج فقط.
+        # حتى الحساب السابق يحتاج إدخال كلمة مروره.
+        if request.user.is_authenticated:
+            auth_logout(request)
+
+        action = choice
+        process_credentials = False
+
+    elif request.user.is_authenticated:
+        return show_account_choice(
+            request,
+            remembered_username,
+            next_url,
+        )
+
+    elif request.method == "GET":
+        if explicit_mode in {"login", "register"}:
+            action = explicit_mode
+
+        elif remembered_username:
+            return show_account_choice(
+                request,
+                remembered_username,
+                next_url,
+            )
+
+        else:
+            action = "login"
+
+        process_credentials = False
+
+    else:
+        action = request.POST.get("action", "login")
+        process_credentials = True
+
+    if action not in {"login", "register"}:
+        action = "login"
 
     login_form = CitizenLoginForm(
         request=request,
         prefix="login",
+        initial={
+            "username": (
+                remembered_username
+                if action == "login"
+                else ""
+            ),
+        },
     )
 
     registration_form = CitizenRegistrationForm(
         prefix="register",
     )
 
-    if request.method == "POST":
+    if process_credentials:
         if action == "register":
             registration_form = CitizenRegistrationForm(
                 request.POST,
@@ -67,20 +218,14 @@ def citizen_auth(request):
 
             if registration_form.is_valid():
                 user = registration_form.save()
-                auth_login(request, user)
 
-                if not user.has_verified_contact:
-                    return redirect(
-                        "citizen_portal:verify_contact"
-                    )
-
-                return redirect(
-                    next_url or "citizen_portal:home"
+                return complete_citizen_login(
+                    request,
+                    user,
+                    next_url,
                 )
 
         else:
-            action = "login"
-
             login_form = CitizenLoginForm(
                 request=request,
                 data=request.POST,
@@ -97,18 +242,13 @@ def citizen_auth(request):
                     )
 
                 else:
-                    auth_login(request, user)
-
-                    if not user.has_verified_contact:
-                        return redirect(
-                            "citizen_portal:verify_contact"
-                        )
-
-                    return redirect(
-                        next_url or "citizen_portal:home"
+                    return complete_citizen_login(
+                        request,
+                        user,
+                        next_url,
                     )
 
-    return render(
+    response = render(
         request,
         "citizen_portal/auth.html",
         {
@@ -116,15 +256,37 @@ def citizen_auth(request):
             "registration_form": registration_form,
             "auth_mode": action,
             "next_url": next_url or "",
+            "next": next_url or "",
         },
     )
 
+    if remembered_username:
+        return remember_username(
+            request,
+            response,
+            remembered_username,
+        )
 
+    return response
+
+
+@never_cache
 @login_required
 @require_POST
 def citizen_logout(request):
+    # نحصل على الاسم قبل إنهاء الجلسة.
+    username = request.user.get_username()
+
     auth_logout(request)
-    return redirect("citizen_portal:auth")
+
+    response = redirect("citizen_portal:auth")
+
+    # يبقى الاسم فقط لعرض شاشة اختيار الحساب.
+    return remember_username(
+        request,
+        response,
+        username,
+    )
 
 
 def citizen_complaints(user):
@@ -141,11 +303,6 @@ def citizen_complaints(user):
 
 @login_required
 def home(request):
-    if not request.user.has_verified_contact:
-        return redirect(
-            "citizen_portal:verify_contact"
-        )
-
     complaints = citizen_complaints(request.user)
 
     active_statuses = [
@@ -155,19 +312,17 @@ def home(request):
         Complaint.Status.IN_PROGRESS,
     ]
 
-    context = {
-        "page": "home",
-        "recent_complaints": complaints[:3],
-        "active_count": complaints.filter(
-            status__in=active_statuses
-        ).count(),
-        "latest_complaint": complaints.first(),
-    }
-
     return render(
         request,
         "citizen_portal/home.html",
-        context,
+        {
+            "page": "home",
+            "recent_complaints": complaints[:3],
+            "active_count": complaints.filter(
+                status__in=active_statuses
+            ).count(),
+            "latest_complaint": complaints.first(),
+        },
     )
 
 
@@ -178,9 +333,7 @@ def complaint_list(request):
         "citizen_portal/home.html",
         {
             "page": "complaints",
-            "complaints": citizen_complaints(
-                request.user
-            ),
+            "complaints": citizen_complaints(request.user),
         },
     )
 
@@ -213,7 +366,8 @@ def account(request):
                 .get(pk=request.user.pk)
             )
 
-            original_email = user.email
+            original_email = user.email or ""
+            original_verified_contact = user.has_verified_contact
 
             form = CitizenAccountForm(
                 request.POST,
@@ -223,30 +377,27 @@ def account(request):
 
             if form.is_valid():
                 candidate_email = (
-                    form.cleaned_data.get("email", "")
-                )
+                    form.cleaned_data.get("email") or ""
+                ).strip().lower()
 
                 profile = form.save(commit=False)
 
                 # يبقى البريد القديم حتى تأكيد الجديد.
                 profile.email = original_email
 
-                needs_verification = bool(
-                    candidate_email
-                ) and (
-                    candidate_email
-                    != original_email.strip().lower()
-                    or not user.has_verified_contact
+                needs_verification = bool(candidate_email) and (
+                    candidate_email != original_email.strip().lower()
+                    or not original_verified_contact
                 )
 
-                if needs_verification:
-                    profile.pending_email = candidate_email
-                else:
-                    profile.pending_email = ""
+                profile.pending_email = (
+                    candidate_email
+                    if needs_verification
+                    else ""
+                )
 
                 profile.save()
 
-                # إلغاء الرمز إذا تغيّر البريد المطلوب تأكيده.
                 EmailVerification.objects.filter(
                     user=user
                 ).exclude(
@@ -297,17 +448,9 @@ def account_saved(request):
 
 @login_required
 def submit_complaint(request):
-    # التحقق في الخادم حتى عند إرسال POST مباشرة.
-    if not request.user.has_verified_contact:
-        return redirect(
-            "citizen_portal:verify_contact"
-        )
-
     if request.method == "POST":
         uploaded_files = request.FILES.copy()
-        camera_photo = uploaded_files.get(
-            "camera_photo"
-        )
+        camera_photo = uploaded_files.get("camera_photo")
 
         if camera_photo:
             uploaded_files["photo"] = camera_photo
@@ -324,9 +467,7 @@ def submit_complaint(request):
 
             return redirect(
                 "citizen_portal:complaint_success",
-                reference_number=(
-                    complaint.reference_number
-                ),
+                reference_number=complaint.reference_number,
             )
 
     else:
@@ -357,6 +498,9 @@ def complaint_success(request, reference_number):
 @login_required
 def load_categories(request):
     service_id = request.GET.get("service")
+
+    if not service_id or not service_id.isdecimal():
+        return JsonResponse([], safe=False)
 
     categories = ServiceCategory.objects.filter(
         service_id=service_id
