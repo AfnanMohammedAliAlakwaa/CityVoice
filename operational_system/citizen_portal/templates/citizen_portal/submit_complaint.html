@@ -1409,20 +1409,14 @@
         if (document.hidden) stopCamera();
     });
 
-    const initialStep =
-        {% if form.service.errors or form.category.errors %}
-            1
-        {% elif form.description.errors %}
-            2
-        {% elif form.photo.errors %}
-            3
-        {% elif form.latitude.errors or form.longitude.errors or form.address.errors or form.location.errors %}
-            4
-        {% else %}
-            1
-        {% endif %};
+       const initialStep = Number(
+        "{% if form.service.errors or form.category.errors %}1{% elif form.description.errors %}2{% elif form.photo.errors %}3{% elif form.latitude.errors or form.longitude.errors or form.address.errors or form.location.errors %}4{% else %}1{% endif %}"
+    );
 
     showStep(initialStep, false);
+})();
+</script>
+{% endblock %}
 })();
 </script>
 {% endblock %}
