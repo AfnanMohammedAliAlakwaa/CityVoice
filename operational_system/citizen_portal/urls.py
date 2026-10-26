@@ -1,6 +1,10 @@
 from django.urls import path
 
-from . import preference_views, views
+from . import (
+    preference_views,
+    verification_views,
+    views,
+)
 
 
 app_name = "citizen_portal"
@@ -16,6 +20,16 @@ urlpatterns = [
         "logout/",
         views.citizen_logout,
         name="logout",
+    ),
+    path(
+        "verify-contact/",
+        verification_views.verify_contact,
+        name="verify_contact",
+    ),
+    path(
+        "verify-contact/sent/",
+        verification_views.verify_contact,
+        name="verify_contact_sent",
     ),
     path(
         "",

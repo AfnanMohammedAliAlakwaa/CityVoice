@@ -7,10 +7,23 @@
 {% block extra_css %}
 <style>
     .cv-portal {
+        --list-surface: #ffffff;
+        --list-background: #f6faf7;
+        --list-text: #293f33;
+        --list-muted: #687d70;
+        --list-border: var(--cv-border, #dce9e0);
         margin: 0;
-        color: #293f33;
-        background: #eef3f0;
+        color: var(--list-text);
+        background: var(--cv-accent-soft, #e8f5ee);
         font-family: Tahoma, Arial, sans-serif;
+    }
+
+    html[data-cv-theme="dark"] .cv-portal {
+        --list-surface: #222c3a;
+        --list-background: #171f2b;
+        --list-text: #edf3ef;
+        --list-muted: #b1bfb7;
+        --list-border: #3b4758;
     }
 
     .cv-portal *,
@@ -25,7 +38,7 @@
         min-height: 100vh;
         min-height: 100dvh;
         margin: 0 auto;
-        background: #f7f9f8;
+        background: var(--list-background);
     }
 
     .cv-portal .app-content {
@@ -36,15 +49,15 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        padding: 28px 36px;
+        gap: 18px;
+        padding: 24px 32px;
+        border-bottom: 1px solid var(--list-border);
         background: var(--cv-accent-soft, #e8f5ee);
-        border-bottom: 1px solid #deece3;
     }
 
     .cv-heading p {
         margin: 0 0 5px;
-        color: #788c80;
+        color: var(--list-muted);
         font-size: 12px;
         line-height: 1.8;
     }
@@ -52,45 +65,44 @@
     .cv-heading h1 {
         margin: 0;
         color: var(--cv-accent, #287e50);
-        font-size: 27px;
-        line-height: 1.5;
+        font-size: 25px;
+        line-height: 1.6;
     }
 
     .cv-heading .cv-tagline {
-        margin-top: 9px;
+        margin-top: 6px;
     }
 
     .cv-logo {
         display: block;
-        width: 115px;
+        width: 112px;
         height: auto;
     }
 
     .cv-main {
-        padding: 28px 36px 125px;
+        padding: 26px 30px 120px;
     }
 
     .cv-home-content {
-        width: 100%;
-        max-width: 700px;
+        max-width: 720px;
         margin: 0 auto;
     }
 
     .cv-welcome,
     .cv-page-heading {
-        margin-bottom: 23px;
+        margin-bottom: 22px;
     }
 
     .cv-welcome h2,
     .cv-page-title {
         margin: 0 0 7px;
-        font-size: 22px;
+        font-size: 23px;
         line-height: 1.6;
     }
 
     .cv-muted {
         margin: 0;
-        color: #7b897f;
+        color: var(--list-muted);
         font-size: 13px;
         line-height: 1.9;
     }
@@ -109,28 +121,28 @@
     .cv-new {
         display: flex;
         align-items: center;
-        gap: 15px;
-        min-height: 110px;
+        gap: 14px;
+        min-height: 100px;
         margin-bottom: 25px;
-        padding: 23px;
-        color: #ffffff;
+        padding: 22px;
+        color: #fff;
         background: var(--cv-accent, #287e50);
-        border-radius: 21px;
+        border-radius: 18px;
         text-decoration: none;
     }
 
-    .cv-new:hover {
-        color: #ffffff;
+    .cv-new:hover,
+    .cv-create:hover {
+        color: #fff;
         background: var(--cv-accent-hover, #206640);
     }
 
     .cv-plus {
         display: grid;
         place-items: center;
-        flex: 0 0 48px;
-        width: 48px;
-        height: 48px;
-        background: rgba(255, 255, 255, 0.17);
+        flex: 0 0 44px;
+        height: 44px;
+        background: rgba(255,255,255,.16);
         border-radius: 50%;
     }
 
@@ -141,39 +153,41 @@
 
     .cv-new-copy strong {
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
         font-size: 18px;
-        line-height: 1.6;
+        line-height: 1.7;
     }
 
     .cv-new-copy small {
         display: block;
-        color: #ffffff;
         font-size: 12px;
         line-height: 1.8;
     }
 
-    .cv-section-heading {
+    .cv-section-heading,
+    .cv-page-heading {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 14px;
+        gap: 14px;
+    }
+
+    .cv-section-heading {
+        margin-bottom: 15px;
     }
 
     .cv-section-heading h2,
     .cv-summary h2,
     .cv-panel h2 {
         margin: 0;
-        font-size: 17px;
+        font-size: 18px;
         line-height: 1.7;
     }
 
     .cv-link,
     .cv-back {
         color: var(--cv-accent, #287e50);
-        font-size: 12px;
+        font-size: 13px;
         line-height: 1.8;
         text-decoration: none;
     }
@@ -186,8 +200,98 @@
     .cv-back {
         display: inline-flex;
         align-items: center;
+        gap: 6px;
         min-height: 44px;
         margin-bottom: 14px;
+    }
+
+    .cv-back .cv-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .cv-create {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 44px;
+        padding: 10px 15px;
+        border-radius: 12px;
+        background: var(--cv-accent, #287e50);
+        color: #fff;
+        font-size: 13px;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .cv-create .cv-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .cv-tools {
+        padding: 16px;
+        margin-bottom: 20px;
+        border: 1px solid var(--list-border);
+        border-radius: 16px;
+        background: var(--list-surface);
+    }
+
+    .cv-search-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--list-muted);
+        font-size: 12px;
+    }
+
+    .cv-search {
+        width: 100%;
+        min-height: 46px;
+        padding: 11px 13px;
+        border: 1px solid var(--list-border);
+        border-radius: 11px;
+        background: var(--list-background);
+        color: var(--list-text);
+        font: inherit;
+        font-size: 13px;
+    }
+
+    .cv-search::placeholder {
+        color: var(--list-muted);
+    }
+
+    .cv-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 13px;
+    }
+
+    .cv-filter {
+        flex: 1 1 auto;
+        min-height: 42px;
+        padding: 9px 12px;
+        border: 1px solid var(--list-border);
+        border-radius: 22px;
+        background: var(--list-surface);
+        color: var(--list-muted);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .cv-filter[aria-pressed="true"] {
+        border-color: var(--cv-accent, #287e50);
+        background: var(--cv-accent, #287e50);
+        color: #fff;
+    }
+
+    .cv-results {
+        margin: 0 0 13px;
+        color: var(--list-muted);
+        font-size: 12px;
+        line-height: 1.8;
     }
 
     .cv-list {
@@ -197,10 +301,10 @@
 
     .cv-fold {
         overflow: hidden;
-        background: #ffffff;
-        border: 1px solid #e5ece7;
-        border-radius: 18px;
-        scroll-margin-top: 20px;
+        background: var(--list-surface);
+        border: 1px solid var(--list-border);
+        border-radius: 17px;
+        scroll-margin-top: 25px;
     }
 
     .cv-fold > summary {
@@ -221,26 +325,26 @@
     }
 
     .cv-fold > summary:hover {
-        background: #fafcfb;
+        background: var(--list-background);
     }
 
-    .cv-fold > summary:focus-visible,
-    .cv-collapse:focus-visible,
-    .cv-portal a:focus-visible {
-        outline: 3px solid #e8b633;
-        outline-offset: -3px;
+    .cv-portal a:focus-visible,
+    .cv-portal button:focus-visible,
+    .cv-portal input:focus-visible,
+    .cv-fold > summary:focus-visible {
+        outline: 3px solid var(--cv-accent, #287e50);
+        outline-offset: 3px;
     }
 
     .cv-document {
         display: grid;
         place-items: center;
         align-self: flex-start;
-        flex: 0 0 40px;
-        width: 40px;
-        height: 40px;
+        flex: 0 0 42px;
+        height: 42px;
         color: var(--cv-accent, #287e50);
         background: var(--cv-accent-soft, #e8f5ee);
-        border-radius: 50%;
+        border-radius: 13px;
     }
 
     .cv-card-copy {
@@ -248,10 +352,11 @@
         min-width: 0;
     }
 
-    .cv-reference {
+    .cv-reference,
+    .cv-date {
         display: block;
-        margin-bottom: 5px;
-        color: #829087;
+        margin-bottom: 6px;
+        color: var(--list-muted);
         font-size: 11px;
         line-height: 1.8;
         overflow-wrap: anywhere;
@@ -259,16 +364,8 @@
 
     .cv-service {
         display: block;
-        margin-bottom: 5px;
+        margin-bottom: 6px;
         font-size: 15px;
-        line-height: 1.7;
-    }
-
-    .cv-date {
-        display: block;
-        margin-bottom: 8px;
-        color: #829087;
-        font-size: 11px;
         line-height: 1.8;
     }
 
@@ -285,60 +382,54 @@
     .cv-fold-action .cv-icon {
         width: 18px;
         height: 18px;
+        transition: transform .15s ease;
     }
 
     .cv-fold[open] > summary .cv-fold-action .cv-icon {
         transform: rotate(180deg);
     }
 
-    .cv-open-label {
-        display: none;
-    }
-
-    .cv-fold[open] > summary .cv-open-label {
-        display: inline;
-    }
-
-    .cv-fold[open] > summary .cv-closed-label {
+    .cv-open-label,
+    .cv-closed-label {
         display: none;
     }
 
     .cv-status {
         display: inline-block;
         padding: 4px 10px;
-        color: #486752;
-        background: #edf3ef;
         border-radius: 20px;
         font-size: 11px;
-        line-height: 1.7;
+        line-height: 1.8;
+        color: #425b4a;
+        background: #edf3ef;
     }
 
     .cv-status--submitted,
     .cv-status--under_review {
-        color: #8b6b20;
-        background: #fff4d6;
+        color: #795814;
+        background: #fff2cc;
     }
 
     .cv-status--assigned,
     .cv-status--in_progress {
-        color: #356a94;
-        background: #eaf2fc;
+        color: #285b88;
+        background: #e8f1fd;
     }
 
     .cv-status--resolved,
     .cv-status--closed {
-        color: #247849;
-        background: #e7f5ec;
+        color: #216e43;
+        background: #e2f4e9;
     }
 
     .cv-status--rejected {
-        color: #a34d4d;
-        background: #fbecec;
+        color: #a12d3b;
+        background: #fde9ed;
     }
 
     .cv-fold-body {
         padding: 22px;
-        border-top: 1px solid #e8eeea;
+        border-top: 1px solid var(--list-border);
     }
 
     .cv-details {
@@ -354,7 +445,7 @@
 
     .cv-details dt {
         margin-bottom: 7px;
-        color: #7b8a80;
+        color: var(--list-muted);
         font-size: 12px;
         line-height: 1.8;
     }
@@ -380,25 +471,23 @@
         max-height: 420px;
         object-fit: contain;
         margin-top: 10px;
-        background: #f5f7f5;
-        border-radius: 13px;
+        background: var(--list-background);
+        border-radius: 12px;
     }
 
     .cv-collapse {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
         width: 100%;
-        min-height: 45px;
+        min-height: 44px;
         margin-top: 22px;
         padding: 10px 15px;
+        border: 1px solid var(--list-border);
+        border-radius: 11px;
         color: var(--cv-accent, #287e50);
         background: var(--cv-accent-soft, #e8f5ee);
-        border: 0;
-        border-radius: 11px;
         font: inherit;
-        font-size: 13px;
         cursor: pointer;
     }
 
@@ -410,9 +499,9 @@
     .cv-empty,
     .cv-summary,
     .cv-panel {
-        padding: 23px;
-        background: #ffffff;
-        border: 1px solid #e5ece7;
+        padding: 25px;
+        background: var(--list-surface);
+        border: 1px solid var(--list-border);
         border-radius: 18px;
     }
 
@@ -420,17 +509,28 @@
         text-align: center;
     }
 
+    .cv-empty-icon {
+        display: grid;
+        place-items: center;
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        background: var(--cv-accent-soft, #e8f5ee);
+        color: var(--cv-accent, #287e50);
+    }
+
     .cv-empty strong {
         display: block;
         margin-bottom: 8px;
-        font-size: 14px;
+        font-size: 16px;
         line-height: 1.8;
     }
 
     .cv-empty p {
-        margin: 0;
-        color: #849087;
-        font-size: 12px;
+        margin: 0 0 16px;
+        color: var(--list-muted);
+        font-size: 13px;
         line-height: 1.9;
     }
 
@@ -453,14 +553,14 @@
     }
 
     .cv-summary-item + .cv-summary-item {
-        padding-right: 16px;
-        border-right: 1px solid #edf1ee;
+        padding-inline-start: 16px;
+        border-inline-start: 1px solid var(--list-border);
     }
 
     .cv-summary-item span {
         display: block;
         margin-bottom: 9px;
-        color: #849087;
+        color: var(--list-muted);
         font-size: 12px;
         line-height: 1.8;
     }
@@ -492,8 +592,8 @@
         margin: 0 auto;
         padding: 10px 20px;
         padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-        background: #ffffff;
-        border-top: 1px solid #e7eee9;
+        background: var(--list-surface);
+        border-top: 1px solid var(--list-border);
     }
 
     .cv-nav a {
@@ -504,7 +604,7 @@
         gap: 5px;
         min-height: 55px;
         padding: 7px;
-        color: #849087;
+        color: var(--list-muted);
         border-radius: 13px;
         font-size: 11px;
         text-decoration: none;
@@ -513,18 +613,21 @@
     .cv-nav a[aria-current="page"] {
         color: var(--cv-accent, #287e50);
         background: var(--cv-accent-soft, #e8f5ee);
-        font-weight: 700;
+        font-weight: bold;
+    }
+
+    .cv-portal [hidden] {
+        display: none !important;
     }
 
     @media (max-width: 600px) {
         .cv-header {
-            align-items: flex-start;
-            gap: 14px;
-            padding: 24px 19px;
+            padding: 20px 18px;
+            gap: 12px;
         }
 
         .cv-heading h1 {
-            font-size: 23px;
+            font-size: 22px;
         }
 
         .cv-heading p {
@@ -533,16 +636,22 @@
 
         .cv-logo {
             width: 86px;
-            margin-top: 5px;
         }
 
         .cv-main {
-            padding: 23px 15px 125px;
+            padding: 20px 14px 120px;
+        }
+
+        .cv-page-title {
+            font-size: 21px;
+        }
+
+        .cv-page-heading {
+            align-items: flex-start;
         }
 
         .cv-new {
-            gap: 11px;
-            padding: 20px 15px;
+            padding: 20px 16px;
         }
 
         .cv-new-copy strong {
@@ -570,8 +679,13 @@
             font-size: 14px;
         }
 
-        .cv-summary {
-            padding: 20px 17px;
+        .cv-create {
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+
+        .cv-filter {
+            flex-basis: calc(50% - 8px);
         }
     }
 </style>
@@ -629,42 +743,28 @@
                     href="{% url 'citizen_portal:complaint_list' %}"
                     class="cv-link"
                 >
-                    عرض جميع الشكاوى
+                    عرض الجميع
                 </a>
             </div>
 
-        {% elif page == "complaints" %}
-            <div class="cv-page-heading">
-                <h2 class="cv-page-title">شكاواي</h2>
-                <p class="cv-muted">
-                    اضغط على الشكوى لعرض تفاصيلها أو طيّها.
-                </p>
+            <div class="cv-list">
+                {% for item in recent_complaints %}
+                    {% include "citizen_portal/complaint_card.html" with item=item %}
+                {% empty %}
+                    <div class="cv-empty">
+                        <strong>لا توجد شكاوى حتى الآن</strong>
+                        <p>ستظهر هنا بعد إرسال أول شكوى.</p>
+                    </div>
+                {% endfor %}
             </div>
-
-        {% elif page == "detail" %}
-            <a
-                href="{% url 'citizen_portal:complaint_list' %}"
-                class="cv-back"
-            >
-                العودة إلى شكاواي
-            </a>
-        {% endif %}
-
-        {% if page == "home" %}
-            {% for item in recent_complaints %}
-                {% include "citizen_portal/complaint_card.html" with item=item %}
-            {% empty %}
-                <div class="cv-empty">
-                    <strong>لا توجد شكاوى</strong>
-                    <p>ستظهر هنا بعد إرسال أول شكوى.</p>
-                </div>
-            {% endfor %}
 
             <section class="cv-summary">
                 <h2>ملخص سريع</h2>
+
                 <div class="cv-summary-grid">
                     <div class="cv-summary-item">
                         <span>شكاوى حالية</span>
+
                         {% if active_count %}
                             <strong>{{ active_count }}</strong>
                         {% else %}
@@ -673,8 +773,10 @@
                             </strong>
                         {% endif %}
                     </div>
+
                     <div class="cv-summary-item">
                         <span>آخر شكوى مقدمة</span>
+
                         <strong class="cv-summary-text">
                             {% if latest_complaint %}
                                 <bdi>{{ latest_complaint.reference_number }}</bdi>
@@ -687,38 +789,142 @@
             </section>
 
         {% elif page == "complaints" %}
-            <div class="cv-list">
+            <a
+                href="{% url 'citizen_portal:home' %}"
+                class="cv-back"
+            >
+                <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14m-6-6 6 6-6 6"></path>
+                </svg>
+                العودة إلى الرئيسية
+            </a>
+
+            <div class="cv-page-heading">
+                <div>
+                    <h2 class="cv-page-title">شكاواي</h2>
+                    <p class="cv-muted">تابع حالة شكاواك وتفاصيلها.</p>
+                </div>
+
+                <a
+                    href="{% url 'citizen_portal:submit_complaint' %}"
+                    class="cv-create"
+                >
+                    <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    تقديم شكوى
+                </a>
+            </div>
+
+            {% if complaints %}
+                <section class="cv-tools" aria-label="البحث وتصفية الشكاوى">
+                    <label for="complaint-search" class="cv-search-label">
+                        البحث في شكاواي
+                    </label>
+
+                    <input
+                        type="search"
+                        id="complaint-search"
+                        class="cv-search"
+                        placeholder="الرقم المرجعي أو اسم الخدمة"
+                        autocomplete="off"
+                    >
+
+                    <div class="cv-filters" aria-label="تصفية حسب الحالة">
+                        <button
+                            type="button"
+                            class="cv-filter"
+                            data-filter="all"
+                            aria-pressed="true"
+                        >الكل</button>
+
+                        <button
+                            type="button"
+                            class="cv-filter"
+                            data-filter="active"
+                            aria-pressed="false"
+                        >قيد المتابعة</button>
+
+                        <button
+                            type="button"
+                            class="cv-filter"
+                            data-filter="done"
+                            aria-pressed="false"
+                        >تم الحل / مغلقة</button>
+
+                        <button
+                            type="button"
+                            class="cv-filter"
+                            data-filter="rejected"
+                            aria-pressed="false"
+                        >مرفوضة</button>
+                    </div>
+                </section>
+
+                <p class="cv-results" id="complaint-results" role="status"></p>
+            {% endif %}
+
+            <div class="cv-list" id="complaints-list">
                 {% for item in complaints %}
-                    {% include "citizen_portal/complaint_card.html" with item=item %}
+                    <div
+                        data-complaint-row
+                        data-status="{{ item.status }}"
+                    >
+                        {% include "citizen_portal/complaint_card.html" with item=item %}
+                    </div>
                 {% empty %}
                     <div class="cv-empty">
-                        <strong>لا توجد شكاوى</strong>
-                        <p>
-                            <a
-                                href="{% url 'citizen_portal:submit_complaint' %}"
-                                class="cv-link"
-                            >
-                                إرسال شكوى جديدة
-                            </a>
-                        </p>
+                        <span class="cv-empty-icon" aria-hidden="true">
+                            <svg class="cv-icon" viewBox="0 0 24 24">
+                                <rect x="5" y="3" width="14" height="18" rx="3"></rect>
+                                <path d="M9 8h6M9 12h6M9 16h4"></path>
+                            </svg>
+                        </span>
+
+                        <strong>لا توجد شكاوى حتى الآن</strong>
+                        <p>يمكنك تقديم شكوى ومتابعة حالتها من هنا.</p>
+
+                        <a
+                            href="{% url 'citizen_portal:submit_complaint' %}"
+                            class="cv-create"
+                        >
+                            تقديم أول شكوى
+                        </a>
                     </div>
                 {% endfor %}
             </div>
 
+            <div class="cv-empty" id="no-filter-results" hidden>
+                <strong>لا توجد شكاوى مطابقة</strong>
+                <p>جرّب كلمة بحث أخرى أو اعرض جميع الحالات.</p>
+                <button
+                    type="button"
+                    class="cv-filter"
+                    id="reset-complaint-filters"
+                >
+                    عرض جميع الشكاوى
+                </button>
+            </div>
+
         {% elif page == "detail" %}
+            <a
+                href="{% url 'citizen_portal:complaint_list' %}"
+                class="cv-back"
+            >
+                العودة إلى شكاواي
+            </a>
+
             {% include "citizen_portal/complaint_card.html" with item=complaint expanded=True %}
 
         {% elif page == "account" %}
             <div class="cv-panel">
                 <h2>حسابي</h2>
-                <p class="cv-muted">
-                    <a
-                        href="{% url 'citizen_portal:account' %}"
-                        class="cv-link"
-                    >
-                        فتح إعدادات الحساب
-                    </a>
-                </p>
+                <a
+                    href="{% url 'citizen_portal:account' %}"
+                    class="cv-link"
+                >
+                    فتح إعدادات الحساب
+                </a>
             </div>
         {% endif %}
 
@@ -767,20 +973,133 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener("click", (event) => {
+(function () {
+    document.addEventListener("click", function (event) {
         const button = event.target.closest("[data-collapse-complaint]");
-
         if (!button) return;
 
         const card = button.closest("details");
-        const summary = card.querySelector("summary");
+        if (!card) return;
 
+        const summary = card.querySelector("summary");
         card.open = false;
-        summary.focus({ preventScroll: true });
+
+        if (summary) {
+            summary.focus({ preventScroll: true });
+        }
+
         card.scrollIntoView({
             block: "nearest",
             behavior: "auto"
         });
     });
+
+    const search = document.getElementById("complaint-search");
+    if (!search) return;
+
+    const rows = Array.from(
+        document.querySelectorAll("[data-complaint-row]")
+    );
+
+    const buttons = Array.from(
+        document.querySelectorAll("[data-filter]")
+    );
+
+    const results = document.getElementById("complaint-results");
+    const empty = document.getElementById("no-filter-results");
+    const reset = document.getElementById("reset-complaint-filters");
+
+    const activeStatuses = new Set([
+        "submitted",
+        "under_review",
+        "assigned",
+        "in_progress"
+    ]);
+
+    const doneStatuses = new Set(["resolved", "closed"]);
+    let selectedFilter = "all";
+
+    function normalize(value) {
+        return value
+            .normalize("NFKC")
+            .toLocaleLowerCase("ar")
+            .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+            .replace(/[أإآ]/g, "ا")
+            .replace(/ى/g, "ي")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+    const searchableText = new Map();
+
+    rows.forEach(function (row) {
+        const summary = row.querySelector("summary");
+        searchableText.set(
+            row,
+            normalize(summary ? summary.textContent : row.textContent)
+        );
+    });
+
+    function updateList() {
+        const query = normalize(search.value);
+        let count = 0;
+
+        rows.forEach(function (row) {
+            const status = row.dataset.status;
+            let matchesStatus = selectedFilter === "all";
+
+            if (selectedFilter === "active") {
+                matchesStatus = activeStatuses.has(status);
+            } else if (selectedFilter === "done") {
+                matchesStatus = doneStatuses.has(status);
+            } else if (selectedFilter === "rejected") {
+                matchesStatus = status === "rejected";
+            }
+
+            const matchesSearch = searchableText.get(row).includes(query);
+            const visible = matchesStatus && matchesSearch;
+
+            row.hidden = !visible;
+
+            if (visible) {
+                count += 1;
+            } else {
+                row.querySelectorAll("details[open]").forEach(function (card) {
+                    card.open = false;
+                });
+            }
+        });
+
+        buttons.forEach(function (button) {
+            button.setAttribute(
+                "aria-pressed",
+                String(button.dataset.filter === selectedFilter)
+            );
+        });
+
+        results.textContent =
+            "عدد الشكاوى المعروضة: " + count + " من " + rows.length;
+
+        empty.hidden = count !== 0;
+    }
+
+    buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            selectedFilter = button.dataset.filter;
+            updateList();
+        });
+    });
+
+    search.addEventListener("input", updateList);
+
+    reset.addEventListener("click", function () {
+        search.value = "";
+        selectedFilter = "all";
+        updateList();
+        search.focus();
+    });
+
+    updateList();
+})();
 </script>
 {% endblock %}

@@ -5,12 +5,14 @@ from django.contrib.auth.forms import (
     UserCreationForm,
 )
 
+from accounts.contact_validation import normalize_phone
+
 
 User = get_user_model()
 
 
 class CitizenLoginForm(AuthenticationForm):
-    """نموذج تسجيل الدخول الخاص بتطبيق المواطن."""
+    """نموذج تسجيل الدخول للمواطن."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,7 +45,7 @@ class CitizenLoginForm(AuthenticationForm):
 
 
 class CitizenRegistrationForm(UserCreationForm):
-    """نموذج إنشاء حساب مواطن جديد."""
+    """إنشاء حساب مواطن، ثم تأكيد بريده الإلكتروني."""
 
     email = forms.EmailField(
         label="البريد الإلكتروني",
@@ -60,12 +62,14 @@ class CitizenRegistrationForm(UserCreationForm):
     phone_number = forms.CharField(
         label="رقم الهاتف",
         required=False,
-        max_length=20,
+        max_length=9,
         widget=forms.TextInput(
             attrs={
                 "placeholder": " ",
                 "type": "tel",
                 "autocomplete": "tel",
+                "inputmode": "numeric",
+                "maxlength": "9",
                 "dir": "ltr",
             }
         ),
@@ -77,6 +81,7 @@ class CitizenRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
+
         fields = [
             "first_name",
             "last_name",
@@ -118,8 +123,8 @@ class CitizenRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["first_name"].required = True
-        self.fields["last_name"].required = True
+        self.fields["first_name"].required = False
+        self.fields["last_name"].required = False
 
         self.fields["username"].error_messages["unique"] = (
             "اسم المستخدم مستخدم مسبقًا."
@@ -143,10 +148,23 @@ class CitizenRegistrationForm(UserCreationForm):
             }
         )
 
+    def clean_phone_number(self):
+        return normalize_phone(
+            self.cleaned_data.get("phone_number")
+        )
+
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
 
-        if User.objects.filter(email__iexact=email).exists():
+        email_exists = User.objects.filter(
+            email__iexact=email
+        ).exists()
+
+        verified_email_exists = User.objects.filter(
+            verified_email__iexact=email
+        ).exists()
+
+        if email_exists or verified_email_exists:
             raise forms.ValidationError(
                 "البريد الإلكتروني مستخدم مسبقًا."
             )
@@ -155,6 +173,7 @@ class CitizenRegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+
         user.role = User.Role.CITIZEN
         user.email = self.cleaned_data["email"]
         user.phone_number = self.cleaned_data.get(
@@ -169,7 +188,7 @@ class CitizenRegistrationForm(UserCreationForm):
 
 
 class CitizenAccountForm(forms.ModelForm):
-    """نموذج تعديل بيانات حساب المواطن."""
+    """تعديل بيانات حساب المواطن."""
 
     class Meta:
         model = User
@@ -213,6 +232,8 @@ class CitizenAccountForm(forms.ModelForm):
                 attrs={
                     "type": "tel",
                     "autocomplete": "tel",
+                    "inputmode": "numeric",
+                    "maxlength": "9",
                     "dir": "ltr",
                 }
             ),
@@ -244,6 +265,36 @@ class CitizenAccountForm(forms.ModelForm):
             "default_address",
         ]:
             self.fields[name].required = False
+
+    def clean_phone_number(self):
+        return normalize_phone(
+            self.cleaned_data.get("phone_number")
+        )
+
+    def clean_email(self):
+        email = (
+            self.cleaned_data.get("email") or ""
+        ).strip().lower()
+
+        other_users = User.objects.exclude(
+            pk=self.instance.pk
+        )
+
+        if email:
+            email_exists = other_users.filter(
+                email__iexact=email
+            ).exists()
+
+            verified_email_exists = other_users.filter(
+                verified_email__iexact=email
+            ).exists()
+
+            if email_exists or verified_email_exists:
+                raise forms.ValidationError(
+                    "هذا البريد مرتبط بحساب آخر."
+                )
+
+        return email
 
     def clean_avatar(self):
         avatar = self.cleaned_data.get("avatar")
