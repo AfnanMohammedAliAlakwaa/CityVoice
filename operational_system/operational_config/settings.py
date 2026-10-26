@@ -146,3 +146,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Citizen authentication
+LOGIN_URL = "citizen_portal:auth"
+LOGIN_REDIRECT_URL = "citizen_portal:home"
+LOGOUT_REDIRECT_URL = "citizen_portal:auth"

@@ -1,0 +1,438 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+
+    <title>تسجيل الدخول | CityVoice</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'citizen_portal/css/auth.css' %}"
+    >
+</head>
+
+<body>
+
+    <main
+        class="auth-wrapper{% if registration_form.errors %} toggled{% endif %}"
+        id="authWrapper"
+    >
+        <!-- الأشكال المتحركة الموجودة في التصميم الأصلي -->
+        <div class="background-shape" aria-hidden="true"></div>
+        <div class="secondary-shape" aria-hidden="true"></div>
+
+        <!-- =========================
+             نموذج تسجيل الدخول
+        ========================== -->
+        <section class="credentials-panel signin">
+            <div class="mobile-brand slide-element">
+                <img
+                    src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                    alt="شعار CityVoice"
+                >
+            </div>
+
+            <h1 class="panel-title slide-element">
+                تسجيل الدخول
+            </h1>
+
+            <p class="panel-description slide-element">
+                أدخلي بيانات حسابك للمتابعة
+            </p>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="login"
+                >
+
+                {% if next %}
+                    <input
+                        type="hidden"
+                        name="next"
+                        value="{{ next }}"
+                    >
+                {% endif %}
+
+                {% if login_form.non_field_errors %}
+                    <div class="form-alert slide-element">
+                        {% for error in login_form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="field-wrapper slide-element">
+                    {{ login_form.username }}
+
+                    <label for="{{ login_form.username.id_for_label }}">
+                        اسم المستخدم
+                    </label>
+
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 12a4 4 0 1 0 0-8
+                                   4 4 0 0 0 0 8Zm7 8
+                                   a7 7 0 0 0-14 0"
+                            />
+                        </svg>
+                    </span>
+
+                    {% for error in login_form.username.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="field-wrapper slide-element password-field">
+                    {{ login_form.password }}
+
+                    <label for="{{ login_form.password.id_for_label }}">
+                        كلمة المرور
+                    </label>
+
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect
+                                x="5"
+                                y="10"
+                                width="14"
+                                height="10"
+                                rx="2"
+                            />
+                            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                        </svg>
+                    </span>
+
+                    <button
+                        class="password-toggle"
+                        type="button"
+                        aria-label="إظهار كلمة المرور"
+                    >
+                        إظهار
+                    </button>
+
+                    {% for error in login_form.password.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="button-wrapper slide-element">
+                    <button class="submit-button" type="submit">
+                        <span>دخول إلى حسابي</span>
+
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M15 6l-6 6 6 6" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="switch-link slide-element">
+                    <p>
+                        ليس لديك حساب؟
+                        <button
+                            type="button"
+                            class="register-trigger"
+                        >
+                            أنشئي حسابًا جديدًا
+                        </button>
+                    </p>
+                </div>
+            </form>
+        </section>
+
+        <!-- النص الظاهر بجوار تسجيل الدخول -->
+        <section class="welcome-section signin">
+            <div class="welcome-content slide-element">
+                <div class="logo-holder">
+                    <img
+                        src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                        alt="شعار CityVoice"
+                    >
+                </div>
+
+                <span class="welcome-label">
+                    منصة الخدمات البلدية
+                </span>
+
+                <h2>
+                    مرحبًا بعودتك
+                </h2>
+
+                <p>
+                    أبلغي عن مشكلات مدينتك، وتابعي حالة بلاغاتك،
+                    وساهمي في تحسين الخدمات.
+                </p>
+            </div>
+        </section>
+
+        <!-- =========================
+             نموذج إنشاء الحساب
+        ========================== -->
+        <section class="credentials-panel signup">
+            <div class="mobile-brand slide-element">
+                <img
+                    src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                    alt="شعار CityVoice"
+                >
+            </div>
+
+            <h1 class="panel-title slide-element">
+                إنشاء حساب
+            </h1>
+
+            <p class="panel-description slide-element">
+                أنشئي حساب مواطن جديدًا
+            </p>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="register"
+                >
+
+                {% if next %}
+                    <input
+                        type="hidden"
+                        name="next"
+                        value="{{ next }}"
+                    >
+                {% endif %}
+
+                {% if registration_form.non_field_errors %}
+                    <div class="form-alert slide-element">
+                        {% for error in registration_form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="names-row slide-element">
+                    <div class="field-wrapper">
+                        {{ registration_form.first_name }}
+
+                        <label for="{{ registration_form.first_name.id_for_label }}">
+                            الاسم الأول
+                        </label>
+
+                        {% for error in registration_form.first_name.errors %}
+                            <span class="field-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="field-wrapper">
+                        {{ registration_form.last_name }}
+
+                        <label for="{{ registration_form.last_name.id_for_label }}">
+                            اسم العائلة
+                        </label>
+
+                        {% for error in registration_form.last_name.errors %}
+                            <span class="field-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    {{ registration_form.username }}
+
+                    <label for="{{ registration_form.username.id_for_label }}">
+                        اسم المستخدم
+                    </label>
+
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 12a4 4 0 1 0 0-8
+                                   4 4 0 0 0 0 8Zm7 8
+                                   a7 7 0 0 0-14 0"
+                            />
+                        </svg>
+                    </span>
+
+                    {% for error in registration_form.username.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    {{ registration_form.email }}
+
+                    <label for="{{ registration_form.email.id_for_label }}">
+                        البريد الإلكتروني
+                    </label>
+
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect
+                                x="3"
+                                y="5"
+                                width="18"
+                                height="14"
+                                rx="2"
+                            />
+                            <path d="m4 7 8 6 8-6" />
+                        </svg>
+                    </span>
+
+                    {% for error in registration_form.email.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    {{ registration_form.phone_number }}
+
+                    <label for="{{ registration_form.phone_number.id_for_label }}">
+                        رقم الهاتف
+                    </label>
+
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M7 3H4a1 1 0 0 0-1 1
+                                   c0 9.4 7.6 17 17 17
+                                   a1 1 0 0 0 1-1v-3
+                                   l-5-1-1.5 2
+                                   a15 15 0 0 1-8.5-8.5
+                                   L8 8 7 3Z"
+                            />
+                        </svg>
+                    </span>
+
+                    {% for error in registration_form.phone_number.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="field-wrapper slide-element password-field">
+                    {{ registration_form.password1 }}
+
+                    <label for="{{ registration_form.password1.id_for_label }}">
+                        كلمة المرور
+                    </label>
+
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect
+                                x="5"
+                                y="10"
+                                width="14"
+                                height="10"
+                                rx="2"
+                            />
+                            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                        </svg>
+                    </span>
+
+                    <button
+                        class="password-toggle"
+                        type="button"
+                        aria-label="إظهار كلمة المرور"
+                    >
+                        إظهار
+                    </button>
+
+                    {% for error in registration_form.password1.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="field-wrapper slide-element password-field">
+                    {{ registration_form.password2 }}
+
+                    <label for="{{ registration_form.password2.id_for_label }}">
+                        تأكيد كلمة المرور
+                    </label>
+
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect
+                                x="5"
+                                y="10"
+                                width="14"
+                                height="10"
+                                rx="2"
+                            />
+                            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                        </svg>
+                    </span>
+
+                    <button
+                        class="password-toggle"
+                        type="button"
+                        aria-label="إظهار كلمة المرور"
+                    >
+                        إظهار
+                    </button>
+
+                    {% for error in registration_form.password2.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="button-wrapper slide-element">
+                    <button class="submit-button" type="submit">
+                        <span>إنشاء الحساب</span>
+
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M15 6l-6 6 6 6" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="switch-link slide-element">
+                    <p>
+                        لديك حساب بالفعل؟
+                        <button
+                            type="button"
+                            class="login-trigger"
+                        >
+                            تسجيل الدخول
+                        </button>
+                    </p>
+                </div>
+            </form>
+        </section>
+
+        <!-- النص الظاهر بجوار إنشاء الحساب -->
+        <section class="welcome-section signup">
+            <div class="welcome-content slide-element">
+                <div class="logo-holder">
+                    <img
+                        src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                        alt="شعار CityVoice"
+                    >
+                </div>
+
+                <span class="welcome-label">
+                    أهلًا بك في CityVoice
+                </span>
+
+                <h2>
+                    صوتك يصنع الفرق
+                </h2>
+
+                <p>
+                    أنشئي حسابك وابدئي بالمساهمة في بناء مدينة
+                    أكثر نظافة وتنظيمًا.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="{% static 'citizen_portal/js/auth.js' %}"></script>
+</body>
+</html>

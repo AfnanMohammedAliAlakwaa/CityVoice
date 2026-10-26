@@ -5,7 +5,18 @@ from . import preference_views, views
 
 app_name = "citizen_portal"
 
+
 urlpatterns = [
+    path(
+        "login/",
+        views.citizen_auth,
+        name="auth",
+    ),
+    path(
+        "logout/",
+        views.citizen_logout,
+        name="logout",
+    ),
     path(
         "",
         views.home,
