@@ -1,0 +1,550 @@
+{% extends "citizen_portal/base.html" %}
+
+{% block title %}تقييم معالجة الشكوى | CityVoice{% endblock %}
+
+{% block body_class %}cv-portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feedback-page {
+        width: 100%;
+        max-width: 620px;
+        margin: 30px auto;
+        padding: 0 18px 35px;
+        direction: rtl;
+    }
+
+    .feedback-card {
+        overflow: hidden;
+        border: 1px solid var(--cv-border);
+        border-radius: 24px;
+        background: #ffffff;
+        box-shadow: 0 18px 45px rgba(36, 74, 52, 0.10);
+    }
+
+    .feedback-card-header {
+        padding: 32px 28px 25px;
+        text-align: center;
+        background:
+            radial-gradient(
+                circle at top right,
+                var(--cv-accent-soft),
+                transparent 48%
+            ),
+            #ffffff;
+    }
+
+    .feedback-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 66px;
+        height: 66px;
+        margin: 0 auto 15px;
+        border: 1px solid var(--cv-border);
+        border-radius: 20px;
+        color: var(--cv-accent);
+        background: var(--cv-accent-soft);
+    }
+
+    .feedback-icon svg {
+        width: 32px;
+        height: 32px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .feedback-card-header h1 {
+        margin: 0;
+        color: var(--cv-text);
+        font-size: 27px;
+        line-height: 1.4;
+    }
+
+    .feedback-card-header p {
+        max-width: 430px;
+        margin: 9px auto 0;
+        color: var(--cv-muted);
+        font-size: 15px;
+        line-height: 1.9;
+    }
+
+    .feedback-complaint {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 0 28px;
+        padding: 16px;
+        border: 1px solid var(--cv-border);
+        border-radius: 16px;
+        background: var(--cv-accent-soft);
+    }
+
+    .feedback-complaint-item {
+        min-width: 0;
+    }
+
+    .feedback-complaint-item span {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--cv-muted);
+        font-size: 12px;
+    }
+
+    .feedback-complaint-item strong {
+        display: block;
+        overflow: hidden;
+        color: var(--cv-text);
+        font-size: 14px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .feedback-form {
+        padding: 28px;
+    }
+
+    .feedback-question {
+        margin-bottom: 10px;
+        color: var(--cv-text);
+        font-size: 18px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .feedback-hint {
+        margin: 0 0 18px;
+        color: var(--cv-muted);
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .rating-stars {
+        display: flex;
+        direction: ltr;
+        justify-content: center;
+        gap: 9px;
+        margin-bottom: 12px;
+    }
+
+    .rating-star {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border: 1px solid #decda7;
+        border-radius: 14px;
+        color: #d5c39a;
+        background: #fffdf7;
+        cursor: pointer;
+        transition:
+            color 0.18s ease,
+            border-color 0.18s ease,
+            background 0.18s ease,
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+    }
+
+    .rating-star svg {
+        width: 27px;
+        height: 27px;
+        fill: currentColor;
+        stroke: currentColor;
+        stroke-width: 1.5;
+    }
+
+    .rating-star:hover {
+        transform: translateY(-2px);
+    }
+
+    .rating-star.is-active {
+        border-color: #c79b42;
+        color: #d3a43f;
+        background: #fff6dd;
+        box-shadow: 0 6px 16px rgba(193, 154, 76, 0.18);
+    }
+
+    .rating-star:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--cv-accent-ring);
+    }
+
+    .rating-result {
+        min-height: 24px;
+        margin-bottom: 24px;
+        color: var(--cv-accent);
+        font-size: 14px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .feedback-field {
+        margin-top: 8px;
+    }
+
+    .feedback-field label {
+        display: block;
+        margin-bottom: 9px;
+        color: var(--cv-text);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .feedback-comment {
+        width: 100%;
+        min-height: 125px;
+        padding: 14px 15px;
+        resize: vertical;
+        border: 1px solid var(--cv-border);
+        border-radius: 14px;
+        color: var(--cv-text);
+        background: var(--cv-field);
+        font: inherit;
+        font-size: 14px;
+        line-height: 1.8;
+        outline: none;
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease,
+            background 0.2s ease;
+    }
+
+    .feedback-comment:focus {
+        border-color: var(--cv-accent);
+        background: #ffffff;
+        box-shadow: 0 0 0 3px var(--cv-accent-ring);
+    }
+
+    .feedback-comment::placeholder {
+        color: #9ba9a0;
+    }
+
+    .feedback-error {
+        margin: 8px 0 0;
+        color: #b73742;
+        font-size: 13px;
+    }
+
+    .feedback-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .feedback-submit,
+    .feedback-cancel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        border-radius: 13px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+            transform 0.18s ease,
+            box-shadow 0.18s ease,
+            background 0.18s ease;
+    }
+
+    .feedback-submit {
+        flex: 1;
+        border: 1px solid var(--cv-accent);
+        color: #ffffff;
+        background: var(--cv-accent);
+        box-shadow: 0 8px 20px var(--cv-accent-ring);
+    }
+
+    .feedback-submit:hover {
+        background: var(--cv-accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .feedback-cancel {
+        min-width: 115px;
+        padding: 0 18px;
+        border: 1px solid var(--cv-border);
+        color: var(--cv-muted);
+        background: #ffffff;
+    }
+
+    .feedback-cancel:hover {
+        color: var(--cv-accent);
+        background: var(--cv-accent-soft);
+    }
+
+    html[data-cv-theme="dark"] .feedback-card,
+    html[data-cv-theme="dark"] .feedback-card-header,
+    html[data-cv-theme="dark"] .feedback-form,
+    html[data-cv-theme="dark"] .feedback-cancel {
+        background: var(--cv-dark-soft);
+    }
+
+    html[data-cv-theme="dark"] .feedback-comment {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    @media (max-width: 520px) {
+        .feedback-page {
+            margin-top: 18px;
+            padding: 0 12px 25px;
+        }
+
+        .feedback-card {
+            border-radius: 19px;
+        }
+
+        .feedback-card-header {
+            padding: 25px 18px 20px;
+        }
+
+        .feedback-card-header h1 {
+            font-size: 23px;
+        }
+
+        .feedback-card-header p {
+            font-size: 13px;
+        }
+
+        .feedback-complaint {
+            margin: 0 18px;
+            padding: 14px;
+        }
+
+        .feedback-form {
+            padding: 24px 18px;
+        }
+
+        .rating-stars {
+            gap: 5px;
+        }
+
+        .rating-star {
+            width: 43px;
+            height: 43px;
+            border-radius: 12px;
+        }
+
+        .rating-star svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .feedback-actions {
+            flex-direction: column;
+        }
+
+        .feedback-cancel {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="feedback-page">
+    <div class="feedback-card">
+        <div class="feedback-card-header">
+            <div class="feedback-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"></path>
+                    <path d="M8.5 10h.01"></path>
+                    <path d="M15.5 10h.01"></path>
+                    <path d="M8.5 14.5c1.8 1.7 5.2 1.7 7 0"></path>
+                </svg>
+            </div>
+
+            <h1>كيف كانت تجربتك؟</h1>
+
+            <p>
+                رأيك يساعد البلدية على تحسين جودة الخدمات
+                والاستجابة للشكاوى بصورة أفضل.
+            </p>
+        </div>
+
+        <div class="feedback-complaint">
+            <div class="feedback-complaint-item">
+                <span>رقم الشكوى</span>
+                <strong>{{ complaint.reference_number }}</strong>
+            </div>
+
+            <div class="feedback-complaint-item">
+                <span>الخدمة البلدية</span>
+                <strong>{{ complaint.service }}</strong>
+            </div>
+        </div>
+
+        <form
+            method="post"
+            class="feedback-form"
+            id="feedback-form"
+            novalidate
+        >
+            {% csrf_token %}
+            {{ form.rating }}
+
+            <div class="feedback-question">
+                ما مدى رضاك عن معالجة الشكوى؟
+            </div>
+
+            <p class="feedback-hint">
+                اختر عدد النجوم الذي يعبّر عن تجربتك
+            </p>
+
+            <div
+                class="rating-stars"
+                id="rating-stars"
+                role="radiogroup"
+                aria-label="تقييم معالجة الشكوى"
+            >
+                {% for value in "12345" %}
+                    <button
+                        type="button"
+                        class="rating-star"
+                        data-rating="{{ value }}"
+                        role="radio"
+                        aria-checked="false"
+                        aria-label="{{ value }} من 5"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                d="m12 2.8 2.85 5.77 6.37.93-4.61 4.49
+                                   1.09 6.34L12 17.34l-5.7 2.99
+                                   1.09-6.34L2.78 9.5l6.37-.93L12 2.8Z"
+                            ></path>
+                        </svg>
+                    </button>
+                {% endfor %}
+            </div>
+
+            <div
+                class="rating-result"
+                id="rating-result"
+                aria-live="polite"
+            ></div>
+
+            {% if form.rating.errors %}
+                <div class="feedback-error">
+                    {{ form.rating.errors.0 }}
+                </div>
+            {% endif %}
+
+            <div class="feedback-field">
+                <label for="{{ form.comment.id_for_label }}">
+                    هل لديك ملاحظات إضافية؟
+                </label>
+
+                {{ form.comment }}
+
+                {% if form.comment.errors %}
+                    <div class="feedback-error">
+                        {{ form.comment.errors.0 }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div
+                class="feedback-error"
+                id="rating-error"
+                hidden
+            >
+                يرجى اختيار التقييم قبل الإرسال.
+            </div>
+
+            <div class="feedback-actions">
+                <button type="submit" class="feedback-submit">
+                    إرسال التقييم
+                </button>
+
+                <a
+                    href="{% url 'citizen_portal:home' %}"
+                    class="feedback-cancel"
+                >
+                    إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("feedback-form");
+        const ratingInput = document.getElementById("id_rating");
+        const stars = Array.from(
+            document.querySelectorAll(".rating-star")
+        );
+        const result = document.getElementById("rating-result");
+        const error = document.getElementById("rating-error");
+
+        const ratingLabels = {
+            1: "غير راضٍ",
+            2: "مقبول",
+            3: "جيد",
+            4: "جيد جدًا",
+            5: "ممتاز"
+        };
+
+        function displayRating(value) {
+            const selectedValue = Number(value || 0);
+
+            stars.forEach((star) => {
+                const starValue = Number(star.dataset.rating);
+                const isActive = starValue <= selectedValue;
+                const isSelected = starValue === selectedValue;
+
+                star.classList.toggle("is-active", isActive);
+                star.setAttribute(
+                    "aria-checked",
+                    isSelected ? "true" : "false"
+                );
+            });
+
+            result.textContent = selectedValue
+                ? `${ratingLabels[selectedValue]} — ${selectedValue} من 5`
+                : "";
+        }
+
+        stars.forEach((star) => {
+            star.addEventListener("click", () => {
+                ratingInput.value = star.dataset.rating;
+                displayRating(ratingInput.value);
+                error.hidden = true;
+            });
+
+            star.addEventListener("mouseenter", () => {
+                displayRating(star.dataset.rating);
+            });
+
+            star.addEventListener("focus", () => {
+                displayRating(star.dataset.rating);
+            });
+        });
+
+        document
+            .getElementById("rating-stars")
+            .addEventListener("mouseleave", () => {
+                displayRating(ratingInput.value);
+            });
+
+        form.addEventListener("submit", (event) => {
+            if (!ratingInput.value) {
+                event.preventDefault();
+                error.hidden = false;
+                stars[0].focus();
+            }
+        });
+
+        displayRating(ratingInput.value);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "citizen_portal/base.html" %}
+
+{% block title %}تم إرسال التقييم | CityVoice{% endblock %}
+
+{% block body_class %}cv-portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feedback-result-page {
+        width: 100%;
+        max-width: 570px;
+        margin: 45px auto;
+        padding: 0 18px 35px;
+        direction: rtl;
+    }
+
+    .feedback-result-card {
+        padding: 40px 30px 32px;
+        border: 1px solid var(--cv-border);
+        border-radius: 24px;
+        background: #ffffff;
+        text-align: center;
+        box-shadow: 0 18px 45px rgba(36, 74, 52, 0.10);
+    }
+
+    .feedback-success-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 18px;
+        border-radius: 50%;
+        color: #ffffff;
+        background: var(--cv-accent);
+        box-shadow: 0 10px 25px var(--cv-accent-ring);
+    }
+
+    .feedback-success-icon svg {
+        width: 37px;
+        height: 37px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .feedback-result-card h1 {
+        margin: 0;
+        color: var(--cv-text);
+        font-size: 27px;
+    }
+
+    .feedback-result-message {
+        max-width: 410px;
+        margin: 12px auto 24px;
+        color: var(--cv-muted);
+        font-size: 15px;
+        line-height: 1.9;
+    }
+
+    .submitted-rating {
+        margin: 0 auto 24px;
+        padding: 18px;
+        border: 1px solid #eadab8;
+        border-radius: 16px;
+        background: #fffaf0;
+    }
+
+    .submitted-rating-label {
+        display: block;
+        margin-bottom: 9px;
+        color: var(--cv-muted);
+        font-size: 13px;
+    }
+
+    .submitted-stars {
+        display: flex;
+        direction: ltr;
+        justify-content: center;
+        gap: 5px;
+        color: #d3a43f;
+    }
+
+    .submitted-stars svg {
+        width: 29px;
+        height: 29px;
+        fill: currentColor;
+        stroke: currentColor;
+    }
+
+    .feedback-reference {
+        margin: 0 0 27px;
+        color: var(--cv-muted);
+        font-size: 13px;
+    }
+
+    .feedback-reference strong {
+        color: var(--cv-text);
+    }
+
+    .feedback-home-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 190px;
+        min-height: 48px;
+        padding: 0 24px;
+        border-radius: 13px;
+        color: #ffffff;
+        background: var(--cv-accent);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 8px 20px var(--cv-accent-ring);
+        transition:
+            transform 0.18s ease,
+            background 0.18s ease;
+    }
+
+    .feedback-home-link:hover {
+        background: var(--cv-accent-hover);
+        transform: translateY(-1px);
+    }
+
+    html[data-cv-theme="dark"] .feedback-result-card {
+        background: var(--cv-dark-soft);
+    }
+
+    html[data-cv-theme="dark"] .submitted-rating {
+        background: rgba(211, 164, 63, 0.08);
+    }
+
+    @media (max-width: 520px) {
+        .feedback-result-page {
+            margin-top: 25px;
+            padding: 0 12px 25px;
+        }
+
+        .feedback-result-card {
+            padding: 32px 20px 27px;
+            border-radius: 19px;
+        }
+
+        .feedback-result-card h1 {
+            font-size: 23px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="feedback-result-page">
+    <div class="feedback-result-card">
+        <div class="feedback-success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 6 9 17l-5-5"></path>
+            </svg>
+        </div>
+
+        <h1>شكرًا لتقييمك</h1>
+
+        <p class="feedback-result-message">
+            تم استلام تقييمك بنجاح. رأيك يساعدنا على تطوير
+            مستوى الخدمات وتحسين معالجة الشكاوى.
+        </p>
+
+        <div class="submitted-rating">
+            <span class="submitted-rating-label">
+                تقييمك لمعالجة الشكوى
+            </span>
+
+            <div
+                class="submitted-stars"
+                aria-label="{{ feedback.rating }} من 5"
+            >
+                {% for value in "12345" %}
+                    {% if forloop.counter <= feedback.rating %}
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                d="m12 2.8 2.85 5.77 6.37.93-4.61 4.49
+                                   1.09 6.34L12 17.34l-5.7 2.99
+                                   1.09-6.34L2.78 9.5l6.37-.93L12 2.8Z"
+                            ></path>
+                        </svg>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <p class="feedback-reference">
+            رقم الشكوى:
+            <strong>{{ complaint.reference_number }}</strong>
+        </p>
+
+        <a
+            href="{% url 'citizen_portal:home' %}"
+            class="feedback-home-link"
+        >
+            العودة إلى الرئيسية
+        </a>
+    </div>
+</section>
+{% endblock %}

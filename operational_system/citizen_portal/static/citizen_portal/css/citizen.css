@@ -1200,3 +1200,112 @@ button.photo-placeholder {
 .photo-preview {
     cursor: pointer;
 }
+/* دعوة المواطن لتقييم معالجة الشكوى */
+.cv-feedback-invitation {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #e1c98f;
+    border-radius: 15px;
+    background: #fffaf0;
+}
+
+.cv-feedback-invitation-icon {
+    display: flex;
+    flex: 0 0 42px;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    color: #bd8f32;
+    background: #fff0ca;
+}
+
+.cv-feedback-invitation-icon .cv-icon {
+    width: 23px;
+    height: 23px;
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 1.5;
+}
+
+.cv-feedback-invitation-copy {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.cv-feedback-invitation-copy strong {
+    color: var(--cv-text);
+    font-size: 14px;
+}
+
+.cv-feedback-invitation-copy span {
+    color: var(--cv-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.cv-feedback-button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 17px;
+    border: 1px solid var(--cv-accent);
+    border-radius: 11px;
+    color: #ffffff;
+    background: var(--cv-accent);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 6px 15px var(--cv-accent-ring);
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease;
+}
+
+.cv-feedback-button:hover {
+    color: #ffffff;
+    background: var(--cv-accent-hover);
+    transform: translateY(-1px);
+}
+
+.cv-feedback-button--done {
+    border-color: var(--cv-border);
+    color: var(--cv-accent);
+    background: var(--cv-accent-soft);
+    box-shadow: none;
+}
+
+.cv-feedback-button--done:hover {
+    color: var(--cv-accent);
+    background: var(--cv-accent-soft);
+}
+
+html[data-cv-theme="dark"] .cv-feedback-invitation {
+    background: rgba(211, 164, 63, 0.08);
+}
+
+@media (max-width: 520px) {
+    .cv-feedback-invitation {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        padding: 13px;
+    }
+
+    .cv-feedback-invitation-copy {
+        width: calc(100% - 58px);
+    }
+
+    .cv-feedback-button {
+        width: 100%;
+        margin-top: 3px;
+    }
+}

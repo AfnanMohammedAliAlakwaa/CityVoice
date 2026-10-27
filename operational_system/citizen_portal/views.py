@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
-
+from django.conf import settings
 from accounts.models import EmailVerification
 from complaints.models import Complaint
 from municipal_services.models import ServiceCategory
@@ -476,9 +476,11 @@ def submit_complaint(request):
     return render(
         request,
         "citizen_portal/submit_complaint.html",
-        {"form": form},
+        {
+            "form": form,
+            "maptiler_api_key": settings.MAPTILER_API_KEY,
+        },
     )
-
 
 @login_required
 def complaint_success(request, reference_number):
@@ -496,22 +498,27 @@ def complaint_success(request, reference_number):
 
 
 @login_required
+@login_required
 def load_categories(request):
     service_id = request.GET.get("service")
-
-    if not service_id or not service_id.isdecimal():
-        return JsonResponse([], safe=False)
 
     categories = ServiceCategory.objects.filter(
         service_id=service_id
     ).order_by("name_ar")
 
-    return JsonResponse(
-        list(
-            categories.values(
-                "id",
-                "name_ar",
-            )
-        ),
-        safe=False,
+    data = list(
+        categories.values(
+            "id",
+            "name_ar",
+        )
     )
+
+    # وضع خيار "أخرى" في نهاية القائمة دائمًا
+    data.sort(
+        key=lambda category: (
+            category["name_ar"].strip() in {"أخرى", "اخرى"},
+            category["name_ar"],
+        )
+    )
+
+    return JsonResponse(data, safe=False)

@@ -1,4 +1,5 @@
 {% extends "citizen_portal/base.html" %}
+{% load static %}
 
 {% block title %}تقديم شكوى | CityVoice{% endblock %}
 {% block body_class %}cv-portal{% endblock %}
@@ -346,6 +347,11 @@
         z-index: 0;
     }
 
+    .cw-location-marker {
+        border: 0 !important;
+        background: transparent !important;
+    }
+
     .cw-pin {
         display: block;
         width: 30px;
@@ -437,72 +443,937 @@
         padding-top: 22px;
     }
 
-    /* مراحل متصلة من اليمين إلى اليسار */
+    /* مراحل الشكوى: خط مستقيم بتصميم أخضر وذهبي */
+.cw-progress {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    direction: rtl;
+    gap: 0;
+    margin: 28px 0 34px;
+    padding: 0;
+    isolation: isolate;
+    list-style: none;
+}
+
+.cw-progress li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 0 4px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+    transition:
+        color 0.3s ease,
+        transform 0.3s ease;
+}
+
+/* الخط المستقيم بين النقاط */
+.cw-progress li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 21px;
+    right: 50%;
+    width: 100%;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--border, #dce9e0);
+    z-index: -1;
+    transition: background 0.45s ease;
+}
+
+/* يتحول الجزء المكتمل إلى الأخضر */
+.cw-progress li.is-complete::before {
+    background: linear-gradient(
+        90deg,
+        #c6a15b,
+        var(--cv-accent, #287e50)
+    );
+}
+
+/* شكل الدائرة */
+.cw-step-number {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border: 2px solid #d9c496;
+    border-radius: 50%;
+    background: var(--surface, #fff);
+    color: #8b7443;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(41, 63, 51, 0.08);
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease,
+        color 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.3s ease;
+}
+
+/* المرحلة الحالية */
+.cw-progress li[aria-current="step"] {
+    color: var(--cv-accent, #287e50);
+    font-weight: 700;
+}
+
+.cw-progress li[aria-current="step"] .cw-step-number {
+    border-color: var(--cv-accent, #287e50);
+    background: var(--cv-accent, #287e50);
+    color: #fff;
+    box-shadow:
+        0 0 0 4px var(--surface, #fff),
+        0 0 0 7px rgba(198, 161, 91, 0.45),
+        0 8px 20px rgba(40, 126, 80, 0.22);
+    transform: scale(1.06);
+}
+
+/* المراحل المكتملة */
+.cw-progress li.is-complete {
+    color: var(--cv-accent, #287e50);
+    font-weight: 700;
+}
+
+.cw-progress li.is-complete .cw-step-number {
+    border-color: var(--cv-accent, #287e50);
+    background: var(--cv-accent, #287e50);
+    color: #fff;
+    box-shadow:
+        0 0 0 3px var(--surface, #fff),
+        0 0 0 5px rgba(198, 161, 91, 0.28);
+}
+
+/* الهاتف */
+@media (max-width: 520px) {
     .cw-progress {
-        direction: rtl;
-        gap: 0;
-        margin: 24px 0 28px;
-        isolation: isolate;
+        margin: 24px 0 30px;
     }
 
     .cw-progress li {
-        position: relative;
-        gap: 10px;
-        min-width: 0;
-        padding: 0 3px;
-    }
-
-    /* خط يصل مركز كل دائرة بالدائرة التالية */
-    .cw-progress li:not(:last-child)::before {
-        content: "";
-        position: absolute;
-        top: 18px;
-        right: 50%;
-        width: 100%;
-        height: 3px;
-        background: var(--border, #dce9e0);
-        z-index: -1;
-    }
-
-    .cw-progress li.is-complete::before {
-        background: var(--cv-accent, #287e50);
+        gap: 8px;
+        padding: 0 2px;
+        font-size: 10px;
     }
 
     .cw-step-number {
-        position: relative;
         width: 38px;
         height: 38px;
-        flex-shrink: 0;
-        border: 2px solid var(--border, #dce9e0);
-        background: var(--surface, #fff);
+        font-size: 13px;
+    }
+
+    .cw-progress li:not(:last-child)::before {
+        top: 18px;
+        height: 3px;
+    }
+}
+/* تصغير دوائر مراحل البلاغ */
+.cw-step-number {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+    border-width: 2px;
+}
+
+/* ضبط الخط في منتصف الدوائر */
+.cw-progress li:not(:last-child)::before {
+    top: 16px;
+    height: 2px;
+}
+
+/* تصغير الحلقة حول المرحلة الحالية */
+.cw-progress li[aria-current="step"] .cw-step-number {
+    transform: scale(1.03);
+    box-shadow:
+        0 0 0 3px var(--surface, #fff),
+        0 0 0 5px rgba(198, 161, 91, 0.38);
+}
+
+/* تصغير الحلقة حول المراحل المكتملة */
+.cw-progress li.is-complete .cw-step-number {
+    box-shadow:
+        0 0 0 2px var(--surface, #fff),
+        0 0 0 4px rgba(198, 161, 91, 0.25);
+}
+
+/* حجم مناسب للهاتف */
+@media (max-width: 520px) {
+    .cw-step-number {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+
+    .cw-progress li:not(:last-child)::before {
+        top: 14px;
+        height: 2px;
+    }
+
+    .cw-progress li {
+        font-size: 10px;
+        gap: 8px;
+    }
+}
+/* تصغير مربع رفع الصورة */
+.cw-photo-stage {
+    min-height: 175px;
+    border-radius: 14px;
+}
+
+/* تصغير محتوى مربع الصورة */
+.cw-photo-empty {
+    gap: 8px;
+    padding: 18px 14px;
+}
+
+/* تصغير دائرة الكاميرا */
+.cw-photo-empty span {
+    width: 50px;
+    height: 50px;
+}
+
+.cw-photo-empty svg {
+    width: 25px;
+    height: 25px;
+}
+
+/* تصغير جميع الأزرار */
+.cw-button {
+    min-height: 41px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    gap: 6px;
+}
+
+.cw-button svg {
+    width: 19px;
+    height: 19px;
+}
+
+/* تقليل الفراغ بين الأزرار */
+.cw-actions {
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* تصغير مربع التنبيه */
+.cw-notice {
+    margin-top: 14px;
+    padding: 9px 12px;
+    border-radius: 9px;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* تصغير زر التقاط الصورة الدائري */
+.cw-shutter {
+    width: 54px;
+    height: 54px;
+    margin: 12px auto;
+}
+
+/* ضبط الحجم على الهاتف */
+@media (max-width: 520px) {
+    .cw-photo-stage {
+        min-height: 155px;
+    }
+
+    .cw-photo-empty span {
+        width: 46px;
+        height: 46px;
+    }
+
+    .cw-button {
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .cw-actions {
+        margin-top: 12px;
+        gap: 8px;
+    }
+}
+/* خيارات تحديد الموقع */
+.cw-location-options {
+    margin: 16px 0 12px;
+}
+
+/* زر الموقع بتصميم نظيف */
+.cw-location-button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 58px;
+    padding: 9px 13px;
+    border: 1px solid #cfe1d6;
+    border-radius: 12px;
+    background: #f8fbf9;
+    color: var(--text);
+    font: inherit;
+    text-align: right;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(31, 105, 66, 0.07);
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.cw-location-button:hover {
+    border-color: var(--cv-accent, #287e50);
+    background: #f2f8f4;
+    box-shadow: 0 5px 14px rgba(31, 105, 66, 0.12);
+    transform: translateY(-1px);
+}
+
+.cw-location-button:active {
+    transform: translateY(0);
+}
+
+.cw-location-button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.cw-location-icon {
+    position: relative;
+    width: 43px;
+    height: 43px;
+    margin-left: 12px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.cw-location-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-left: 11px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: var(--cv-accent-soft, #e8f5ee);
+    color: var(--cv-accent, #287e50);
+}
+
+.cw-location-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* نص الزر */
+.cw-location-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.cw-location-content strong {
+    color: var(--cv-accent, #287e50);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.cw-location-content small {
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+/* الفاصل بين التحديد التلقائي واليدوي */
+.cw-location-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 13px 0 5px;
+    color: var(--muted);
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.cw-location-divider::before,
+.cw-location-divider::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: var(--border);
+}
+
+/* الهاتف */
+@media (max-width: 520px) {
+    .cw-location-button {
+        min-height: 54px;
+        padding: 8px 11px;
+    }
+
+    .cw-location-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 9px;
+    }
+
+    .cw-location-divider {
+        font-size: 9px;
+    }
+}
+/* تنسيق متوازن لشاشة الهاتف كاملة */
+@media (max-width: 520px) {
+    .complaint-wizard {
+        width: 100%;
+        max-width: none;
+        margin: 0 auto;
+        padding: 8px 10px 16px;
+    }
+
+    .complaint-wizard .cw-card {
+        min-height: calc(100svh - 95px);
+        padding: 17px 15px;
+        border-radius: 17px;
+    }
+
+    .cw-back {
+        min-height: 36px;
+        margin-bottom: 4px;
+        font-size: 12px;
+    }
+
+    .cw-card h1 {
+        margin-bottom: 4px;
+        font-size: 20px;
+        line-height: 1.5;
+    }
+
+    .cw-card h2 {
+        margin-bottom: 5px;
+        font-size: 18px;
+        line-height: 1.5;
+    }
+
+    .cw-help {
+        margin-bottom: 10px;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    /* مراحل البلاغ */
+    .cw-progress {
+        margin: 14px 0 20px;
+    }
+
+    .cw-progress li {
+        gap: 6px;
+        font-size: 10px;
+    }
+
+    .cw-step-number {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .cw-progress li:not(:last-child)::before {
+        top: 15px;
+        height: 2px;
+    }
+
+    /* الحقول بحجم طبيعي */
+    .cw-field {
+        margin: 12px 0;
+    }
+
+    .cw-field label {
+        margin-bottom: 5px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .cw-field select,
+    .cw-field input:not([type="hidden"]):not([type="file"]) {
+        min-height: 44px;
+        padding: 9px 11px;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+
+    .cw-field textarea {
+        min-height: 125px;
+        padding: 10px 11px;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .cw-field small {
+        margin-top: 5px;
+        font-size: 10px;
+        line-height: 1.6;
+    }
+
+    /* الأزرار تبقى واضحة وسهلة اللمس */
+    .cw-actions {
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .cw-button {
+        min-height: 44px;
+        padding: 9px 12px;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+
+    /* الصورة */
+    .cw-photo-stage {
+        min-height: 165px;
+        border-radius: 13px;
+    }
+
+    .cw-photo-empty {
+        gap: 8px;
+        padding: 18px 14px;
+    }
+
+    .cw-photo-empty span {
+        width: 48px;
+        height: 48px;
+    }
+
+    /* تحديد الموقع */
+    .cw-location-options {
+        margin: 12px 0 9px;
+    }
+
+    .cw-location-button {
+        min-height: 56px;
+        padding: 9px 12px;
+    }
+
+    .cw-location-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .cw-location-content strong {
+        font-size: 13px;
+    }
+
+    .cw-location-content small {
+        font-size: 10px;
+    }
+
+    .cw-location-divider {
+        margin: 11px 0 6px;
+        font-size: 9px;
+    }
+
+    .cw-map {
+        height: 220px;
+        margin: 10px 0;
+        border-radius: 13px;
+    }
+
+    .cw-notice {
+        margin-top: 12px;
+        padding: 9px 11px;
+        font-size: 11px;
+        line-height: 1.7;
+    }
+}
+/* تنسيق قوائم الاختيار */
+.cw-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 14px;
+    padding-left: 44px;
+    border: 1px solid #cfe1d6;
+    background-color: #f8fbf9;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23287e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 14px center;
+    background-size: 18px;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 2px 7px rgba(40, 126, 80, 0.05);
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.cw-field select:hover {
+    border-color: #8fbea2;
+    background-color: #ffffff;
+}
+
+.cw-field select:focus {
+    border-color: var(--cv-accent, #287e50);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(40, 126, 80, 0.12);
+    outline: none;
+}
+
+/* النص الافتراضي قبل الاختيار */
+.cw-field select.is-placeholder {
+    color: #9aa8a0;
+    font-weight: 400;
+}
+
+/* الخيارات الحقيقية */
+.cw-field select option {
+    color: #293f33;
+    background: #ffffff;
+}
+
+/* اختر الخدمة أو اختر نوع المشكلة */
+.cw-field select option[value=""] {
+    color: #a7b1ab;
+}
+
+/* القائمة المعطلة قبل اختيار الخدمة */
+.cw-field select:disabled {
+    color: #aab5ae;
+    background-color: #f3f7f4;
+    cursor: not-allowed;
+    opacity: 1;
+}
+/* القائمة المنسدلة المخصصة */
+.cw-custom-select {
+    position: relative;
+    width: 100%;
+}
+
+/* إخفاء قائمة المتصفح مع إبقائها داخل النموذج */
+.cw-native-select {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* الزر الظاهر بدل select */
+.cw-select-trigger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+    padding: 11px 14px 11px 45px;
+    border: 1px solid #cfe1d6;
+    border-radius: 12px;
+    background: #f8fbf9;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    text-align: right;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(40, 126, 80, 0.05);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.cw-select-trigger::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    width: 8px;
+    height: 8px;
+    border-left: 2px solid #287e50;
+    border-bottom: 2px solid #287e50;
+    transform: translateY(-2px) rotate(-45deg);
+    transition: transform 0.2s ease;
+}
+
+.cw-custom-select.is-open .cw-select-trigger::after {
+    transform: translateY(2px) rotate(135deg);
+}
+
+.cw-select-trigger:hover {
+    border-color: #8fbea2;
+    background: #ffffff;
+}
+
+.cw-select-trigger:focus-visible {
+    border-color: #287e50;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(40, 126, 80, 0.13);
+}
+
+/* النص الافتراضي الباهت */
+.cw-select-trigger.is-placeholder {
+    color: #9ca9a1;
+    font-weight: 400;
+}
+
+.cw-select-trigger:disabled {
+    color: #aab5ae;
+    background: #f2f6f3;
+    cursor: not-allowed;
+}
+
+/* صندوق الخيارات */
+.cw-select-menu {
+    position: absolute;
+    top: calc(100% + 7px);
+    right: 0;
+    left: 0;
+    z-index: 100;
+    max-height: 235px;
+    padding: 6px;
+    overflow-y: auto;
+    border: 1px solid #d3e3d8;
+    border-radius: 13px;
+    background: #ffffff;
+    box-shadow: 0 14px 35px rgba(36, 74, 52, 0.17);
+}
+
+.cw-select-menu[hidden] {
+    display: none;
+}
+
+/* كل خيار */
+.cw-select-option {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #293f33;
+    font: inherit;
+    font-size: 13px;
+    text-align: right;
+    cursor: pointer;
+    transition:
+        color 0.15s ease,
+        background 0.15s ease;
+}
+
+.cw-select-option:hover,
+.cw-select-option:focus-visible {
+    background: #edf7f1;
+    color: #1f6e45;
+    outline: none;
+}
+
+/* الخيار المحدد */
+.cw-select-option.is-selected {
+    position: relative;
+    padding-left: 38px;
+    background: #e8f5ee;
+    color: #1f7549;
+    font-weight: 700;
+}
+
+.cw-select-option.is-selected::after {
+    content: "✓";
+    position: absolute;
+    left: 14px;
+    color: #c19a4c;
+    font-size: 15px;
+}
+
+/* الخيار الافتراضي */
+.cw-select-option.is-placeholder {
+    color: #a4afa8;
+}
+
+.cw-select-option:disabled {
+    cursor: default;
+}
+
+/* الهاتف */
+@media (max-width: 520px) {
+    .cw-select-trigger {
+        min-height: 44px;
+        padding: 9px 12px 9px 42px;
+        font-size: 13px;
+    }
+
+    .cw-select-menu {
+        max-height: 210px;
+    }
+
+    .cw-select-option {
+        min-height: 40px;
+        padding: 8px 11px;
+        font-size: 12px;
+    }
+}
+/* تحسين شكل القائمة دون تغيير طريقة عملها */
+/* صندوق الخيارات */
+.cw-select-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    left: 0;
+    z-index: 1000;
+
+    /* عرض كل الخيارات دون تمرير */
+    max-height: none;
+    height: auto;
+    padding: 8px;
+    overflow: visible;
+
+    /* جميع الحدود خضراء */
+    border: 2px solid #287e50;
+    border-radius: 14px;
+    background: #ffffff;
+
+    box-shadow:
+        0 16px 32px rgba(25, 72, 47, 0.18),
+        0 4px 10px rgba(25, 72, 47, 0.08);
+}
+
+/* إخفاء القائمة عند إغلاقها */
+.cw-select-menu[hidden] {
+    display: none;
+}
+
+.cw-select-option {
+    min-height: 44px;
+    color: #263d31;
+    background: #ffffff;
+    border-bottom: 1px solid #edf2ef;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.cw-select-option:last-child {
+    border-bottom: none;
+}
+
+.cw-select-option:hover,
+.cw-select-option:focus-visible {
+    background: #eaf5ef;
+    color: #176f43;
+}
+
+/* الخيار المحدد */
+.cw-select-option.is-selected {
+    background: #287e50;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(40, 126, 80, 0.18);
+}
+
+.cw-select-option.is-selected::after {
+    content: "✓";
+    position: absolute;
+    left: 14px;
+    color: #f1d57b;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+/* النص الإرشادي فقط يكون باهتًا */
+.cw-select-option.is-placeholder {
+    background: #f5f8f6;
+    color: #9ca9a1;
+    font-weight: 400;
+}
+/* تكبير محتوى واجهة البلاغ قليلًا على الهاتف فقط */
+@media (max-width: 520px) {
+    .complaint-wizard {
+        width: 100%;
+        margin: 10px auto;
+        padding: 0 10px 24px;
+    }
+
+    .cw-card {
+        width: 100%;
+        padding: 22px 18px;
+        border-radius: 18px;
+    }
+
+    .cw-card h1 {
+        font-size: 23px;
+        line-height: 1.5;
+    }
+
+    .cw-card h2 {
+        font-size: 20px;
+        line-height: 1.6;
+    }
+
+    .cw-help {
         font-size: 14px;
-        font-weight: bold;
+        line-height: 1.7;
     }
 
-    .cw-progress li[aria-current="step"] .cw-step-number {
-        border-color: var(--cv-accent, #287e50);
-        background: var(--cv-accent, #287e50);
-        color: #fff;
-        box-shadow:
-            0 0 0 4px var(--surface, #fff),
-            0 0 0 6px var(--cv-accent-soft, #e8f5ee);
+    .cw-progress li {
+        font-size: 12px;
     }
 
-    .cw-progress li.is-complete .cw-step-number {
-        border-color: var(--cv-accent, #287e50);
-        background: var(--cv-accent, #287e50);
-        color: #fff;
+    .cw-step-number {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
     }
 
-    @media (max-width: 520px) {
-        .cw-progress {
-            margin: 22px 0 26px;
-        }
-
-        .cw-progress li {
-            font-size: 11px;
-        }
+    .cw-field {
+        margin: 19px 0;
     }
+
+    .cw-field label {
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+
+    .cw-field small {
+        font-size: 13px;
+    }
+
+    .cw-select-trigger {
+        min-height: 50px;
+        padding: 10px 14px 10px 44px;
+        font-size: 15px;
+    }
+
+    .cw-select-option {
+        min-height: 44px;
+        padding: 9px 13px 9px 40px;
+        font-size: 14px;
+    }
+
+    .cw-field textarea {
+        min-height: 155px;
+        font-size: 15px;
+    }
+
+    .cw-button {
+        min-height: 50px;
+        padding: 12px 15px;
+        font-size: 15px;
+    }
+
+    .cw-notice,
+    .cw-error,
+    .complaint-wizard .errorlist {
+        font-size: 14px;
+    }
+}
 </style>
 {% endblock %}
 
@@ -738,12 +1609,29 @@
                     اضغط على مكان المشكلة أو اسحب العلامة لتعديل الموقع.
                 </p>
 
-                <button
-                    type="button"
-                    class="cw-button cw-button-secondary"
-                    id="gps-button"
-                >تحديد موقعي الحالي</button>
+                <div class="cw-location-options">
+    <button
+        type="button"
+        class="cw-location-button"
+        id="gps-button"
+    >
+        <span class="cw-location-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-7.2 8-13a8 8 0 1 0-16 0c0 5.8 8 13 8 13Z"></path>
+        <circle cx="12" cy="9" r="2.7"></circle>
+    </svg>
+</span>
 
+        <span class="cw-location-content">
+            <strong>استخدام موقعي الحالي</strong>
+            <small>تحديد تلقائي من خلال موقع الجهاز</small>
+        </span>
+    </button>
+
+    <div class="cw-location-divider">
+        <span>أو حدّد موقع المشكلة يدويًا على الخريطة</span>
+    </div>
+</div>
                 <div
                     id="complaint-map"
                     class="cw-map"
@@ -874,6 +1762,190 @@
     const gpsButton = document.getElementById("gps-button");
     const submitButton = document.getElementById("submit-button");
     const categoryStatus = document.getElementById("category-status");
+    function updateSelectAppearance(select) {
+    select.classList.toggle(
+        "is-placeholder",
+        !select.value
+    );
+}
+
+/* تعديل النصوص الافتراضية */
+if (service.options.length) {
+    service.options[0].textContent =
+        "اختر الخدمة البلدية";
+
+    service.options[0].disabled = true;
+}
+
+if (category.options.length) {
+    category.options[0].textContent =
+        "اختر نوع المشكلة";
+
+    category.options[0].disabled = true;
+}
+
+/* تحديث اللون عند الاختيار */
+[service, category].forEach(select => {
+    updateSelectAppearance(select);
+
+    select.addEventListener("change", () => {
+        updateSelectAppearance(select);
+    });
+});
+function createCustomSelect(select) {
+    if (!select || select.dataset.customized === "true") {
+        return;
+    }
+
+    select.dataset.customized = "true";
+    select.classList.add("cw-native-select");
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "cw-custom-select";
+
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "cw-select-trigger";
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+
+    const menu = document.createElement("div");
+    menu.className = "cw-select-menu";
+    menu.setAttribute("role", "listbox");
+    menu.hidden = true;
+
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.appendChild(select);
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(menu);
+
+    function closeMenu() {
+        menu.hidden = true;
+        wrapper.classList.remove("is-open");
+        trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function renderOptions() {
+        const selectedOption =
+            select.options[select.selectedIndex];
+
+        trigger.textContent = selectedOption
+            ? selectedOption.textContent
+            : "اختر";
+
+        trigger.disabled = select.disabled;
+
+        trigger.classList.toggle(
+            "is-placeholder",
+            !select.value
+        );
+
+        menu.replaceChildren();
+
+        Array.from(select.options).forEach(option => {
+            const item = document.createElement("button");
+
+            item.type = "button";
+            item.className = "cw-select-option";
+            item.textContent = option.textContent;
+            item.disabled = option.disabled;
+            item.setAttribute("role", "option");
+
+            item.classList.toggle(
+                "is-placeholder",
+                !option.value
+            );
+
+            item.classList.toggle(
+                "is-selected",
+                option.value === select.value &&
+                Boolean(option.value)
+            );
+
+            item.setAttribute(
+                "aria-selected",
+                option.value === select.value
+                    ? "true"
+                    : "false"
+            );
+
+            item.addEventListener("click", () => {
+                if (option.disabled) {
+                    return;
+                }
+
+                select.value = option.value;
+
+                select.dispatchEvent(
+                    new Event("change", {
+                        bubbles: true
+                    })
+                );
+
+                renderOptions();
+                closeMenu();
+                trigger.focus();
+            });
+
+            menu.appendChild(item);
+        });
+    }
+
+    trigger.addEventListener("click", event => {
+        event.stopPropagation();
+
+        if (trigger.disabled) {
+            return;
+        }
+
+        const willOpen = menu.hidden;
+
+        document
+            .querySelectorAll(".cw-select-menu")
+            .forEach(otherMenu => {
+                otherMenu.hidden = true;
+                otherMenu
+                    .closest(".cw-custom-select")
+                    ?.classList.remove("is-open");
+            });
+
+        menu.hidden = !willOpen;
+        wrapper.classList.toggle("is-open", willOpen);
+
+        trigger.setAttribute(
+            "aria-expanded",
+            willOpen ? "true" : "false"
+        );
+    });
+
+    select.addEventListener("change", renderOptions);
+
+    const observer = new MutationObserver(renderOptions);
+
+    observer.observe(select, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: [
+            "disabled",
+            "selected"
+        ]
+    });
+
+    document.addEventListener("click", closeMenu);
+
+    wrapper.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closeMenu();
+            trigger.focus();
+        }
+    });
+
+    renderOptions();
+}
+
+createCustomSelect(service);
+createCustomSelect(category);
 
     let currentStep = 1;
     let stream = null;
@@ -969,6 +2041,17 @@
             && lat >= -90 && lat <= 90
             && lng >= -180 && lng <= 180;
     }
+    function hasPhoto() {
+    const hasCameraPhoto =
+        cameraInput.files && cameraInput.files.length > 0;
+
+    const hasGalleryPhoto =
+        photoInput &&
+        photoInput.files &&
+        photoInput.files.length > 0;
+
+    return Boolean(hasCameraPhoto || hasGalleryPhoto);
+}
 
     function validateStep(number) {
         if (number === 1) {
@@ -997,11 +2080,25 @@
             }
         }
 
-        if (number === 3 && cameraBusy) {
-            showError("انتظر اكتمال التقاط الصورة أو أغلق الكاميرا.");
-            return false;
-        }
+        if (number === 3) {
+    if (cameraBusy) {
+        showError(
+            "انتظر اكتمال التقاط الصورة أو أغلق الكاميرا."
+        );
+        return false;
+    }
 
+    if (!hasPhoto()) {
+        const message =
+            "يجب التقاط صورة للمشكلة أو اختيار صورة من المعرض قبل الانتقال إلى الموقع.";
+
+        showError(message);
+        cameraStatus.textContent = message;
+        openCameraButton.focus();
+
+        return false;
+    }
+}
         if (number === 4) {
             if (!validLocation()) {
                 showError("حدد موقع المشكلة على الخريطة أولًا.");
@@ -1035,8 +2132,18 @@
         const controller = new AbortController();
         categoriesRequest = controller;
 
-        category.replaceChildren(new Option("اختر نوع المشكلة", ""));
-        category.disabled = true;
+        const placeholderOption = new Option(
+    "اختر نوع المشكلة",
+    ""
+);
+
+placeholderOption.disabled = true;
+placeholderOption.selected = !selectedValue;
+
+category.replaceChildren(placeholderOption);
+category.disabled = true;
+
+updateSelectAppearance(category);
         categoriesLoading = false;
 
         if (!service.value) {
@@ -1072,6 +2179,7 @@
             });
 
             category.disabled = data.length === 0;
+            updateSelectAppearance(category);
             categoryStatus.textContent = data.length
                 ? "اختر التصنيف الأقرب للمشكلة."
                 : "لا توجد تصنيفات لهذه الخدمة.";
@@ -1301,24 +2409,71 @@
             return;
         }
 
-        map = L.map("complaint-map").setView([15.3694, 44.1910], 13);
+        map = L.map("complaint-map").setView(
+            [15.37904, 44.16206896],
+            14
+        );
+
+        const maptilerApiKey = "{{ maptiler_api_key|escapejs }}";
 
         L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            `https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=${maptilerApiKey}`,
             {
-                maxZoom: 19,
-                attribution: "&copy; OpenStreetMap contributors"
+                tileSize: 512,
+                zoomOffset: -1,
+                minZoom: 1,
+                maxZoom: 20,
+                crossOrigin: true,
+                attribution:
+                    '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank">MapTiler</a> ' +
+                    '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a>'
             }
         ).addTo(map);
+
+        // إظهار حدود مديرية معين دون تقييد حركة الخريطة.
+        fetch("{% url 'locations:main_boundary' %}")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("تعذر تحميل حدود مديرية معين");
+                }
+
+                return response.json();
+            })
+            .then(boundaryData => {
+                const boundaryLayer = L.geoJSON(boundaryData, {
+                    style: {
+                        color: "#16834f",
+                        weight: 3,
+                        opacity: 1,
+                        fillColor: "#2f9a62",
+                        fillOpacity: 0.06
+                    }
+                }).addTo(map);
+
+                boundaryLayer.bindTooltip("حدود مديرية معين", {
+                    sticky: true,
+                    direction: "top"
+                });
+            })
+            .catch(error => {
+                console.error(error);
+            });
 
         map.on("click", event => {
             setLocation(event.latlng.lat, event.latlng.lng);
         });
 
         if (validLocation()) {
-            setLocation(Number(latitude.value), Number(longitude.value));
-            map.setView([Number(latitude.value), Number(longitude.value)], 17);
+            const savedLat = Number(latitude.value);
+            const savedLng = Number(longitude.value);
+
+            setLocation(savedLat, savedLng);
+            map.setView([savedLat, savedLng], 17);
         }
+
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
     }
 
     function setLocation(lat, lng) {
@@ -1327,16 +2482,15 @@
         hideReview();
 
         if (map) {
-            if (marker) {
-                marker.setLatLng([lat, lng]);
-            } else {
+            if (!marker) {
                 marker = L.marker([lat, lng], {
                     draggable: true,
+                    zIndexOffset: 1000,
                     icon: L.divIcon({
-                        className: "",
-                        html: '<span class="cw-pin"></span>',
+                        className: "cw-location-marker",
+                        html: '<span class="cw-pin" aria-hidden="true"></span>',
                         iconSize: [30, 38],
-                        iconAnchor: [15, 36]
+                        iconAnchor: [15, 38]
                     })
                 }).addTo(map);
 
@@ -1344,7 +2498,15 @@
                     const point = marker.getLatLng();
                     setLocation(point.lat, point.lng);
                 });
+            } else {
+                marker.setLatLng([lat, lng]);
+
+                if (!map.hasLayer(marker)) {
+                    marker.addTo(map);
+                }
             }
+
+            marker.setZIndexOffset(1000);
         }
 
         locationStatus.textContent =

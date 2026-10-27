@@ -338,6 +338,69 @@
             stroke-linecap: round;
             stroke-linejoin: round;
         }
+        .cv-header-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cv-header-back {
+            display: grid;
+            place-items: center;
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+            padding: 0;
+            border: 1px solid var(--cv-border);
+            border-radius: 9px;
+            background: var(--cv-accent-soft);
+            color: var(--cv-accent);
+            text-decoration: none;
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .cv-header-back:hover {
+            border-color: var(--cv-accent);
+            background: #ffffff;
+            transform: translateX(2px);
+        }
+
+        .cv-header-back:focus-visible {
+            outline: 3px solid var(--cv-accent-ring);
+            outline-offset: 2px;
+        }
+
+        .cv-header-back svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        html[data-cv-theme="dark"] .cv-header-back {
+            background: var(--cv-dark-soft);
+            border-color: var(--cv-border);
+            color: var(--cv-bright);
+        }
+
+        @media (max-width: 600px) {
+            .cv-header-back {
+                width: 30px;
+                height: 30px;
+                border-radius: 8px;
+            }
+
+            .cv-header-back svg {
+                width: 15px;
+                height: 15px;
+            }
+        }
 
         /* الوضع الداكن المشترك */
         html[data-cv-theme="dark"] {
@@ -456,17 +519,33 @@
 
         {% block header %}
             <header class="app-header">
-                <a
-                    href="{% url 'citizen_portal:home' %}"
-                    class="brand-link"
-                    aria-label="CityVoice — الرئيسية"
-                >
-                    <img
-                        src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
-                        alt="CityVoice"
-                        class="brand-logo"
+                <div class="cv-header-brand">
+                    {% if request.resolver_match.url_name == "submit_complaint" %}
+                        <a
+                            href="{% url 'citizen_portal:home' %}"
+                            class="cv-header-back"
+                            aria-label="العودة إلى الصفحة الرئيسية"
+                            title="العودة إلى الصفحة الرئيسية"
+                        >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 12h14"></path>
+                                <path d="m12 5 7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    {% endif %}
+
+                    <a
+                        href="{% url 'citizen_portal:home' %}"
+                        class="brand-link"
+                        aria-label="CityVoice — الرئيسية"
                     >
-                </a>
+                        <img
+                            src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                            alt="CityVoice"
+                            class="brand-logo"
+                        >
+                    </a>
+                </div>
 
                 <div class="user-welcome">
                     <span>مرحبًا بك</span>
