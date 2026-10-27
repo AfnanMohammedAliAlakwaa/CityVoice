@@ -6,8 +6,23 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("citizen_portal.urls")),
+
+    path(
+        "locations/",
+        include("locations.urls"),
+    ),
+
+    path(
+        "feedback/",
+        include("feedback.urls"),
+    ),
+
+    path(
+        "",
+        include("citizen_portal.urls"),
+    ),
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(

@@ -24,6 +24,7 @@ GDAL_LIBRARY_PATH = os.getenv("GDAL_LIBRARY_PATH")
 GEOS_LIBRARY_PATH = os.getenv("GEOS_LIBRARY_PATH")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("OPERATIONAL_SECRET_KEY")
+MAPTILER_API_KEY = os.getenv("MAPTILER_API_KEY", "")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,7 +32,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "192.168.0.101",
+    "192.168.0.104",
 ]
 
 # Application definition
@@ -82,6 +83,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'feedback.context_processors.feedback_notifications',
             ],
         },
     },

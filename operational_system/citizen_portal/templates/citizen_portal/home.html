@@ -585,7 +585,7 @@
         bottom: 0;
         left: 0;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
         width: 100%;
         max-width: 960px;
@@ -614,6 +614,30 @@
         color: var(--cv-accent, #287e50);
         background: var(--cv-accent-soft, #e8f5ee);
         font-weight: bold;
+    }
+
+    .cv-nav a {
+        position: relative;
+    }
+
+    .cv-nav-badge {
+        position: absolute;
+        top: 4px;
+        right: calc(50% - 29px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 19px;
+        height: 19px;
+        padding: 0 5px;
+        border: 2px solid var(--list-surface);
+        border-radius: 999px;
+        color: #ffffff;
+        background: #c59637;
+        font-size: 10px;
+        font-weight: 800;
+        line-height: 1;
+        box-shadow: 0 3px 8px rgba(118, 80, 15, 0.22);
     }
 
     .cv-portal [hidden] {
@@ -789,16 +813,6 @@
             </section>
 
         {% elif page == "complaints" %}
-            <a
-                href="{% url 'citizen_portal:home' %}"
-                class="cv-back"
-            >
-                <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M5 12h14m-6-6 6 6-6 6"></path>
-                </svg>
-                العودة إلى الرئيسية
-            </a>
-
             <div class="cv-page-heading">
                 <div>
                     <h2 class="cv-page-title">شكاواي</h2>
@@ -916,6 +930,81 @@
 
             {% include "citizen_portal/complaint_card.html" with item=complaint expanded=True %}
 
+        {% elif page == "feedback" %}
+            <a
+                href="{% url 'citizen_portal:home' %}"
+                class="cv-back"
+            >
+                <svg
+                    class="cv-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <path d="M5 12h14m-6-6 6 6-6 6"></path>
+                </svg>
+
+                العودة إلى الرئيسية
+            </a>
+
+            <div class="cv-page-heading">
+                <div>
+                    <h2 class="cv-page-title">التقييم</h2>
+
+                    <p class="cv-muted">
+                        قيّم تجربتك بعد اكتمال معالجة الشكوى.
+                    </p>
+                </div>
+            </div>
+
+            {% if pending_complaints %}
+                <div class="cv-section-heading">
+                    <h2>بانتظار تقييمك</h2>
+
+                    <span class="cv-status cv-status--resolved">
+                        {{ pending_feedback_count }}
+                    </span>
+                </div>
+
+                <div class="cv-list">
+                    {% for item in pending_complaints %}
+                        {% include "citizen_portal/complaint_card.html" with item=item %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="cv-empty">
+                    <span class="cv-empty-icon" aria-hidden="true">
+                        <svg class="cv-icon" viewBox="0 0 24 24">
+                            <path
+                                d="m12 3 2.75 5.57 6.15.89-4.45 4.34
+                                   1.05 6.12L12 17.03l-5.5 2.89
+                                   1.05-6.12L3.1 9.46l6.15-.89L12 3Z"
+                            ></path>
+                        </svg>
+                    </span>
+
+                    <strong>لا توجد تقييمات جديدة</strong>
+
+                    <p>
+                        ستظهر هنا الشكاوى بعد اكتمال معالجتها.
+                    </p>
+                </div>
+            {% endif %}
+
+            {% if completed_complaints %}
+                <div
+                    class="cv-section-heading"
+                    style="margin-top: 28px;"
+                >
+                    <h2>التقييمات السابقة</h2>
+                </div>
+
+                <div class="cv-list">
+                    {% for item in completed_complaints %}
+                        {% include "citizen_portal/complaint_card.html" with item=item %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
         {% elif page == "account" %}
             <div class="cv-panel">
                 <h2>حسابي</h2>
@@ -954,6 +1043,30 @@
             <path d="M9 8h6M9 12h6M9 16h4"></path>
         </svg>
         <span>الشكاوى</span>
+    </a>
+
+    <a
+        href="{% url 'feedback:feedback_list' %}"
+        {% if page == "feedback" %}aria-current="page"{% endif %}
+    >
+        {% if pending_feedback_count %}
+            <span
+                class="cv-nav-badge"
+                aria-label="{{ pending_feedback_count }} تقييمات جديدة"
+            >
+                {{ pending_feedback_count }}
+            </span>
+        {% endif %}
+
+        <svg class="cv-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+                d="m12 3 2.75 5.57 6.15.89-4.45 4.34
+                   1.05 6.12L12 17.03l-5.5 2.89
+                   1.05-6.12L3.1 9.46l6.15-.89L12 3Z"
+            ></path>
+        </svg>
+
+        <span>التقييم</span>
     </a>
 
     <a

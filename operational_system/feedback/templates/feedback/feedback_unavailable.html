@@ -1,0 +1,156 @@
+{% extends "citizen_portal/base.html" %}
+
+{% block title %}التقييم غير متاح | CityVoice{% endblock %}
+
+{% block body_class %}cv-portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feedback-unavailable-page {
+        width: 100%;
+        max-width: 570px;
+        margin: 45px auto;
+        padding: 0 18px 35px;
+        direction: rtl;
+    }
+
+    .feedback-unavailable-card {
+        padding: 40px 30px 32px;
+        border: 1px solid var(--cv-border);
+        border-radius: 24px;
+        background: #ffffff;
+        text-align: center;
+        box-shadow: 0 18px 45px rgba(36, 74, 52, 0.10);
+    }
+
+    .feedback-wait-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 18px;
+        border: 1px solid #e2c98e;
+        border-radius: 22px;
+        color: #b58a34;
+        background: #fff8e8;
+    }
+
+    .feedback-wait-icon svg {
+        width: 37px;
+        height: 37px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .feedback-unavailable-card h1 {
+        margin: 0;
+        color: var(--cv-text);
+        font-size: 26px;
+    }
+
+    .feedback-unavailable-card p {
+        max-width: 420px;
+        margin: 12px auto 23px;
+        color: var(--cv-muted);
+        font-size: 15px;
+        line-height: 1.9;
+    }
+
+    .feedback-status-box {
+        margin-bottom: 27px;
+        padding: 15px;
+        border: 1px solid var(--cv-border);
+        border-radius: 15px;
+        background: var(--cv-accent-soft);
+    }
+
+    .feedback-status-box span {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--cv-muted);
+        font-size: 12px;
+    }
+
+    .feedback-status-box strong {
+        color: var(--cv-text);
+        font-size: 15px;
+    }
+
+    .feedback-return-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 190px;
+        min-height: 48px;
+        padding: 0 24px;
+        border-radius: 13px;
+        color: #ffffff;
+        background: var(--cv-accent);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 8px 20px var(--cv-accent-ring);
+    }
+
+    .feedback-return-link:hover {
+        background: var(--cv-accent-hover);
+    }
+
+    html[data-cv-theme="dark"] .feedback-unavailable-card {
+        background: var(--cv-dark-soft);
+    }
+
+    @media (max-width: 520px) {
+        .feedback-unavailable-page {
+            margin-top: 25px;
+            padding: 0 12px 25px;
+        }
+
+        .feedback-unavailable-card {
+            padding: 32px 20px 27px;
+            border-radius: 19px;
+        }
+
+        .feedback-unavailable-card h1 {
+            font-size: 22px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="feedback-unavailable-page">
+    <div class="feedback-unavailable-card">
+        <div class="feedback-wait-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5l3 2"></path>
+            </svg>
+        </div>
+
+        <h1>التقييم غير متاح حاليًا</h1>
+
+        <p>
+            ستتمكن من تقييم الخدمة بعد اكتمال معالجة الشكوى.
+            سنعرض لك خيار التقييم عندما تتحول حالة الشكوى إلى
+            تم الحل أو مغلقة.
+        </p>
+
+        <div class="feedback-status-box">
+            <span>الحالة الحالية للشكوى</span>
+            <strong>{{ complaint.get_status_display }}</strong>
+        </div>
+
+        <a
+            href="{% url 'citizen_portal:home' %}"
+            class="feedback-return-link"
+        >
+            العودة إلى الرئيسية
+        </a>
+    </div>
+</section>
+{% endblock %}

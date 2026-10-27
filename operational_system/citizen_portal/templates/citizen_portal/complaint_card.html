@@ -76,6 +76,7 @@
             {% if item.photo %}
                 <div class="cv-wide">
                     <dt>صورة البلاغ</dt>
+
                     <dd>
                         <img
                             src="{{ item.photo.url }}"
@@ -87,6 +88,58 @@
                 </div>
             {% endif %}
         </dl>
+
+        {% if item.status == "resolved" or item.status == "closed" %}
+            <div class="cv-feedback-invitation">
+                <span
+                    class="cv-feedback-invitation-icon"
+                    aria-hidden="true"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        class="cv-icon"
+                    >
+                        <path
+                            d="m12 3 2.75 5.57 6.15.89-4.45 4.34
+                               1.05 6.12L12 17.03l-5.5 2.89
+                               1.05-6.12L3.1 9.46l6.15-.89L12 3Z"
+                        ></path>
+                    </svg>
+                </span>
+
+                <div class="cv-feedback-invitation-copy">
+                    {% if item.feedback %}
+                        <strong>شكرًا لمشاركتنا رأيك</strong>
+
+                        <span>
+                            تم إرسال تقييمك لهذه الشكوى بنجاح.
+                        </span>
+                    {% else %}
+                        <strong>تمت معالجة شكواك</strong>
+
+                        <span>
+                            شاركنا رأيك في جودة معالجة الشكوى.
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if item.feedback %}
+                    <a
+                        href="{% url 'feedback:feedback_success' item.reference_number %}"
+                        class="cv-feedback-button cv-feedback-button--done"
+                    >
+                        تم التقييم
+                    </a>
+                {% else %}
+                    <a
+                        href="{% url 'feedback:submit_feedback' item.reference_number %}"
+                        class="cv-feedback-button"
+                    >
+                        تقييم الخدمة
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
 
         <button
             type="button"
