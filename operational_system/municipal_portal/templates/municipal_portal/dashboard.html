@@ -1,0 +1,302 @@
+{% extends "municipal_portal/base.html" %}
+
+{% block title %}
+لوحة التحكم | CityVoice
+{% endblock %}
+
+{% block page_title %}
+لوحة التحكم
+{% endblock %}
+
+{% block content %}
+
+<div class="mp-page-heading">
+    <div>
+        <h1>نظرة عامة</h1>
+
+        <p>
+            متابعة البلاغات وأوامر العمل في بلدية معين.
+        </p>
+    </div>
+
+    <div class="mp-actions">
+        <a
+            href="{% url 'municipal_portal:complaint_list' %}"
+            class="mp-button"
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect
+                    x="5"
+                    y="3"
+                    width="14"
+                    height="18"
+                    rx="3"
+                ></rect>
+                <path d="M9 8h6M9 12h6M9 16h4"></path>
+            </svg>
+
+            عرض جميع البلاغات
+        </a>
+
+        <a
+            href="{% url 'municipal_portal:work_order_list' %}"
+            class="mp-button mp-button--secondary"
+        >
+            عرض أوامر العمل
+        </a>
+    </div>
+</div>
+
+<section class="mp-stats" aria-label="إحصائيات البلاغات">
+
+    <article class="mp-stat-card">
+        <span class="mp-stat-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect
+                    x="5"
+                    y="3"
+                    width="14"
+                    height="18"
+                    rx="3"
+                ></rect>
+                <path d="M9 8h6M9 12h6M9 16h4"></path>
+            </svg>
+        </span>
+
+        <span class="mp-stat-content">
+            <span>إجمالي البلاغات</span>
+            <strong>{{ total_count }}</strong>
+        </span>
+    </article>
+
+    <article class="mp-stat-card mp-stat-card--gold">
+        <span class="mp-stat-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5l3 2"></path>
+            </svg>
+        </span>
+
+        <span class="mp-stat-content">
+            <span>بلاغات جديدة</span>
+            <strong>{{ submitted_count }}</strong>
+        </span>
+    </article>
+
+    <article class="mp-stat-card mp-stat-card--blue">
+        <span class="mp-stat-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12a8 8 0 1 0 3-6"></path>
+                <path d="M4 4v5h5"></path>
+            </svg>
+        </span>
+
+        <span class="mp-stat-content">
+            <span>قيد المراجعة</span>
+            <strong>{{ under_review_count }}</strong>
+        </span>
+    </article>
+
+    <article class="mp-stat-card mp-stat-card--orange">
+        <span class="mp-stat-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 6 18 2l4 4-4 4"></path>
+                <path d="m18 6-7.5 7.5"></path>
+                <path d="M4 20l4-1 11-11"></path>
+            </svg>
+        </span>
+
+        <span class="mp-stat-content">
+            <span>تم الإسناد</span>
+            <strong>{{ assigned_count }}</strong>
+        </span>
+    </article>
+
+    <article class="mp-stat-card mp-stat-card--orange">
+        <span class="mp-stat-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20h16"></path>
+                <path d="M6 16 16 6l2 2L8 18H6Z"></path>
+            </svg>
+        </span>
+
+        <span class="mp-stat-content">
+            <span>قيد التنفيذ</span>
+            <strong>{{ in_progress_count }}</strong>
+        </span>
+    </article>
+
+    <article class="mp-stat-card">
+        <span class="mp-stat-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="m8 12 3 3 5-6"></path>
+            </svg>
+        </span>
+
+        <span class="mp-stat-content">
+            <span>تم حلها</span>
+            <strong>{{ resolved_count }}</strong>
+        </span>
+    </article>
+    <article class="mp-stat-card mp-stat-card--blue">
+    <span class="mp-stat-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect
+                x="4"
+                y="5"
+                width="16"
+                height="15"
+                rx="3"
+            ></rect>
+            <path d="M8 5V3h8v2M9 12h6"></path>
+        </svg>
+    </span>
+
+    <span class="mp-stat-content">
+        <span>بلاغات مغلقة</span>
+        <strong>{{ closed_count }}</strong>
+    </span>
+</article>
+
+    <article class="mp-stat-card mp-stat-card--blue">
+        <span class="mp-stat-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 6 18 2l4 4-4 4"></path>
+                <path d="m18 6-7.5 7.5"></path>
+                <path d="M6 18h12"></path>
+            </svg>
+        </span>
+
+        <span class="mp-stat-content">
+            <span>أوامر عمل نشطة</span>
+            <strong>{{ active_work_orders_count }}</strong>
+        </span>
+    </article>
+
+</section>
+
+<section class="mp-panel">
+    <div class="mp-panel-header">
+        <div>
+            <h2>أحدث البلاغات</h2>
+        </div>
+
+        <a href="{% url 'municipal_portal:complaint_list' %}">
+            عرض جميع البلاغات
+        </a>
+    </div>
+
+    {% if recent_complaints %}
+        <div class="mp-table-wrap">
+            <table class="mp-table">
+                <thead>
+                    <tr>
+                        <th>الرقم المرجعي</th>
+                        <th>الخدمة والتصنيف</th>
+                        <th>المواطن</th>
+                        <th>الأولوية</th>
+                        <th>الحالة</th>
+                        <th>تاريخ التقديم</th>
+                        <th>التفاصيل</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for complaint in recent_complaints %}
+                        <tr>
+                            <td>
+                                <a
+                                    href="{% url 'municipal_portal:complaint_detail' complaint.reference_number %}"
+                                    class="mp-reference"
+                                >
+                                    <bdi>
+                                        {{ complaint.reference_number }}
+                                    </bdi>
+                                </a>
+                            </td>
+
+                            <td>
+                                <span class="mp-cell-main">
+                                    <strong>
+                                        {{ complaint.service.name_ar }}
+                                    </strong>
+
+                                    <small>
+                                        {{ complaint.category.name_ar }}
+                                    </small>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="mp-cell-main">
+                                    <strong>
+                                        {{ complaint.citizen.get_full_name|default:complaint.citizen.username }}
+                                    </strong>
+
+                                    <small>
+                                        {{ complaint.citizen.phone_number|default:"لا يوجد رقم" }}
+                                    </small>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span
+                                    class="mp-priority mp-priority--{{ complaint.priority }}"
+                                >
+                                    {{ complaint.get_priority_display }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span
+                                    class="mp-status mp-status--{{ complaint.status }}"
+                                >
+                                    {{ complaint.get_status_display }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <time
+                                    datetime="{{ complaint.created_at|date:'c' }}"
+                                >
+                                    {{ complaint.created_at|date:"Y/m/d" }}
+                                </time>
+                            </td>
+
+                            <td>
+                                <a
+                                    href="{% url 'municipal_portal:complaint_detail' complaint.reference_number %}"
+                                    class="mp-button mp-button--secondary"
+                                >
+                                    فتح
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="mp-empty">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect
+                    x="5"
+                    y="3"
+                    width="14"
+                    height="18"
+                    rx="3"
+                ></rect>
+                <path d="M9 8h6M9 12h6M9 16h4"></path>
+            </svg>
+
+            <strong>لا توجد بلاغات حتى الآن</strong>
+
+            <p>
+                ستظهر البلاغات الجديدة هنا بمجرد إرسالها من بوابة المواطن.
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

@@ -11,6 +11,10 @@ urlpatterns = [
         "locations/",
         include("locations.urls"),
     ),
+    path(
+    "municipality/",
+    include("municipal_portal.urls"),
+),
 
     path(
         "feedback/",

@@ -1,0 +1,108 @@
+{% extends "municipal_portal/base.html" %}
+
+{% block title %}
+الإشعارات | CityVoice
+{% endblock %}
+
+{% block page_title %}
+الإشعارات
+{% endblock %}
+
+{% block content %}
+
+<div class="mp-page-heading">
+    <div>
+        <h1>الإشعارات</h1>
+
+        <p>
+            متابعة آخر البلاغات والتحديثات المهمة.
+        </p>
+    </div>
+
+    {% if unread_notifications_count %}
+        <form
+            method="post"
+            action="{% url 'municipal_portal:mark_all_notifications_read' %}"
+        >
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="mp-button mp-button--secondary"
+            >
+                تحديد الكل كمقروء
+            </button>
+        </form>
+    {% endif %}
+</div>
+
+<section class="mp-notification-list">
+    {% for notification in notifications %}
+        <article
+            class="mp-notification-card {% if not notification.is_read %}mp-notification-card--unread{% endif %}"
+        >
+            <span class="mp-notification-card-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                    <path d="M10 21h4"></path>
+                </svg>
+            </span>
+
+            <div class="mp-notification-card-content">
+                <div class="mp-notification-card-heading">
+                    <h2>{{ notification.title }}</h2>
+
+                    {% if not notification.is_read %}
+                        <span>جديد</span>
+                    {% endif %}
+                </div>
+
+                <p>{{ notification.message }}</p>
+
+                <time datetime="{{ notification.created_at|date:'c' }}">
+                    {{ notification.created_at|date:"Y/m/d — H:i" }}
+                </time>
+            </div>
+
+            {% if notification.link %}
+                <form
+                    method="post"
+                    action="{% url 'municipal_portal:mark_notification_read' notification.pk %}"
+                >
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="mp-button mp-button--secondary"
+                    >
+                        فتح
+                    </button>
+                </form>
+            {% elif not notification.is_read %}
+                <form
+                    method="post"
+                    action="{% url 'municipal_portal:mark_notification_read' notification.pk %}"
+                >
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="mp-button mp-button--secondary"
+                    >
+                        تمت القراءة
+                    </button>
+                </form>
+            {% endif %}
+        </article>
+    {% empty %}
+        <div class="mp-empty">
+            <strong>لا توجد إشعارات</strong>
+
+            <p>
+                ستظهر هنا إشعارات البلاغات والتحديثات الجديدة.
+            </p>
+        </div>
+    {% endfor %}
+</section>
+
+{% endblock %}

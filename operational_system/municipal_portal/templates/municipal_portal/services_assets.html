@@ -1,0 +1,272 @@
+{% extends "municipal_portal/base.html" %}
+
+{% block title %}
+الخدمات والأصول | CityVoice
+{% endblock %}
+
+{% block page_title %}
+الخدمات والأصول
+{% endblock %}
+
+{% block content %}
+
+<div class="mp-page-heading">
+    <div>
+        <h1>الخدمات والأصول</h1>
+
+        <p>
+            إدارة الخدمات البلدية وتصنيفاتها والأصول المرتبطة بها.
+        </p>
+    </div>
+</div>
+
+<div class="mp-section-tabs">
+    <a href="#municipal-services">
+        الخدمات والتصنيفات
+    </a>
+
+    <a href="#municipal-assets">
+        الأصول البلدية
+    </a>
+</div>
+
+<section
+    class="mp-panel"
+    id="municipal-services"
+>
+    <div class="mp-panel-header">
+        <div>
+            <h2>الخدمات والتصنيفات</h2>
+
+            <p>
+                الخدمات التي تظهر للمواطن عند تقديم البلاغ.
+            </p>
+        </div>
+
+        {% if request.user.is_staff %}
+            <a
+                href="{% url 'admin:municipal_services_municipalservice_add' %}"
+                class="mp-button"
+            >
+                إضافة خدمة
+            </a>
+        {% endif %}
+    </div>
+
+    {% if services %}
+        <div class="mp-service-grid">
+            {% for service in services %}
+                <article class="mp-service-card">
+                    <div class="mp-service-card-header">
+                        <span class="mp-service-card-icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="m12 3 9 5-9 5-9-5 9-5Z"></path>
+                                <path d="m3 12 9 5 9-5"></path>
+                            </svg>
+                        </span>
+
+                        <div>
+                            <h3>{{ service.name_ar }}</h3>
+
+                            {% if service.is_active %}
+                                <span class="mp-active-label">
+                                    مفعّلة
+                                </span>
+                            {% else %}
+                                <span class="mp-inactive-label">
+                                    متوقفة
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if service.description %}
+                        <p class="mp-service-description">
+                            {{ service.description }}
+                        </p>
+                    {% endif %}
+
+                    <div class="mp-service-numbers">
+                        <span>
+                            <strong>{{ service.category_count }}</strong>
+                            تصنيف
+                        </span>
+
+                        <span>
+                            <strong>{{ service.asset_type_count }}</strong>
+                            نوع أصل
+                        </span>
+
+                        <span>
+                            <strong>{{ service.asset_count }}</strong>
+                            أصل
+                        </span>
+                    </div>
+
+                    <div class="mp-service-categories">
+                        <strong>التصنيفات:</strong>
+
+                        {% for category in service.categories.all %}
+                            <span>
+                                {{ category.name_ar }}
+                            </span>
+                        {% empty %}
+                            <small>
+                                لا توجد تصنيفات مضافة.
+                            </small>
+                        {% endfor %}
+                    </div>
+
+                    {% if request.user.is_staff %}
+                        <a
+                            href="{% url 'admin:municipal_services_municipalservice_change' service.pk %}"
+                            class="mp-text-link"
+                        >
+                            تعديل الخدمة
+                        </a>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="mp-empty">
+            <strong>لا توجد خدمات مضافة</strong>
+
+            <p>
+                أضيفي الخدمات والتصنيفات التي يمكن للمواطن تقديم بلاغ عنها.
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+<section
+    class="mp-panel"
+    id="municipal-assets"
+>
+    <div class="mp-panel-header">
+        <div>
+            <h2>الأصول البلدية</h2>
+
+            <p>
+                العناصر والمرافق البلدية المسجلة ومواقعها وحالتها.
+            </p>
+        </div>
+
+        {% if request.user.is_staff %}
+            <a
+                href="{% url 'admin:assets_municipalasset_add' %}"
+                class="mp-button"
+            >
+                إضافة أصل
+            </a>
+        {% endif %}
+    </div>
+
+    {% if assets %}
+        <div class="mp-table-wrap">
+            <table class="mp-table">
+                <thead>
+                    <tr>
+                        <th>رمز الأصل</th>
+                        <th>الخدمة</th>
+                        <th>نوع الأصل</th>
+                        <th>الاسم</th>
+                        <th>الحي والعنوان</th>
+                        <th>الحالة</th>
+                        <th>درجة الأصل</th>
+                        <th>التفاصيل</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for asset in assets %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    <bdi>{{ asset.asset_code }}</bdi>
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ asset.asset_type.service.name_ar }}
+                            </td>
+
+                            <td>
+                                {{ asset.asset_type.name_ar }}
+                            </td>
+
+                            <td>
+                                {{ asset.name_ar|default:"غير مضاف" }}
+                            </td>
+
+                            <td>
+                                <span class="mp-cell-main">
+                                    <strong>
+                                        {{ asset.neighborhood|default:"حي غير محدد" }}
+                                    </strong>
+
+                                    <small>
+                                        {{ asset.address|default:"لا يوجد عنوان" }}
+                                    </small>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="mp-asset-state mp-asset-state--{{ asset.status }}">
+                                    {% if asset.status == "operational" %}
+                                        يعمل
+                                    {% elif asset.status == "needs_maintenance" %}
+                                        يحتاج صيانة
+                                    {% elif asset.status == "under_maintenance" %}
+                                        تحت الصيانة
+                                    {% elif asset.status == "out_of_service" %}
+                                        خارج الخدمة
+                                    {% else %}
+                                        {{ asset.get_status_display }}
+                                    {% endif %}
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if asset.condition == "good" %}
+                                    جيدة
+                                {% elif asset.condition == "fair" %}
+                                    مقبولة
+                                {% elif asset.condition == "poor" %}
+                                    سيئة
+                                {% elif asset.condition == "critical" %}
+                                    حرجة
+                                {% else %}
+                                    {{ asset.get_condition_display }}
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if request.user.is_staff %}
+                                    <a
+                                        href="{% url 'admin:assets_municipalasset_change' asset.pk %}"
+                                        class="mp-button mp-button--secondary"
+                                    >
+                                        فتح
+                                    </a>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="mp-empty">
+            <strong>لا توجد أصول بلدية مسجلة</strong>
+
+            <p>
+                ستظهر هنا أعمدة الإنارة والحاويات والمرافق المسجلة.
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
