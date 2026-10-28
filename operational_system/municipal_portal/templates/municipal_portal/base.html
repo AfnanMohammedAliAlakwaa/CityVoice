@@ -3,22 +3,118 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1"
     >
 
     <title>
-        {% block title %}
-            بوابة البلدية | CityVoice
-        {% endblock %}
+        {% block title %}بوابة البلدية | CityVoice{% endblock %}
     </title>
 
     <link
-    rel="stylesheet"
-    href="{% static 'municipal_portal/css/municipal.css' %}?v=3"
->
+        rel="stylesheet"
+        href="{% static 'municipal_portal/css/municipal.css' %}?v=3"
+    >
+
+    <style>
+        [data-notification-count][hidden],
+        .mp-live-notice[hidden] {
+            display: none !important;
+        }
+
+        .mp-live-notice {
+            position: fixed;
+            inset-inline-end: 20px;
+            bottom: 20px;
+            z-index: 2000;
+            width: min(390px, calc(100% - 40px));
+            box-sizing: border-box;
+            padding: 18px;
+            border: 1px solid #cde3d5;
+            border-inline-start: 5px solid #237d50;
+            border-radius: 16px;
+            background: #fff;
+            color: #233d2e;
+            box-shadow: 0 12px 40px rgb(20 55 35 / 18%);
+            font: inherit;
+        }
+
+        .mp-live-notice-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .mp-live-notice-title {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .mp-live-notice-message {
+            margin: 10px 0 14px;
+            color: #536c5d;
+            font-size: 14px;
+            line-height: 1.9;
+            overflow-wrap: anywhere;
+        }
+
+        .mp-live-notice-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #d8e8df;
+            border-radius: 10px;
+            background: #f5faf7;
+            color: #237d50;
+            font: inherit;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .mp-live-notice-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 8px 15px;
+            box-sizing: border-box;
+            border-radius: 10px;
+            background: #237d50;
+            color: #fff;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .mp-live-notice-close:focus-visible,
+        .mp-live-notice-link:focus-visible {
+            outline: 3px solid #a5d6ba;
+            outline-offset: 3px;
+        }
+
+        .mp-live-announcement {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
+        @media (max-width: 560px) {
+            .mp-live-notice {
+                inset-inline-end: 12px;
+                bottom: 12px;
+                width: calc(100% - 24px);
+            }
+        }
+    </style>
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -73,7 +169,6 @@
                     <rect x="3" y="14" width="7" height="7" rx="2"></rect>
                     <rect x="14" y="14" width="7" height="7" rx="2"></rect>
                 </svg>
-
                 <span>لوحة التحكم</span>
             </a>
 
@@ -88,7 +183,6 @@
                     <path d="m3 12 9 5 9-5"></path>
                     <path d="m3 16 9 5 9-5"></path>
                 </svg>
-
                 <span>الخدمات والأصول</span>
             </a>
 
@@ -108,7 +202,6 @@
                     ></rect>
                     <path d="M9 8h6M9 12h6M9 16h4"></path>
                 </svg>
-
                 <span>البلاغات</span>
             </a>
 
@@ -124,7 +217,6 @@
                     <path d="M10 7 6 3 3 6l4 4"></path>
                     <path d="m6 6 12 12"></path>
                 </svg>
-
                 <span>أوامر العمل</span>
             </a>
 
@@ -139,7 +231,6 @@
                     <path d="M2 21v-2a7 7 0 0 1 14 0v2"></path>
                     <path d="M17 8h5M19.5 5.5v5"></path>
                 </svg>
-
                 <span>العاملون</span>
             </a>
 
@@ -156,42 +247,35 @@
 
                 <span>الإشعارات</span>
 
-                {% if unread_notifications_count %}
-                    <span class="mp-navigation-badge">
-                        {{ unread_notifications_count }}
-                    </span>
-                {% endif %}
+                <span
+                    class="mp-navigation-badge"
+                    data-notification-count
+                    {% if not unread_notifications_count %}hidden{% endif %}
+                >
+                    {{ unread_notifications_count|default:0 }}
+                </span>
             </a>
         </nav>
 
         <div class="mp-sidebar-footer">
-            
-
             <form
                 method="post"
                 action="{% url 'citizen_portal:logout' %}"
             >
                 {% csrf_token %}
 
-                <button
-                    type="submit"
-                    class="mp-logout"
-                >
+                <button type="submit" class="mp-logout">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M10 4H4v16h6"></path>
                         <path d="M14 8l4 4-4 4M8 12h10"></path>
                     </svg>
-
                     تسجيل الخروج
                 </button>
             </form>
         </div>
     </aside>
 
-    <div
-        class="mp-overlay"
-        id="sidebar-overlay"
-    ></div>
+    <div class="mp-overlay" id="sidebar-overlay"></div>
 
     <div class="mp-page">
         <header class="mp-topbar">
@@ -215,9 +299,7 @@
                     </span>
 
                     <strong class="mp-topbar-title">
-                        {% block page_title %}
-                            لوحة التحكم
-                        {% endblock %}
+                        {% block page_title %}لوحة التحكم{% endblock %}
                     </strong>
                 </div>
             </div>
@@ -226,6 +308,7 @@
                 <a
                     href="{% url 'municipal_portal:notification_list' %}"
                     class="mp-notification-button"
+                    id="municipal-notification-button"
                     aria-label="الإشعارات"
                 >
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -233,11 +316,13 @@
                         <path d="M10 21h4"></path>
                     </svg>
 
-                    {% if unread_notifications_count %}
-                        <span class="mp-notification-badge">
-                            {{ unread_notifications_count }}
-                        </span>
-                    {% endif %}
+                    <span
+                        class="mp-notification-badge"
+                        data-notification-count
+                        {% if not unread_notifications_count %}hidden{% endif %}
+                    >
+                        {{ unread_notifications_count|default:0 }}
+                    </span>
                 </a>
 
                 <div class="mp-topbar-user">
@@ -281,12 +366,60 @@
     </div>
 </div>
 
+<div
+    class="mp-live-notice"
+    id="municipal-live-notice"
+    data-summary-url="{% url 'municipal_portal:notification_summary' %}"
+    hidden
+>
+    <div class="mp-live-notice-header">
+        <h2
+            class="mp-live-notice-title"
+            id="municipal-live-notice-title"
+        >
+            إشعار جديد
+        </h2>
+
+        <button
+            type="button"
+            class="mp-live-notice-close"
+            id="municipal-live-notice-close"
+            aria-label="إغلاق التنبيه"
+        >
+            ×
+        </button>
+    </div>
+
+    <p
+        class="mp-live-notice-message"
+        id="municipal-live-notice-message"
+    ></p>
+
+    <a
+        href="{% url 'municipal_portal:notification_list' %}"
+        class="mp-live-notice-link"
+    >
+        عرض الإشعارات
+    </a>
+</div>
+
+<div
+    class="mp-live-announcement"
+    id="municipal-live-announcement"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+></div>
+
 <script>
 (function () {
-    const sidebar = document.getElementById("municipal-sidebar");
     const openButton = document.getElementById("sidebar-open");
     const closeButton = document.getElementById("sidebar-close");
     const overlay = document.getElementById("sidebar-overlay");
+
+    if (!openButton || !closeButton || !overlay) {
+        return;
+    }
 
     function openSidebar() {
         document.body.classList.add("mp-sidebar-open");
@@ -302,11 +435,205 @@
     closeButton.addEventListener("click", closeSidebar);
     overlay.addEventListener("click", closeSidebar);
 
-    document.addEventListener("keydown", event => {
+    document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
             closeSidebar();
         }
     });
+})();
+</script>
+
+<script>
+(function () {
+    const notice = document.getElementById("municipal-live-notice");
+    const title = document.getElementById("municipal-live-notice-title");
+    const message = document.getElementById(
+        "municipal-live-notice-message"
+    );
+    const closeButton = document.getElementById(
+        "municipal-live-notice-close"
+    );
+    const announcement = document.getElementById(
+        "municipal-live-announcement"
+    );
+    const bell = document.getElementById(
+        "municipal-notification-button"
+    );
+    const badges = document.querySelectorAll(
+        "[data-notification-count]"
+    );
+
+    if (!notice || !title || !message || !closeButton) {
+        return;
+    }
+
+    const summaryUrl = notice.dataset.summaryUrl;
+    const pollInterval = 10000;
+
+    let timer = null;
+    let busy = false;
+    let stopped = false;
+    let latestSeenId = null;
+
+    function updateBadges(count) {
+        badges.forEach(function (badge) {
+            badge.textContent = count > 99
+                ? "99+"
+                : String(count);
+
+            badge.hidden = count === 0;
+        });
+
+        if (bell) {
+            bell.setAttribute(
+                "aria-label",
+                count > 0
+                    ? "الإشعارات، " + count + " غير مقروءة"
+                    : "الإشعارات، لا توجد إشعارات غير مقروءة"
+            );
+        }
+    }
+
+    function showNotice(notification) {
+        // استخدام textContent يمنع تفسير نص الإشعار كـ HTML.
+        title.textContent = notification.title || "إشعار جديد";
+        message.textContent = notification.message || "";
+
+        notice.hidden = false;
+
+        if (announcement) {
+            announcement.textContent =
+                title.textContent + ". " + message.textContent;
+        }
+    }
+
+    function scheduleNext() {
+        window.clearTimeout(timer);
+
+        if (!stopped && !document.hidden) {
+            timer = window.setTimeout(
+                fetchSummary,
+                pollInterval
+            );
+        }
+    }
+
+    async function fetchSummary() {
+        window.clearTimeout(timer);
+
+        if (busy || stopped || document.hidden) {
+            return;
+        }
+
+        busy = true;
+
+        const controller = new AbortController();
+        const timeout = window.setTimeout(function () {
+            controller.abort();
+        }, 8000);
+
+        try {
+            const response = await fetch(summaryUrl, {
+                method: "GET",
+                credentials: "same-origin",
+                cache: "no-store",
+                headers: {
+                    "Accept": "application/json"
+                },
+                signal: controller.signal
+            });
+
+            // عند انتهاء الجلسة أو فقدان الصلاحية،
+            // نتوقف عن طلب بيانات الإشعارات.
+            if (
+                response.redirected ||
+                response.status === 401 ||
+                response.status === 403
+            ) {
+                stopped = true;
+                notice.hidden = true;
+                return;
+            }
+
+            if (!response.ok) {
+                return;
+            }
+
+            const contentType = response.headers.get(
+                "content-type"
+            ) || "";
+
+            if (!contentType.includes("application/json")) {
+                return;
+            }
+
+            const data = await response.json();
+
+            const unreadCount = Number(data.unread_count);
+            const latestId = Number(data.latest_id);
+
+            if (
+                !Number.isSafeInteger(unreadCount) ||
+                unreadCount < 0 ||
+                !Number.isSafeInteger(latestId) ||
+                latestId < 0
+            ) {
+                return;
+            }
+
+            updateBadges(unreadCount);
+
+            // أول استجابة تحدد الموجود مسبقًا،
+            // ولا تعرضه على أنه وصل الآن.
+            if (
+                latestSeenId !== null &&
+                latestId > latestSeenId &&
+                data.latest_notification &&
+                data.latest_notification.is_read === false
+            ) {
+                showNotice(data.latest_notification);
+            }
+
+            latestSeenId = latestId;
+
+        } catch (error) {
+            // عند انقطاع الشبكة نعيد المحاولة في الدورة التالية.
+        } finally {
+            window.clearTimeout(timeout);
+            busy = false;
+            scheduleNext();
+        }
+    }
+
+    closeButton.addEventListener("click", function () {
+        notice.hidden = true;
+
+        if (announcement) {
+            announcement.textContent = "";
+        }
+    });
+
+    document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+            window.clearTimeout(timer);
+        } else {
+            fetchSummary();
+        }
+    });
+
+    window.addEventListener("online", fetchSummary);
+
+    window.addEventListener("pagehide", function () {
+        window.clearTimeout(timer);
+    });
+
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            fetchSummary();
+        }
+    });
+
+    fetchSummary();
 })();
 </script>
 
