@@ -18,6 +18,23 @@ urlpatterns = [
         views.services_assets,
         name="services_assets",
     ),
+    path(
+    "services-assets/add/",
+    views.asset_create,
+    name="asset_create",
+),
+
+path(
+    "services-assets/import/",
+    views.asset_import,
+    name="asset_import",
+),
+
+path(
+    "services-assets/template/",
+    views.asset_excel_template,
+    name="asset_excel_template",
+),
 
     path(
         "notifications/",

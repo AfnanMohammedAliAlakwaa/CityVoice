@@ -16,9 +16,9 @@
     </title>
 
     <link
-        rel="stylesheet"
-        href="{% static 'municipal_portal/css/municipal.css' %}"
-    >
+    rel="stylesheet"
+    href="{% static 'municipal_portal/css/municipal.css' %}?v=3"
+>
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -165,24 +165,7 @@
         </nav>
 
         <div class="mp-sidebar-footer">
-            <div class="mp-sidebar-user">
-                <span
-                    class="mp-user-avatar"
-                    aria-hidden="true"
-                >
-                    {{ request.user.first_name|first|default:"م" }}
-                </span>
-
-                <span>
-                    <strong>
-                        {{ request.user.get_full_name|default:request.user.username }}
-                    </strong>
-
-                    <small>
-                        {{ request.user.get_role_display }}
-                    </small>
-                </span>
-            </div>
+            
 
             <form
                 method="post"

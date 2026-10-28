@@ -1053,16 +1053,7 @@ svg {
     margin-bottom: 18px;
 }
 
-.mp-brand {
-    gap: 9px;
-}
 
-.mp-brand img {
-    width: 40px;
-    height: 40px;
-    padding: 4px;
-    border-radius: 11px;
-}
 
 .mp-brand strong {
     font-size: 17px;
@@ -1543,4 +1534,223 @@ svg {
     .mp-topbar-user > span:first-child {
         display: none;
     }
+}
+/* ======================================
+   الشكل النهائي للشريط الجانبي
+====================================== */
+
+html body .mp-sidebar {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+
+    width: 240px !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+
+    padding: 18px 14px !important;
+
+    background:
+        linear-gradient(
+            180deg,
+            #17613b 0%,
+            #104a2e 100%
+        ) !important;
+
+    border: 0 !important;
+
+    /* تدوير الجهة الداخلية فقط */
+    border-radius: 28px 0 0 28px !important;
+
+    box-shadow:
+        -10px 0 35px rgba(10, 74, 44, 0.12) !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+/* مساحة الصفحة بجانب الشريط */
+
+html body .mp-page {
+    width: calc(100% - 240px) !important;
+    min-height: 100vh !important;
+
+    margin-right: 240px !important;
+    margin-inline-start: 240px !important;
+    padding-right: 0 !important;
+}
+
+/* ======================================
+   الشعار في المنتصف
+====================================== */
+
+html body .mp-sidebar-header {
+    position: relative;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    margin: 0 0 20px !important;
+    padding: 8px 0 20px !important;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+html body .mp-brand {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+/* إخفاء النص لأن اسم CityVoice موجود داخل صورة الشعار */
+
+html body .mp-brand > span {
+    display: none !important;
+}
+
+/* تكبير الشعار وإزالة المربع الأبيض */
+
+
+/* زر إغلاق القائمة في الهاتف */
+
+html body .mp-sidebar-close {
+    position: absolute !important;
+    top: 12px !important;
+    left: 8px !important;
+}
+
+/* ======================================
+   روابط التنقل
+====================================== */
+
+html body .mp-navigation {
+    gap: 6px !important;
+}
+
+html body .mp-navigation a {
+    min-height: 46px !important;
+    margin: 1px 0 !important;
+    padding: 10px 12px !important;
+
+    color: rgba(255, 255, 255, 0.82) !important;
+    background: transparent !important;
+
+    border: 1px solid transparent !important;
+    border-radius: 14px !important;
+
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease,
+        transform 0.2s ease !important;
+}
+
+html body .mp-navigation a:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.10) !important;
+    transform: translateX(-2px) !important;
+}
+
+html body .mp-navigation a[aria-current="page"] {
+    color: #17613b !important;
+    background: #ffffff !important;
+
+    border-radius: 14px !important;
+
+    box-shadow:
+        0 8px 22px rgba(3, 40, 23, 0.16) !important;
+}
+
+/* بيانات المستخدم */
+
+html body .mp-sidebar-user {
+    background: rgba(255, 255, 255, 0.08) !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.12) !important;
+
+    border-radius: 15px !important;
+}
+
+/* زر تسجيل الخروج */
+
+html body .mp-logout {
+    color: #ffffff !important;
+    background: transparent !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.20) !important;
+
+    border-radius: 14px !important;
+}
+
+html body .mp-logout:hover {
+    background: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* الهاتف */
+
+@media (max-width: 900px) {
+    html body .mp-sidebar {
+        width: min(280px, 86vw) !important;
+        border-radius: 24px 0 0 24px !important;
+    }
+
+    html body .mp-page {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-inline-start: 0 !important;
+    }
+
+    html body .mp-brand img {
+        width: 145px !important;
+        height: 64px !important;
+    }
+}
+/* بطاقة الشعار */
+
+html body .mp-brand {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 165px !important;
+    height: 78px !important;
+
+    margin: 0 auto !important;
+    padding: 8px 10px !important;
+
+    background: rgba(255, 255, 255, 0.96) !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.70) !important;
+
+    border-radius: 16px !important;
+
+    box-shadow:
+        0 7px 18px rgba(3, 48, 28, 0.12) !important;
+}
+
+html body .mp-brand img {
+    display: block !important;
+
+    width: 135px !important;
+    height: 52px !important;
+
+    margin: 0 auto !important;
+    padding: 0 !important;
+
+    object-fit: contain !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    filter: none !important;
 }

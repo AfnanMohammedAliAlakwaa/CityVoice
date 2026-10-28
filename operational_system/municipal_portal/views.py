@@ -1,22 +1,31 @@
+from datetime import date, datetime
+from io import BytesIO
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Q
+from django.contrib.gis.geos import Point
+from django.db import transaction
+from django.db.models import Count, OuterRef, Q, Subquery
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from assets.models import MunicipalAsset
+from openpyxl import Workbook, load_workbook
+
+from assets.models import AssetType, MunicipalAsset
 from complaints.models import Complaint
+from locations.models import Neighborhood
 from maintenance.models import WorkOrder
 from municipal_services.models import MunicipalService
 from notifications.models import Notification
 
 from .decorators import municipal_required
+from .forms import AssetExcelUploadForm, MunicipalAssetForm
 
 
 User = get_user_model()
-
 
 @municipal_required
 def dashboard(request):
@@ -103,6 +112,17 @@ def services_assets(request):
         .order_by("name_ar")
     )
 
+    last_completed_maintenance = (
+        WorkOrder.objects
+        .filter(
+            complaint__asset=OuterRef("pk"),
+            status=WorkOrder.Status.COMPLETED,
+            completed_at__isnull=False,
+        )
+        .order_by("-completed_at")
+        .values("completed_at")[:1]
+    )
+
     assets = (
         MunicipalAsset.objects
         .select_related(
@@ -110,8 +130,38 @@ def services_assets(request):
             "asset_type__service",
             "neighborhood",
         )
-        .order_by("-created_at")
+        .annotate(
+            last_maintenance_at=Subquery(
+                last_completed_maintenance,
+            )
+        )
+        .order_by(
+            "asset_type__service__name_ar",
+            "asset_code",
+        )
     )
+    assets_by_service = {}
+
+    for asset in assets:
+        service_id = asset.asset_type.service_id
+
+        assets_by_service.setdefault(
+            service_id,
+            [],
+        ).append(asset)
+
+    service_sections = []
+
+    for service in services:
+        service_sections.append(
+            {
+                "service": service,
+                "assets": assets_by_service.get(
+                    service.pk,
+                    [],
+                ),
+            }
+        )
 
     return render(
         request,
@@ -119,9 +169,535 @@ def services_assets(request):
         {
             "services": services,
             "assets": assets,
+            "service_sections": service_sections,
+            "asset_form": MunicipalAssetForm(),
+            "excel_form": AssetExcelUploadForm(),
         },
     )
 
+@municipal_required
+@require_POST
+def asset_create(request):
+    form = MunicipalAssetForm(
+        request.POST,
+    )
+
+    if form.is_valid():
+        asset = form.save()
+
+        messages.success(
+            request,
+            (
+                f"تمت إضافة الأصل "
+                f"{asset.asset_code} بنجاح."
+            ),
+        )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    error_messages = []
+
+    for field_errors in form.errors.values():
+        for error in field_errors:
+            error_messages.append(str(error))
+
+    messages.error(
+        request,
+        "تعذر إضافة الأصل: "
+        + "، ".join(error_messages),
+    )
+
+    return redirect(
+        "municipal_portal:services_assets",
+    )
+
+
+@municipal_required
+@require_POST
+def asset_create(request):
+    form = MunicipalAssetForm(
+        request.POST,
+    )
+
+    if form.is_valid():
+        asset = form.save()
+
+        messages.success(
+            request,
+            (
+                f"تمت إضافة الأصل "
+                f"{asset.asset_code} بنجاح."
+            ),
+        )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    error_messages = []
+
+    for field_errors in form.errors.values():
+        for error in field_errors:
+            error_messages.append(str(error))
+
+    messages.error(
+        request,
+        "تعذر إضافة الأصل: "
+        + "، ".join(error_messages),
+    )
+
+    return redirect(
+        "municipal_portal:services_assets",
+    )
+
+
+@municipal_required
+@require_POST
+def asset_import(request):
+    form = AssetExcelUploadForm(
+        request.POST,
+        request.FILES,
+    )
+
+    if not form.is_valid():
+        messages.error(
+            request,
+            "يرجى اختيار ملف Excel صحيح بصيغة xlsx.",
+        )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    excel_file = form.cleaned_data[
+        "excel_file"
+    ]
+
+    try:
+        workbook = load_workbook(
+            excel_file,
+            data_only=True,
+        )
+
+        worksheet = workbook.active
+
+    except Exception:
+        messages.error(
+            request,
+            "تعذر قراءة ملف Excel.",
+        )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    expected_headers = [
+        "asset_code",
+        "service",
+        "asset_type",
+        "name_ar",
+        "neighborhood",
+        "address",
+        "latitude",
+        "longitude",
+        "status",
+        "condition",
+        "installation_date",
+        "notes",
+    ]
+
+    received_headers = [
+        str(cell.value).strip()
+        if cell.value is not None
+        else ""
+        for cell in worksheet[1]
+    ]
+
+    if received_headers != expected_headers:
+        messages.error(
+            request,
+            (
+                "أعمدة ملف Excel غير صحيحة. "
+                "استخدمي النموذج الذي يتم تنزيله من النظام."
+            ),
+        )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    status_values = {
+        value
+        for value, label
+        in MunicipalAsset.Status.choices
+    }
+
+    condition_values = {
+        value
+        for value, label
+        in MunicipalAsset.Condition.choices
+    }
+
+    assets_to_create = []
+    errors = []
+    codes_in_file = set()
+
+    for row_number, row in enumerate(
+        worksheet.iter_rows(
+            min_row=2,
+            values_only=True,
+        ),
+        start=2,
+    ):
+        if not any(
+            value not in (None, "")
+            for value in row
+        ):
+            continue
+
+        (
+            asset_code,
+            service_name,
+            asset_type_name,
+            name_ar,
+            neighborhood_name,
+            address,
+            latitude,
+            longitude,
+            status,
+            condition,
+            installation_date,
+            notes,
+        ) = row
+
+        asset_code = str(
+            asset_code or ""
+        ).strip()
+
+        service_name = str(
+            service_name or ""
+        ).strip()
+
+        asset_type_name = str(
+            asset_type_name or ""
+        ).strip()
+
+        status = str(
+            status or "operational"
+        ).strip()
+
+        condition = str(
+            condition or "good"
+        ).strip()
+
+        if not asset_code:
+            errors.append(
+                f"الصف {row_number}: رمز الأصل مطلوب."
+            )
+            continue
+
+        if asset_code in codes_in_file:
+            errors.append(
+                (
+                    f"الصف {row_number}: رمز الأصل "
+                    f"{asset_code} مكرر داخل الملف."
+                )
+            )
+            continue
+
+        if MunicipalAsset.objects.filter(
+            asset_code=asset_code,
+        ).exists():
+            errors.append(
+                (
+                    f"الصف {row_number}: الأصل "
+                    f"{asset_code} موجود مسبقًا."
+                )
+            )
+            continue
+
+        codes_in_file.add(asset_code)
+
+        try:
+            service = MunicipalService.objects.get(
+                name_ar__iexact=service_name,
+            )
+        except MunicipalService.DoesNotExist:
+            errors.append(
+                (
+                    f"الصف {row_number}: الخدمة "
+                    f"{service_name} غير موجودة."
+                )
+            )
+            continue
+
+        try:
+            asset_type = AssetType.objects.get(
+                service=service,
+                name_ar__iexact=asset_type_name,
+            )
+        except AssetType.DoesNotExist:
+            errors.append(
+                (
+                    f"الصف {row_number}: نوع الأصل "
+                    f"{asset_type_name} غير موجود "
+                    f"ضمن خدمة {service.name_ar}."
+                )
+            )
+            continue
+
+        neighborhood = None
+
+        if neighborhood_name:
+            neighborhood = Neighborhood.objects.filter(
+                name_ar__iexact=str(
+                    neighborhood_name
+                ).strip(),
+            ).first()
+
+            if neighborhood is None:
+                errors.append(
+                    (
+                        f"الصف {row_number}: الحي "
+                        f"{neighborhood_name} غير موجود."
+                    )
+                )
+                continue
+
+        try:
+            latitude_value = float(latitude)
+            longitude_value = float(longitude)
+
+            if not -90 <= latitude_value <= 90:
+                raise ValueError
+
+            if not -180 <= longitude_value <= 180:
+                raise ValueError
+
+        except (TypeError, ValueError):
+            errors.append(
+                (
+                    f"الصف {row_number}: "
+                    "الإحداثيات غير صحيحة."
+                )
+            )
+            continue
+
+        if status not in status_values:
+            errors.append(
+                (
+                    f"الصف {row_number}: "
+                    f"حالة التشغيل {status} غير صحيحة."
+                )
+            )
+            continue
+
+        if condition not in condition_values:
+            errors.append(
+                (
+                    f"الصف {row_number}: "
+                    f"الحالة الفنية {condition} غير صحيحة."
+                )
+            )
+            continue
+
+        parsed_installation_date = None
+
+        if installation_date:
+            try:
+                if isinstance(
+                    installation_date,
+                    datetime,
+                ):
+                    parsed_installation_date = (
+                        installation_date.date()
+                    )
+
+                elif isinstance(
+                    installation_date,
+                    date,
+                ):
+                    parsed_installation_date = (
+                        installation_date
+                    )
+
+                else:
+                    parsed_installation_date = (
+                        date.fromisoformat(
+                            str(
+                                installation_date
+                            ).strip()
+                        )
+                    )
+
+            except ValueError:
+                errors.append(
+                    (
+                        f"الصف {row_number}: "
+                        "تاريخ التركيب غير صحيح. "
+                        "استخدمي YYYY-MM-DD."
+                    )
+                )
+                continue
+
+        asset = MunicipalAsset(
+            asset_code=asset_code,
+            asset_type=asset_type,
+            name_ar=str(
+                name_ar or ""
+            ).strip(),
+            neighborhood=neighborhood,
+            address=str(
+                address or ""
+            ).strip(),
+            location=Point(
+                longitude_value,
+                latitude_value,
+                srid=4326,
+            ),
+            status=status,
+            condition=condition,
+            installation_date=(
+                parsed_installation_date
+            ),
+            notes=str(
+                notes or ""
+            ).strip(),
+        )
+
+        assets_to_create.append(asset)
+
+    if errors:
+        for error in errors[:10]:
+            messages.error(
+                request,
+                error,
+            )
+
+        if len(errors) > 10:
+            messages.error(
+                request,
+                (
+                    f"يوجد {len(errors) - 10} "
+                    "أخطاء إضافية في الملف."
+                ),
+            )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    if not assets_to_create:
+        messages.warning(
+            request,
+            "لا توجد صفوف صالحة للاستيراد.",
+        )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    with transaction.atomic():
+        MunicipalAsset.objects.bulk_create(
+            assets_to_create,
+        )
+
+    messages.success(
+        request,
+        (
+            f"تم استيراد {len(assets_to_create)} "
+            "أصل بنجاح."
+        ),
+    )
+
+    return redirect(
+        "municipal_portal:services_assets",
+    )
+
+
+@municipal_required
+def asset_excel_template(request):
+    workbook = Workbook()
+
+    worksheet = workbook.active
+    worksheet.title = "الأصول البلدية"
+
+    headers = [
+        "asset_code",
+        "service",
+        "asset_type",
+        "name_ar",
+        "neighborhood",
+        "address",
+        "latitude",
+        "longitude",
+        "status",
+        "condition",
+        "installation_date",
+        "notes",
+    ]
+
+    worksheet.append(headers)
+
+    worksheet.append(
+        [
+            "LIGHT-001",
+            "الإنارة العامة",
+            "عمود إنارة",
+            "عمود إنارة شارع الزبيري",
+            "",
+            "شارع الزبيري",
+            15.3694000,
+            44.1910000,
+            "operational",
+            "good",
+            "2026-01-15",
+            "",
+        ]
+    )
+
+    widths = {
+        "A": 18,
+        "B": 24,
+        "C": 22,
+        "D": 32,
+        "E": 22,
+        "F": 34,
+        "G": 18,
+        "H": 18,
+        "I": 24,
+        "J": 18,
+        "K": 22,
+        "L": 35,
+    }
+
+    for column, width in widths.items():
+        worksheet.column_dimensions[
+            column
+        ].width = width
+
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+
+    response = HttpResponse(
+        output.getvalue(),
+        content_type=(
+            "application/vnd.openxmlformats-"
+            "officedocument.spreadsheetml.sheet"
+        ),
+    )
+
+    response[
+        "Content-Disposition"
+    ] = (
+        'attachment; '
+        'filename="cityvoice_assets_template.xlsx"'
+    )
+
+    return response
 
 @municipal_required
 def complaint_list(request):

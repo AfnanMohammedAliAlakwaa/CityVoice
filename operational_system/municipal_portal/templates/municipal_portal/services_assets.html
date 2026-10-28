@@ -8,265 +8,1039 @@
 الخدمات والأصول
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .asset-page-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .asset-page-heading h1 {
+        margin: 0 0 7px;
+        font-size: 25px;
+    }
+
+    .asset-page-heading p {
+        margin: 0;
+        color: var(--mp-muted);
+    }
+
+    .asset-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+
+    .asset-action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 36px;
+        padding: 7px 12px;
+        color: #ffffff;
+        background: var(--mp-green);
+        border: 1px solid var(--mp-green);
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(23, 97, 59, 0.10);
+        transition: transform 0.18s ease, box-shadow 0.18s ease,
+                    background-color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .asset-action-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 15px rgba(23, 97, 59, 0.14);
+    }
+
+    .asset-action-button--secondary {
+        color: var(--mp-green-dark);
+        background: rgba(255, 255, 255, 0.82);
+        border-color: var(--mp-border);
+        box-shadow: 0 3px 10px rgba(31, 93, 58, 0.05);
+    }
+
+    .asset-form-panel {
+        display: none;
+        margin-bottom: 18px;
+        padding: 18px;
+        background: #ffffff;
+        border: 1px solid var(--mp-border);
+        border-radius: 15px;
+        box-shadow: var(--mp-shadow);
+    }
+
+    .asset-form-panel.is-visible {
+        display: block;
+    }
+
+    .asset-form-panel h2 {
+        margin: 0 0 16px;
+        font-size: 18px;
+    }
+
+    .asset-form-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 13px;
+    }
+
+    .asset-form-field {
+        display: grid;
+        gap: 6px;
+    }
+
+    .asset-form-field label {
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .asset-form-field input,
+    .asset-form-field select,
+    .asset-form-field textarea {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 11px;
+        color: var(--mp-text);
+        background: #f9fcfa;
+        border: 1px solid var(--mp-border);
+        border-radius: 10px;
+    }
+
+    .asset-form-field textarea {
+        min-height: 85px;
+        resize: vertical;
+    }
+
+    .asset-form-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .asset-service-panel {
+        display: none;
+    }
+
+    .asset-service-panel.is-active {
+        display: block;
+    }
+
+    .asset-table-panel {
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid var(--mp-border);
+        border-radius: 15px;
+        box-shadow: var(--mp-shadow);
+    }
+
+    .asset-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--mp-border);
+    }
+
+    .asset-table-header h2 {
+        margin: 0 0 4px;
+        font-size: 19px;
+    }
+
+    .asset-table-header p {
+        margin: 0;
+        color: var(--mp-muted);
+        font-size: 12px;
+    }
+
+    .asset-search {
+        width: min(290px, 100%);
+        min-height: 40px;
+        padding: 8px 12px;
+        border: 1px solid var(--mp-border);
+        border-radius: 10px;
+    }
+
+    .asset-table-wrap {
+        overflow-x: auto;
+    }
+
+    .asset-table {
+        width: 100%;
+        min-width: 1180px;
+        border-collapse: collapse;
+    }
+
+    .asset-table th,
+    .asset-table td {
+        padding: 12px 11px;
+        border-bottom: 1px solid var(--mp-border);
+        text-align: right;
+        vertical-align: middle;
+        font-size: 12px;
+    }
+
+    .asset-table th {
+        color: #5d7466;
+        background: #f3f8f5;
+        white-space: nowrap;
+    }
+
+    .asset-table tbody tr:hover {
+        background: #f9fcfa;
+    }
+
+    .asset-code {
+        color: var(--mp-green-dark);
+        font-weight: 800;
+    }
+
+    .asset-location {
+        display: grid;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+    .asset-location small {
+        color: var(--mp-muted);
+    }
+
+    .asset-state,
+    .asset-condition {
+        display: inline-block;
+        padding: 5px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .asset-state--operational,
+    .asset-condition--good {
+        color: #176f46;
+        background: #e3f4ea;
+    }
+
+    .asset-state--needs_maintenance,
+    .asset-condition--fair {
+        color: #8a6015;
+        background: #fff1cb;
+    }
+
+    .asset-state--under_maintenance,
+    .asset-condition--poor {
+        color: #a45c18;
+        background: #ffead8;
+    }
+
+    .asset-state--out_of_service,
+    .asset-condition--critical {
+        color: #a13a44;
+        background: #fde7e9;
+    }
+
+    .asset-edit-link {
+        display: inline-block;
+        padding: 6px 10px;
+        color: var(--mp-green-dark);
+        background: #ffffff;
+        border: 1px solid var(--mp-border);
+        border-radius: 8px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .asset-empty {
+        padding: 45px 20px;
+        text-align: center;
+    }
+
+    .asset-empty strong {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 17px;
+    }
+
+    .asset-empty p {
+        margin: 0;
+        color: var(--mp-muted);
+    }
+
+    @media (max-width: 900px) {
+        .asset-page-heading,
+        .asset-table-header,
+        .asset-form-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .asset-search {
+            width: 100%;
+        }
+    }
+
+    .asset-service-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin: 12px 0 18px;
+    padding: 0;
+
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+}
+
+.asset-service-tab {
+    flex: 0 0 auto;
+    min-width: auto;
+    min-height: 38px;
+
+    padding: 8px 14px;
+
+    color: #587064;
+    background: rgba(255, 255, 255, 0.82);
+
+    border: 1px solid #d4e5da;
+    border-radius: 999px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    box-shadow:
+        0 3px 10px rgba(31, 93, 58, 0.05);
+
+    cursor: pointer;
+
+    transition:
+        color 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+.asset-service-tab:hover {
+    color: #17613b;
+    background: #f5faf7;
+    border-color: #bcd9c8;
+    transform: translateY(-1px);
+}
+
+.asset-service-tab.is-active {
+    color: #17613b;
+    background: #e6f4eb;
+
+    border-color: #8fc7a7;
+
+    box-shadow:
+        0 4px 12px rgba(31, 112, 67, 0.08);
+}
+
+.asset-tab-count {
+    display: inline-grid;
+    place-items: center;
+
+    min-width: 20px;
+    height: 20px;
+
+    margin-right: 6px;
+    padding: 0 5px;
+
+    color: #17613b;
+    background: rgba(40, 126, 80, 0.10);
+
+    border-radius: 999px;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.asset-service-tab.is-active .asset-tab-count {
+    color: #ffffff;
+    background: #287e50;
+}
+
+    .asset-dialog {
+        width: min(480px, calc(100% - 28px));
+        max-width: 480px;
+        padding: 0;
+        color: var(--mp-text);
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(204, 226, 213, 0.95);
+        border-radius: 22px;
+        box-shadow: 0 28px 75px rgba(8, 54, 31, 0.24);
+        overflow: hidden;
+    }
+
+    .asset-dialog::backdrop {
+        background: rgba(8, 40, 25, 0.38);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+
+    .asset-dialog[open] {
+        animation: asset-dialog-in 0.20s ease-out;
+    }
+
+    @keyframes asset-dialog-in {
+        from { opacity: 0; transform: translateY(12px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .asset-dialog-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 20px 22px 16px;
+        border-bottom: 1px solid #e5efe9;
+    }
+
+    .asset-dialog-header h2 {
+        margin: 0 0 5px;
+        font-size: 19px;
+    }
+
+    .asset-dialog-header p {
+        margin: 0;
+        color: var(--mp-muted);
+        font-size: 12px;
+    }
+
+    .asset-dialog-close {
+        display: grid;
+        place-items: center;
+        flex: 0 0 32px;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        color: #557064;
+        background: #f0f7f3;
+        border: 0;
+        border-radius: 50%;
+        font-size: 21px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .asset-dialog-close:hover {
+        color: #17613b;
+        background: #e3f1e8;
+    }
+
+    .asset-dialog-body {
+        padding: 20px 22px 22px;
+    }
+
+    .asset-file-picker {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        min-height: 100px;
+        padding: 16px;
+        background: #f7fbf8;
+        border: 1.5px dashed #a7cdb6;
+        border-radius: 17px;
+        cursor: pointer;
+        transition: 0.18s ease;
+    }
+
+    .asset-file-picker:hover {
+        background: #eff8f2;
+        border-color: #287e50;
+    }
+
+    .asset-file-icon {
+        display: grid;
+        place-items: center;
+        flex: 0 0 46px;
+        width: 46px;
+        height: 46px;
+        color: #287e50;
+        background: #e2f1e7;
+        border-radius: 14px;
+    }
+
+    .asset-file-icon svg {
+        width: 23px;
+        height: 23px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .asset-file-text {
+        display: grid;
+        gap: 4px;
+    }
+
+    .asset-file-text strong { font-size: 14px; }
+    .asset-file-text small { color: var(--mp-muted); font-size: 11px; }
+
+    .asset-file-picker input[type="file"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .asset-import-note {
+        margin-top: 11px;
+        padding: 10px 12px;
+        color: #60766a;
+        background: #f2f7f4;
+        border-radius: 11px;
+        font-size: 11px;
+    }
+
+    .asset-dialog-actions {
+        display: flex;
+        gap: 7px;
+        margin-top: 17px;
+    }
+
+    @media (max-width: 650px) {
+        .asset-service-tabs {
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .asset-service-tab {
+            flex: 0 0 auto;
+            padding: 7px 12px;
+            font-size: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
-<div class="mp-page-heading">
+<div class="asset-page-heading">
     <div>
-        <h1>الخدمات والأصول</h1>
+        <h1>سجل الأصول البلدية</h1>
 
         <p>
-            إدارة الخدمات البلدية وتصنيفاتها والأصول المرتبطة بها.
+            إدارة أصول الخدمات البلدية ومواقعها وحالتها الفنية.
         </p>
     </div>
-</div>
 
-<div class="mp-section-tabs">
-    <a href="#municipal-services">
-        الخدمات والتصنيفات
-    </a>
+    <div class="asset-actions">
+        <button
+            type="button"
+            class="asset-action-button"
+            data-open-panel="asset-create-panel"
+        >
+            إضافة أصل
+        </button>
 
-    <a href="#municipal-assets">
-        الأصول البلدية
-    </a>
+        <button
+            type="button"
+            class="asset-action-button asset-action-button--secondary"
+            data-open-dialog="asset-import-dialog"
+        >
+            استيراد Excel
+        </button>
+
+        <a
+            href="{% url 'municipal_portal:asset_excel_template' %}"
+            class="asset-action-button asset-action-button--secondary"
+        >
+            تنزيل نموذج Excel
+        </a>
+    </div>
 </div>
 
 <section
-    class="mp-panel"
-    id="municipal-services"
+    class="asset-form-panel"
+    id="asset-create-panel"
 >
-    <div class="mp-panel-header">
-        <div>
-            <h2>الخدمات والتصنيفات</h2>
+    <h2>إضافة أصل بلدي جديد</h2>
 
-            <p>
-                الخدمات التي تظهر للمواطن عند تقديم البلاغ.
-            </p>
-        </div>
+    <form
+        method="post"
+        action="{% url 'municipal_portal:asset_create' %}"
+    >
+        {% csrf_token %}
 
-        {% if request.user.is_staff %}
-            <a
-                href="{% url 'admin:municipal_services_municipalservice_add' %}"
-                class="mp-button"
-            >
-                إضافة خدمة
-            </a>
-        {% endif %}
-    </div>
+        <div class="asset-form-grid">
+            {% for field in asset_form %}
+                <div class="asset-form-field">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
 
-    {% if services %}
-        <div class="mp-service-grid">
-            {% for service in services %}
-                <article class="mp-service-card">
-                    <div class="mp-service-card-header">
-                        <span class="mp-service-card-icon">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="m12 3 9 5-9 5-9-5 9-5Z"></path>
-                                <path d="m3 12 9 5 9-5"></path>
-                            </svg>
-                        </span>
+                        {% if field.field.required %}
+                            <span aria-hidden="true">*</span>
+                        {% endif %}
+                    </label>
 
-                        <div>
-                            <h3>{{ service.name_ar }}</h3>
+                    {{ field }}
 
-                            {% if service.is_active %}
-                                <span class="mp-active-label">
-                                    مفعّلة
-                                </span>
-                            {% else %}
-                                <span class="mp-inactive-label">
-                                    متوقفة
-                                </span>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    {% if service.description %}
-                        <p class="mp-service-description">
-                            {{ service.description }}
-                        </p>
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
                     {% endif %}
-
-                    <div class="mp-service-numbers">
-                        <span>
-                            <strong>{{ service.category_count }}</strong>
-                            تصنيف
-                        </span>
-
-                        <span>
-                            <strong>{{ service.asset_type_count }}</strong>
-                            نوع أصل
-                        </span>
-
-                        <span>
-                            <strong>{{ service.asset_count }}</strong>
-                            أصل
-                        </span>
-                    </div>
-
-                    <div class="mp-service-categories">
-                        <strong>التصنيفات:</strong>
-
-                        {% for category in service.categories.all %}
-                            <span>
-                                {{ category.name_ar }}
-                            </span>
-                        {% empty %}
-                            <small>
-                                لا توجد تصنيفات مضافة.
-                            </small>
-                        {% endfor %}
-                    </div>
-
-                    {% if request.user.is_staff %}
-                        <a
-                            href="{% url 'admin:municipal_services_municipalservice_change' service.pk %}"
-                            class="mp-text-link"
-                        >
-                            تعديل الخدمة
-                        </a>
-                    {% endif %}
-                </article>
+                </div>
             {% endfor %}
         </div>
-    {% else %}
-        <div class="mp-empty">
-            <strong>لا توجد خدمات مضافة</strong>
 
-            <p>
-                أضيفي الخدمات والتصنيفات التي يمكن للمواطن تقديم بلاغ عنها.
-            </p>
+        <div class="asset-form-buttons">
+            <button
+                type="submit"
+                class="asset-action-button"
+            >
+                حفظ الأصل
+            </button>
+
+            <button
+                type="button"
+                class="asset-action-button asset-action-button--secondary"
+                data-close-panel="asset-create-panel"
+            >
+                إلغاء
+            </button>
         </div>
-    {% endif %}
+    </form>
 </section>
 
-<section
-    class="mp-panel"
-    id="municipal-assets"
->
-    <div class="mp-panel-header">
+<dialog class="asset-dialog" id="asset-import-dialog">
+    <div class="asset-dialog-header">
         <div>
-            <h2>الأصول البلدية</h2>
-
-            <p>
-                العناصر والمرافق البلدية المسجلة ومواقعها وحالتها.
-            </p>
+            <h2>استيراد الأصول من Excel</h2>
+            <p>اختاري الملف المعبأ وفق نموذج النظام.</p>
         </div>
 
-        {% if request.user.is_staff %}
-            <a
-                href="{% url 'admin:assets_municipalasset_add' %}"
-                class="mp-button"
-            >
-                إضافة أصل
-            </a>
-        {% endif %}
+        <button
+            type="button"
+            class="asset-dialog-close"
+            data-close-dialog="asset-import-dialog"
+            aria-label="إغلاق"
+        >×</button>
     </div>
 
-    {% if assets %}
-        <div class="mp-table-wrap">
-            <table class="mp-table">
-                <thead>
-                    <tr>
-                        <th>رمز الأصل</th>
-                        <th>الخدمة</th>
-                        <th>نوع الأصل</th>
-                        <th>الاسم</th>
-                        <th>الحي والعنوان</th>
-                        <th>الحالة</th>
-                        <th>درجة الأصل</th>
-                        <th>التفاصيل</th>
-                    </tr>
-                </thead>
+    <form
+        method="post"
+        enctype="multipart/form-data"
+        action="{% url 'municipal_portal:asset_import' %}"
+        class="asset-dialog-body"
+    >
+        {% csrf_token %}
 
-                <tbody>
-                    {% for asset in assets %}
-                        <tr>
-                            <td>
-                                <strong>
-                                    <bdi>{{ asset.asset_code }}</bdi>
-                                </strong>
-                            </td>
+        <label
+            class="asset-file-picker"
+            for="{{ excel_form.excel_file.id_for_label }}"
+        >
+            <span class="asset-file-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 16V4"></path>
+                    <path d="m7 9 5-5 5 5"></path>
+                    <path d="M5 14v5h14v-5"></path>
+                </svg>
+            </span>
 
-                            <td>
-                                {{ asset.asset_type.service.name_ar }}
-                            </td>
+            <span class="asset-file-text">
+                <strong>اختيار ملف Excel</strong>
+                <small id="excel-file-name">اضغطي هنا لاختيار ملف .xlsx</small>
+            </span>
 
-                            <td>
-                                {{ asset.asset_type.name_ar }}
-                            </td>
+            {{ excel_form.excel_file }}
+        </label>
 
-                            <td>
-                                {{ asset.name_ar|default:"غير مضاف" }}
-                            </td>
-
-                            <td>
-                                <span class="mp-cell-main">
-                                    <strong>
-                                        {{ asset.neighborhood|default:"حي غير محدد" }}
-                                    </strong>
-
-                                    <small>
-                                        {{ asset.address|default:"لا يوجد عنوان" }}
-                                    </small>
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="mp-asset-state mp-asset-state--{{ asset.status }}">
-                                    {% if asset.status == "operational" %}
-                                        يعمل
-                                    {% elif asset.status == "needs_maintenance" %}
-                                        يحتاج صيانة
-                                    {% elif asset.status == "under_maintenance" %}
-                                        تحت الصيانة
-                                    {% elif asset.status == "out_of_service" %}
-                                        خارج الخدمة
-                                    {% else %}
-                                        {{ asset.get_status_display }}
-                                    {% endif %}
-                                </span>
-                            </td>
-
-                            <td>
-                                {% if asset.condition == "good" %}
-                                    جيدة
-                                {% elif asset.condition == "fair" %}
-                                    مقبولة
-                                {% elif asset.condition == "poor" %}
-                                    سيئة
-                                {% elif asset.condition == "critical" %}
-                                    حرجة
-                                {% else %}
-                                    {{ asset.get_condition_display }}
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                {% if request.user.is_staff %}
-                                    <a
-                                        href="{% url 'admin:assets_municipalasset_change' asset.pk %}"
-                                        class="mp-button mp-button--secondary"
-                                    >
-                                        فتح
-                                    </a>
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="asset-import-note">
+            استخدمي نموذج Excel الذي تم تنزيله من النظام، وبحجم لا يتجاوز 5 MB.
         </div>
-    {% else %}
-        <div class="mp-empty">
-            <strong>لا توجد أصول بلدية مسجلة</strong>
 
-            <p>
-                ستظهر هنا أعمدة الإنارة والحاويات والمرافق المسجلة.
-            </p>
+        <div class="asset-dialog-actions">
+            <button type="submit" class="asset-action-button">
+                بدء الاستيراد
+            </button>
+
+            <button
+                type="button"
+                class="asset-action-button asset-action-button--secondary"
+                data-close-dialog="asset-import-dialog"
+            >إلغاء</button>
         </div>
-    {% endif %}
-</section>
+    </form>
+</dialog>
 
+{% if service_sections %}
+    <div
+        class="asset-service-tabs"
+        role="tablist"
+        aria-label="الخدمات البلدية"
+    >
+        {% for section in service_sections %}
+            <button
+                type="button"
+                class="asset-service-tab {% if forloop.first %}is-active{% endif %}"
+                data-service-tab="service-panel-{{ section.service.pk }}"
+                role="tab"
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+            >
+                {{ section.service.name_ar }}
+
+                <span class="asset-tab-count">
+                    {{ section.assets|length }}
+                </span>
+            </button>
+        {% endfor %}
+    </div>
+
+    {% for section in service_sections %}
+        <section
+            class="asset-service-panel {% if forloop.first %}is-active{% endif %}"
+            id="service-panel-{{ section.service.pk }}"
+            role="tabpanel"
+        >
+            <div class="asset-table-panel">
+                <div class="asset-table-header">
+                    <div>
+                        <h2>{{ section.service.name_ar }}</h2>
+
+                        <p>
+                            {{ section.assets|length }}
+                            أصل مسجل ضمن هذه الخدمة.
+                        </p>
+                    </div>
+
+                    <input
+                        type="search"
+                        class="asset-search"
+                        placeholder="ابحث في الأصول..."
+                        data-asset-search
+                    >
+                </div>
+
+                {% if section.assets %}
+                    <div class="asset-table-wrap">
+                        <table class="asset-table">
+                            <thead>
+                                <tr>
+                                    <th>رمز الأصل</th>
+                                    <th>نوع الأصل</th>
+                                    <th>اسم الأصل</th>
+                                    <th>الحي والعنوان</th>
+                                    <th>الإحداثيات</th>
+                                    <th>حالة التشغيل</th>
+                                    <th>الحالة الفنية</th>
+                                    <th>آخر صيانة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for asset in section.assets %}
+                                    <tr data-asset-row>
+                                        <td>
+                                            <bdi class="asset-code">
+                                                {{ asset.asset_code }}
+                                            </bdi>
+                                        </td>
+
+                                        <td>
+                                            {{ asset.asset_type.name_ar }}
+                                        </td>
+
+                                        <td>
+                                            {{ asset.name_ar|default:"غير مضاف" }}
+                                        </td>
+
+                                        <td>
+                                            <div class="asset-location">
+                                                <strong>
+                                                    {{ asset.neighborhood|default:"حي غير محدد" }}
+                                                </strong>
+
+                                                <small>
+                                                    {{ asset.address|default:"لا يوجد عنوان" }}
+                                                </small>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            {% if asset.location %}
+                                                <div class="asset-location">
+                                                    <small>
+                                                        العرض:
+                                                        <bdi>
+                                                            {{ asset.location.y|floatformat:6 }}
+                                                        </bdi>
+                                                    </small>
+
+                                                    <small>
+                                                        الطول:
+                                                        <bdi>
+                                                            {{ asset.location.x|floatformat:6 }}
+                                                        </bdi>
+                                                    </small>
+                                                </div>
+                                            {% else %}
+                                                غير محدد
+                                            {% endif %}
+                                        </td>
+
+                                        <td>
+                                            <span class="asset-state asset-state--{{ asset.status }}">
+                                                {% if asset.status == "operational" %}
+                                                    يعمل
+                                                {% elif asset.status == "needs_maintenance" %}
+                                                    يحتاج صيانة
+                                                {% elif asset.status == "under_maintenance" %}
+                                                    تحت الصيانة
+                                                {% elif asset.status == "out_of_service" %}
+                                                    خارج الخدمة
+                                                {% else %}
+                                                    {{ asset.get_status_display }}
+                                                {% endif %}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <span class="asset-condition asset-condition--{{ asset.condition }}">
+                                                {% if asset.condition == "good" %}
+                                                    جيدة
+                                                {% elif asset.condition == "fair" %}
+                                                    مقبولة
+                                                {% elif asset.condition == "poor" %}
+                                                    سيئة
+                                                {% elif asset.condition == "critical" %}
+                                                    حرجة
+                                                {% else %}
+                                                    {{ asset.get_condition_display }}
+                                                {% endif %}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            {% if asset.last_maintenance_at %}
+                                                <time
+                                                    datetime="{{ asset.last_maintenance_at|date:'c' }}"
+                                                >
+                                                    {{ asset.last_maintenance_at|date:"Y/m/d" }}
+                                                </time>
+                                            {% else %}
+                                                لم تتم صيانته
+                                            {% endif %}
+                                        </td>
+
+                                        <td>
+                                            {% if request.user.is_staff %}
+                                                <a
+                                                    href="{% url 'admin:assets_municipalasset_change' asset.pk %}"
+                                                    class="asset-edit-link"
+                                                >
+                                                    تعديل
+                                                </a>
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="asset-empty">
+                        <strong>
+                            لا توجد أصول مسجلة
+                        </strong>
+
+                        <p>
+                            استخدمي زر إضافة أصل أو استيراد Excel.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    {% endfor %}
+{% else %}
+    <div class="asset-empty">
+        <strong>لا توجد خدمات بلدية</strong>
+
+        <p>
+            أضيفي الخدمات أولًا قبل تسجيل الأصول.
+        </p>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const tabs = document.querySelectorAll(
+        "[data-service-tab]"
+    );
+
+    const panels = document.querySelectorAll(
+        ".asset-service-panel"
+    );
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            const panelId = tab.dataset.serviceTab;
+
+            tabs.forEach(item => {
+                item.classList.remove("is-active");
+                item.setAttribute(
+                    "aria-selected",
+                    "false"
+                );
+            });
+
+            panels.forEach(panel => {
+                panel.classList.remove("is-active");
+            });
+
+            tab.classList.add("is-active");
+
+            tab.setAttribute(
+                "aria-selected",
+                "true"
+            );
+
+            document
+                .getElementById(panelId)
+                .classList
+                .add("is-active");
+        });
+    });
+
+    document
+        .querySelectorAll("[data-open-panel]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                const panelId =
+                    button.dataset.openPanel;
+
+                document
+                    .getElementById(panelId)
+                    .classList
+                    .toggle("is-visible");
+            });
+        });
+
+    document
+        .querySelectorAll("[data-close-panel]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                const panelId =
+                    button.dataset.closePanel;
+
+                document
+                    .getElementById(panelId)
+                    .classList
+                    .remove("is-visible");
+            });
+        });
+
+    document
+        .querySelectorAll("[data-open-dialog]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                const dialog = document.getElementById(
+                    button.dataset.openDialog
+                );
+
+                if (dialog) {
+                    dialog.showModal();
+                }
+            });
+        });
+
+    document
+        .querySelectorAll("[data-close-dialog]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                const dialog = document.getElementById(
+                    button.dataset.closeDialog
+                );
+
+                if (dialog) {
+                    dialog.close();
+                }
+            });
+        });
+
+    document
+        .querySelectorAll(".asset-dialog")
+        .forEach(dialog => {
+            dialog.addEventListener("click", event => {
+                const bounds = dialog.getBoundingClientRect();
+                const outside = (
+                    event.clientX < bounds.left
+                    || event.clientX > bounds.right
+                    || event.clientY < bounds.top
+                    || event.clientY > bounds.bottom
+                );
+
+                if (outside) {
+                    dialog.close();
+                }
+            });
+        });
+
+    const excelInput = document.querySelector(
+        '#asset-import-dialog input[type="file"]'
+    );
+
+    const excelFileName = document.getElementById(
+        "excel-file-name"
+    );
+
+    if (excelInput && excelFileName) {
+        excelInput.addEventListener("change", () => {
+            excelFileName.textContent = excelInput.files.length
+                ? excelInput.files[0].name
+                : "اضغطي هنا لاختيار ملف .xlsx";
+        });
+    }
+
+    document
+        .querySelectorAll("[data-asset-search]")
+        .forEach(input => {
+            input.addEventListener("input", () => {
+                const query = input.value
+                    .trim()
+                    .toLowerCase();
+
+                const panel = input.closest(
+                    ".asset-service-panel"
+                );
+
+                panel
+                    .querySelectorAll(
+                        "[data-asset-row]"
+                    )
+                    .forEach(row => {
+                        const rowText = row
+                            .textContent
+                            .toLowerCase();
+
+                        row.hidden = (
+                            query
+                            && !rowText.includes(query)
+                        );
+                    });
+            });
+        });
+})();
+</script>
 {% endblock %}
