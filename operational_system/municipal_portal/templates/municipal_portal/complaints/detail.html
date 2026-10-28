@@ -1,0 +1,1140 @@
+{% extends "municipal_portal/base.html" %}
+{% load l10n %}
+
+{% block title %}تفاصيل البلاغ | CityVoice{% endblock %}
+{% block page_title %}تفاصيل البلاغ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .complaint-detail {
+        --cd-green: #237d50;
+        --cd-border: #d8e8df;
+        --cd-muted: #64776c;
+        --cd-text: #233d2e;
+        display: grid;
+        gap: 20px;
+        color: var(--cd-text);
+    }
+
+    .complaint-detail *,
+    .complaint-detail *::before,
+    .complaint-detail *::after {
+        box-sizing: border-box;
+    }
+
+    .cd-heading,
+    .cd-actions,
+    .cd-tags {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .cd-heading {
+        justify-content: space-between;
+    }
+
+    .cd-heading h1 {
+        margin: 0 0 8px;
+        font-size: clamp(21px, 3vw, 28px);
+    }
+
+    .cd-reference {
+        display: inline-block;
+        color: var(--cd-muted);
+        direction: ltr;
+        overflow-wrap: anywhere;
+    }
+
+    .cd-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 10px 18px;
+        border: 1px solid var(--cd-green);
+        border-radius: 12px;
+        background: var(--cd-green);
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .cd-button:hover {
+        filter: brightness(.95);
+    }
+
+    .cd-button:focus-visible,
+    .complaint-detail .mc-input:focus-visible {
+        outline: 3px solid #a5d6ba;
+        outline-offset: 3px;
+    }
+
+    .cd-button--secondary {
+        border-color: var(--cd-border);
+        background: #fff;
+        color: var(--cd-green);
+    }
+
+    .cd-button svg {
+        width: 19px;
+        height: 19px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .cd-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 13px;
+        border-radius: 10px;
+        background: #edf6f0;
+        color: #236441;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .cd-tag--submitted {
+        background: #fff5d9;
+        color: #805a00;
+    }
+
+    .cd-tag--under_review {
+        background: #eaf2ff;
+        color: #245f9b;
+    }
+
+    .cd-tag--assigned,
+    .cd-tag--in_progress {
+        background: #fff0e4;
+        color: #98511c;
+    }
+
+    .cd-tag--resolved,
+    .cd-tag--closed {
+        background: #e7f5ec;
+        color: #236441;
+    }
+
+    .cd-tag--rejected {
+        background: #fdecec;
+        color: #a33131;
+    }
+
+    .cd-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+        align-items: start;
+        gap: 20px;
+    }
+
+    .cd-column {
+        display: grid;
+        gap: 20px;
+        min-width: 0;
+    }
+
+    .cd-card {
+        min-width: 0;
+        padding: 24px;
+        border: 1px solid var(--cd-border);
+        border-radius: 20px;
+        background: #fff;
+    }
+
+    .cd-card h2 {
+        margin: 0 0 20px;
+        font-size: 19px;
+    }
+
+    .cd-info {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        margin: 0;
+    }
+
+    .cd-info div {
+        min-width: 0;
+    }
+
+    .cd-info dt {
+        margin-bottom: 7px;
+        color: var(--cd-muted);
+        font-size: 13px;
+    }
+
+    .cd-info dd {
+        margin: 0;
+        font-weight: 600;
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+    }
+
+    .cd-wide {
+        grid-column: 1 / -1;
+    }
+
+    .cd-description {
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .cd-description p {
+        margin: 0 0 12px;
+    }
+
+    .cd-photo {
+        display: block;
+        width: 100%;
+        max-height: 420px;
+        border: 1px solid var(--cd-border);
+        border-radius: 14px;
+        background: #f4f8f5;
+        object-fit: contain;
+    }
+
+    .cd-caption,
+    .cd-help {
+        margin: 0;
+        color: var(--cd-muted);
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    .cd-caption {
+        margin-top: 12px;
+    }
+
+    .cd-note {
+        margin: 0;
+        padding: 14px 16px;
+        border: 1px solid var(--cd-border);
+        border-radius: 12px;
+        background: #f1f7f3;
+        color: #405e4b;
+        line-height: 1.9;
+    }
+
+    .cd-form {
+        display: grid;
+        gap: 18px;
+    }
+
+    .cd-field {
+        display: grid;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .cd-field label {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .complaint-detail .mc-input {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-height: 46px;
+        padding: 11px 13px;
+        border: 1px solid #cbded2;
+        border-radius: 11px;
+        background: #fff;
+        color: var(--cd-text);
+        font: inherit;
+    }
+
+    .complaint-detail textarea.mc-input {
+        min-height: 110px;
+        resize: vertical;
+    }
+
+    .cd-errors,
+    .cd-field .errorlist {
+        margin: 0;
+        padding: 12px 16px;
+        border: 1px solid #f0cece;
+        border-radius: 10px;
+        background: #fff0f0;
+        color: #9e3030;
+        font-size: 14px;
+        line-height: 1.8;
+        list-style: none;
+    }
+
+    .cd-errors {
+        margin-bottom: 16px;
+    }
+
+    .cd-errors .errorlist {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .cd-map {
+        height: 300px;
+        margin-bottom: 16px;
+        overflow: hidden;
+        border: 1px solid var(--cd-border);
+        border-radius: 14px;
+        background: #f1f7f3;
+    }
+
+    .cd-map-status {
+        margin: 0;
+        padding: 20px;
+        color: var(--cd-muted);
+        line-height: 1.8;
+    }
+
+    .cd-coordinates {
+        display: inline-block;
+        direction: ltr;
+        overflow-wrap: anywhere;
+    }
+
+    .cd-location-actions {
+        margin-top: 16px;
+    }
+
+    /* نافذة سجل البلاغ */
+    .cd-history-dialog {
+        width: min(760px, calc(100% - 32px));
+        max-height: calc(100vh - 40px);
+        max-height: calc(100dvh - 40px);
+        margin: auto;
+        padding: 0;
+        overflow: auto;
+        overscroll-behavior: contain;
+        border: 1px solid var(--cd-border);
+        border-radius: 20px;
+        background: #fff;
+        color: var(--cd-text);
+        font: inherit;
+        box-shadow: 0 24px 80px rgb(0 0 0 / 20%);
+    }
+
+    .cd-history-dialog::backdrop {
+        background: rgb(15 35 25 / 55%);
+    }
+
+    .cd-history-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--cd-border);
+        background: #fff;
+    }
+
+    .cd-history-toolbar h2 {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .cd-history-body {
+        padding: 20px;
+    }
+
+    .cd-history-dialog .cd-card {
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+    }
+
+    /* العنوان موجود في شريط النافذة بدل تكراره داخلها. */
+    .cd-history-dialog #complaint-history-title {
+        display: none;
+    }
+
+    html.cd-history-open,
+    html.cd-history-open body {
+        overflow: hidden;
+    }
+
+    @media (max-width: 1000px) {
+        .cd-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .cd-card {
+            padding: 18px;
+            border-radius: 16px;
+        }
+
+        .cd-info {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .cd-actions,
+        .cd-form .cd-button {
+            width: 100%;
+        }
+
+        .cd-actions .cd-button {
+            flex: 1;
+        }
+
+        .cd-map {
+            height: 250px;
+        }
+
+        .cd-history-dialog {
+            width: calc(100% - 20px);
+            max-height: calc(100vh - 20px);
+            max-height: calc(100dvh - 20px);
+            border-radius: 16px;
+        }
+
+        .cd-history-toolbar,
+        .cd-history-body {
+            padding: 16px;
+        }
+
+        .cd-history-toolbar h2 {
+            font-size: 18px;
+        }
+    }
+</style>
+
+{% if complaint.location and maptiler_api_key %}
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="complaint-detail">
+
+    <header class="cd-heading">
+        <div>
+            <h1>{{ complaint.service.name_ar }}</h1>
+            <span class="cd-reference">
+                {{ complaint.reference_number }}
+            </span>
+        </div>
+
+        <div class="cd-actions">
+            <button
+                type="button"
+                class="cd-button"
+                id="openComplaintHistory"
+                aria-haspopup="dialog"
+                aria-controls="complaintHistoryDialog"
+            >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 11a9 9 0 1 1 2.6 7"></path>
+                    <path d="M3 4v7h7"></path>
+                    <path d="M12 7v5l3 2"></path>
+                </svg>
+                سجل البلاغ
+            </button>
+
+            <a
+                href="{% url 'municipal_portal:complaint_list' %}"
+                class="cd-button cd-button--secondary"
+            >
+                العودة إلى البلاغات
+            </a>
+        </div>
+    </header>
+
+    <div class="cd-tags">
+        <span class="cd-tag cd-tag--{{ complaint.status }}">
+            {{ complaint.get_status_display }}
+        </span>
+
+        <span class="cd-tag">
+            الأولوية: {{ complaint.get_priority_display }}
+        </span>
+    </div>
+
+    <div class="cd-grid">
+        <div class="cd-column">
+
+            <section class="cd-card">
+                <h2>بيانات البلاغ</h2>
+
+                <dl class="cd-info">
+                    <div>
+                        <dt>الخدمة</dt>
+                        <dd>{{ complaint.service.name_ar }}</dd>
+                    </div>
+
+                    <div>
+                        <dt>التصنيف</dt>
+                        <dd>{{ complaint.category.name_ar }}</dd>
+                    </div>
+
+                    <div>
+                        <dt>تاريخ التقديم</dt>
+                        <dd>
+                            {{ complaint.created_at|date:"Y/m/d — H:i" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>آخر تحديث</dt>
+                        <dd>
+                            {{ complaint.updated_at|date:"Y/m/d — H:i" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>الحي</dt>
+                        <dd>
+                            {{ complaint.neighborhood|default:"غير محدد" }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>الأصل المرتبط</dt>
+                        <dd>
+                            {{ complaint.asset|default:"غير محدد" }}
+                        </dd>
+                    </div>
+
+                    <div class="cd-wide">
+                        <dt>العنوان</dt>
+                        <dd>
+                            {{ complaint.address|default:"لم يُضف عنوان" }}
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="cd-card">
+                <h2>وصف البلاغ</h2>
+                <div class="cd-description">
+                    {{ complaint.description|linebreaks }}
+                </div>
+            </section>
+
+            <section class="cd-card">
+                <h2>صورة البلاغ</h2>
+
+                {% if complaint.photo %}
+                    <a
+                        href="{{ complaint.photo.url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="فتح صورة البلاغ بحجم أكبر"
+                    >
+                        <img
+                            src="{{ complaint.photo.url }}"
+                            alt="الصورة المرفقة مع البلاغ"
+                            class="cd-photo"
+                            loading="lazy"
+                        >
+                    </a>
+
+                    <p class="cd-caption">
+                        اضغط على الصورة لعرضها بحجم أكبر.
+                    </p>
+                {% else %}
+                    <p class="cd-note">
+                        لا توجد صورة مرفقة بهذا البلاغ.
+                    </p>
+                {% endif %}
+            </section>
+
+            <section class="cd-card">
+                <h2>موقع البلاغ</h2>
+
+                {% if complaint.location %}
+                    {% if maptiler_api_key %}
+                        <div
+                            id="complaintMap"
+                            class="cd-map"
+                            data-lat="{{ complaint.location.y|unlocalize }}"
+                            data-lng="{{ complaint.location.x|unlocalize }}"
+                        >
+                            <p class="cd-map-status">
+                                جارٍ تحميل الخريطة…
+                            </p>
+                        </div>
+
+                        {{ maptiler_api_key|json_script:"complaint-map-key" }}
+                    {% endif %}
+
+                    <dl class="cd-info">
+                        <div class="cd-wide">
+                            <dt>الإحداثيات</dt>
+                            <dd>
+                                <span class="cd-coordinates">
+                                    {{ complaint.location.y|unlocalize }},
+                                    {{ complaint.location.x|unlocalize }}
+                                </span>
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div class="cd-actions cd-location-actions">
+                        <a
+                            href="https://www.google.com/maps/search/?api=1&amp;query={{ complaint.location.y|unlocalize }},{{ complaint.location.x|unlocalize }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="cd-button cd-button--secondary"
+                        >
+                            فتح الموقع في الخرائط
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="cd-note">
+                        لا يوجد موقع مسجل لهذا البلاغ.
+                    </p>
+                {% endif %}
+            </section>
+
+        </div>
+
+        <div class="cd-column">
+
+            <section class="cd-card">
+                <h2>بيانات المواطن</h2>
+
+                {% if complaint.citizen %}
+                    <dl class="cd-info">
+                        <div class="cd-wide">
+                            <dt>الاسم</dt>
+                            <dd>
+                                {% if complaint.citizen.get_full_name %}
+                                    {{ complaint.citizen.get_full_name }}
+                                {% else %}
+                                    {{ complaint.citizen.username }}
+                                {% endif %}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>اسم المستخدم</dt>
+                            <dd>{{ complaint.citizen.username }}</dd>
+                        </div>
+
+                        <div>
+                            <dt>رقم الهاتف</dt>
+                            <dd>
+                                <bdi>
+                                    {{ complaint.citizen.phone_number|default:"غير مسجل" }}
+                                </bdi>
+                            </dd>
+                        </div>
+
+                        <div class="cd-wide">
+                            <dt>البريد الإلكتروني</dt>
+                            <dd>
+                                <bdi>
+                                    {{ complaint.citizen.email|default:"غير مسجل" }}
+                                </bdi>
+                            </dd>
+                        </div>
+                    </dl>
+                {% else %}
+                    <p class="cd-note">
+                        حساب المواطن المرتبط بهذا البلاغ غير متاح.
+                    </p>
+                {% endif %}
+            </section>
+
+            <section class="cd-card">
+                <h2>مراجعة البلاغ</h2>
+
+                {% if review_form.non_field_errors %}
+                    <div class="cd-errors" role="alert">
+                        {{ review_form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {% if can_review %}
+                    <form
+                        method="post"
+                        class="cd-form"
+                        data-review-form
+                    >
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="action"
+                            value="review"
+                        >
+
+                        {% for field in review_form %}
+                            <div class="cd-field">
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.help_text %}
+                                    <p class="cd-help">
+                                        {{ field.help_text }}
+                                    </p>
+                                {% endif %}
+
+                                {{ field.errors }}
+                            </div>
+                        {% endfor %}
+
+                        <p
+                            class="cd-help"
+                            data-service-options-message
+                            aria-live="polite"
+                        ></p>
+
+                        <p class="cd-note">
+                            راجع الخدمة والتصنيف والأصل المرتبط،
+                            وحدد الأولوية قبل حفظ المراجعة.
+                        </p>
+
+                        <button type="submit" class="cd-button">
+                            {% if complaint.status == "under_review" %}
+                                حفظ بيانات المراجعة
+                            {% else %}
+                                اعتماد المراجعة
+                            {% endif %}
+                        </button>
+                    </form>
+                {% else %}
+                    <p class="cd-note">
+                        الحالة الحالية:
+                        <strong>
+                            {{ complaint.get_status_display }}
+                        </strong>
+
+                        {% if work_order %}
+                            <br>
+                            تم إسناد البلاغ، ولا تتاح إعادة تعديل المراجعة.
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </section>
+
+            <section class="cd-card">
+                <h2>إسناد البلاغ</h2>
+
+                {% if assignment_form.non_field_errors %}
+                    <div class="cd-errors" role="alert">
+                        {{ assignment_form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {% if work_order %}
+                    <dl class="cd-info">
+                        <div class="cd-wide">
+                            <dt>قائد الفريق</dt>
+                            <dd>
+                                {% if work_order.assigned_to.get_full_name %}
+                                    {{ work_order.assigned_to.get_full_name }}
+                                {% else %}
+                                    {{ work_order.assigned_to.username }}
+                                {% endif %}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>حالة أمر العمل</dt>
+                            <dd>{{ work_order.get_status_display }}</dd>
+                        </div>
+
+                        <div>
+                            <dt>تاريخ إنشاء أمر العمل</dt>
+                            <dd>
+                                {{ work_order.created_at|date:"Y/m/d — H:i" }}
+                            </dd>
+                        </div>
+
+                        <div class="cd-wide">
+                            <dt>أُسند بواسطة</dt>
+                            <dd>
+                                {% if work_order.assigned_by %}
+                                    {% if work_order.assigned_by.get_full_name %}
+                                        {{ work_order.assigned_by.get_full_name }}
+                                    {% else %}
+                                        {{ work_order.assigned_by.username }}
+                                    {% endif %}
+                                {% else %}
+                                    غير متاح
+                                {% endif %}
+                            </dd>
+                        </div>
+
+                        <div class="cd-wide">
+                            <dt>تعليمات التنفيذ</dt>
+                            <dd>
+                                {{ work_order.instructions|default:"لا توجد تعليمات إضافية"|linebreaksbr }}
+                            </dd>
+                        </div>
+
+                        {% if work_order.started_at %}
+                            <div>
+                                <dt>تاريخ بدء التنفيذ</dt>
+                                <dd>
+                                    {{ work_order.started_at|date:"Y/m/d — H:i" }}
+                                </dd>
+                            </div>
+                        {% endif %}
+
+                        {% if work_order.completed_at %}
+                            <div>
+                                <dt>تاريخ إكمال المهمة</dt>
+                                <dd>
+                                    {{ work_order.completed_at|date:"Y/m/d — H:i" }}
+                                </dd>
+                            </div>
+                        {% endif %}
+
+                        {% if work_order.completion_notes %}
+                            <div class="cd-wide">
+                                <dt>ملاحظات الإنجاز</dt>
+                                <dd>
+                                    {{ work_order.completion_notes|linebreaksbr }}
+                                </dd>
+                            </div>
+                        {% endif %}
+
+                        {% if work_order.completion_photo %}
+                            <div class="cd-wide">
+                                <dt>صورة الإنجاز</dt>
+                                <dd>
+                                    <a
+                                        href="{{ work_order.completion_photo.url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="فتح صورة الإنجاز بحجم أكبر"
+                                    >
+                                        <img
+                                            src="{{ work_order.completion_photo.url }}"
+                                            alt="صورة بعد إنجاز المهمة"
+                                            class="cd-photo"
+                                            loading="lazy"
+                                        >
+                                    </a>
+                                </dd>
+                            </div>
+                        {% endif %}
+                    </dl>
+
+                {% elif can_assign %}
+                    {% if assignment_form.assigned_to.field.queryset.exists %}
+                        <form method="post" class="cd-form">
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="assign"
+                            >
+
+                            {% for field in assignment_form %}
+                                <div class="cd-field">
+                                    <label for="{{ field.id_for_label }}">
+                                        {{ field.label }}
+                                    </label>
+
+                                    {{ field }}
+                                    {{ field.errors }}
+                                </div>
+                            {% endfor %}
+
+                            <button type="submit" class="cd-button">
+                                إسناد البلاغ وإنشاء أمر العمل
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="cd-note">
+                            لا توجد حسابات صيانة نشطة متاحة للإسناد.
+                        </p>
+                    {% endif %}
+
+                {% elif complaint.status == "submitted" %}
+                    <p class="cd-note">
+                        راجع البلاغ أولًا قبل إسناده إلى قائد الفريق.
+                    </p>
+                {% else %}
+                    <p class="cd-note">
+                        لا يتاح إنشاء أمر عمل في الحالة الحالية للبلاغ.
+                    </p>
+                {% endif %}
+            </section>
+
+        </div>
+    </div>
+
+    <dialog
+        id="complaintHistoryDialog"
+        class="cd-history-dialog"
+        aria-labelledby="historyDialogTitle"
+        dir="rtl"
+    >
+        <div class="cd-history-toolbar">
+            <h2 id="historyDialogTitle">سجل البلاغ</h2>
+
+            <button
+                type="button"
+                class="cd-button cd-button--secondary"
+                id="closeComplaintHistory"
+                autofocus
+            >
+                إغلاق
+            </button>
+        </div>
+
+        <div class="cd-history-body">
+            {% include "municipal_portal/complaints/history.html" with history_entries=history_entries %}
+        </div>
+    </dialog>
+
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const dialog = document.getElementById("complaintHistoryDialog");
+    const openButton = document.getElementById("openComplaintHistory");
+    const closeButton = document.getElementById("closeComplaintHistory");
+
+    if (!dialog || !openButton || !closeButton) {
+        return;
+    }
+
+    openButton.addEventListener("click", function () {
+        if (!dialog.open) {
+            dialog.showModal();
+            document.documentElement.classList.add("cd-history-open");
+        }
+    });
+
+    closeButton.addEventListener("click", function () {
+        dialog.close();
+    });
+
+    dialog.addEventListener("click", function (event) {
+        if (event.target !== dialog) {
+            return;
+        }
+
+        const bounds = dialog.getBoundingClientRect();
+
+        const clickedOutside = (
+            event.clientX < bounds.left ||
+            event.clientX > bounds.right ||
+            event.clientY < bounds.top ||
+            event.clientY > bounds.bottom
+        );
+
+        if (clickedOutside) {
+            dialog.close();
+        }
+    });
+
+    dialog.addEventListener("close", function () {
+        document.documentElement.classList.remove("cd-history-open");
+
+        openButton.focus({
+            preventScroll: true
+        });
+    });
+})();
+</script>
+
+<script>
+(function () {
+    function initializeReviewFilters() {
+        const form = document.querySelector("[data-review-form]");
+
+        if (!form) {
+            return;
+        }
+
+        const service = form.querySelector("[data-review-service]");
+        const category = form.querySelector("[data-review-category]");
+        const asset = form.querySelector("[data-review-asset]");
+        const message = form.querySelector(
+            "[data-service-options-message]"
+        );
+
+        if (!service || !category || !asset) {
+            return;
+        }
+
+        const allCategories = Array.from(category.options).map(
+            option => option.cloneNode(true)
+        );
+
+        const allAssets = Array.from(asset.options).map(
+            option => option.cloneNode(true)
+        );
+
+        function updateOptions(select, allOptions, serviceId) {
+            const previousValue = select.value;
+
+            const matchingOptions = allOptions.filter(option => {
+                return (
+                    option.value !== "" &&
+                    option.dataset.serviceId === serviceId
+                );
+            });
+
+            const emptyOption = allOptions.find(
+                option => option.value === ""
+            );
+
+            select.replaceChildren();
+
+            if (emptyOption) {
+                select.appendChild(emptyOption.cloneNode(true));
+            } else {
+                select.add(new Option("اختر من القائمة", ""));
+            }
+
+            matchingOptions.forEach(option => {
+                select.appendChild(option.cloneNode(true));
+            });
+
+            const previousValueStillAvailable = matchingOptions.some(
+                option => option.value === previousValue
+            );
+
+            select.value = previousValueStillAvailable
+                ? previousValue
+                : "";
+
+            return matchingOptions.length;
+        }
+
+        function filterByService() {
+            const serviceId = service.value;
+
+            const categoryCount = updateOptions(
+                category,
+                allCategories,
+                serviceId
+            );
+
+            const assetCount = updateOptions(
+                asset,
+                allAssets,
+                serviceId
+            );
+
+            if (!message) {
+                return;
+            }
+
+            if (!serviceId) {
+                message.textContent =
+                    "اختر الخدمة لعرض التصنيفات والأصول التابعة لها.";
+            } else if (categoryCount === 0) {
+                message.textContent =
+                    "لا توجد تصنيفات متاحة لهذه الخدمة. " +
+                    "يلزم إضافة تصنيف قبل حفظ المراجعة.";
+            } else if (assetCount === 0) {
+                message.textContent =
+                    "لا توجد أصول متاحة لهذه الخدمة. " +
+                    "يمكن حفظ المراجعة دون ربط أصل.";
+            } else {
+                message.textContent = "";
+            }
+        }
+
+        service.addEventListener("change", filterByService);
+        filterByService();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            initializeReviewFilters
+        );
+    } else {
+        initializeReviewFilters();
+    }
+})();
+</script>
+
+{% if complaint.location and maptiler_api_key %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+(function () {
+    const container = document.getElementById("complaintMap");
+    const keyElement = document.getElementById("complaint-map-key");
+
+    if (!container || !keyElement) {
+        return;
+    }
+
+    if (!window.L) {
+        container.innerHTML =
+            '<p class="cd-map-status">' +
+            'تعذر تحميل الخريطة. يمكنك استخدام زر فتح الموقع في الخرائط.' +
+            '</p>';
+        return;
+    }
+
+    const latitude = Number(container.dataset.lat);
+    const longitude = Number(container.dataset.lng);
+    const apiKey = JSON.parse(keyElement.textContent);
+
+    if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+    ) {
+        container.innerHTML =
+            '<p class="cd-map-status">إحداثيات الموقع غير صالحة.</p>';
+        return;
+    }
+
+    container.replaceChildren();
+
+    const map = L.map(container).setView(
+        [latitude, longitude],
+        16
+    );
+
+    L.tileLayer(
+        "https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png" +
+        "?key=" + encodeURIComponent(apiKey),
+        {
+            tileSize: 512,
+            zoomOffset: -1,
+            maxZoom: 19,
+            attribution:
+                '&copy; <a href="https://www.maptiler.com/copyright/" ' +
+                'target="_blank" rel="noopener noreferrer">MapTiler</a> ' +
+                '&copy; <a href="https://www.openstreetmap.org/copyright" ' +
+                'target="_blank" rel="noopener noreferrer">' +
+                'OpenStreetMap</a> contributors'
+        }
+    ).addTo(map);
+
+    L.marker([latitude, longitude])
+        .addTo(map)
+        .bindPopup("موقع البلاغ")
+        .openPopup();
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import (
     get_user_model,
     login as auth_login,
@@ -10,11 +11,17 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_http_methods, require_POST
-from django.conf import settings
+from django.views.decorators.http import (
+    require_http_methods,
+    require_POST,
+)
+
 from accounts.models import EmailVerification
-from complaints.models import Complaint
+from complaints.models import Complaint, ComplaintHistory
 from municipal_services.models import ServiceCategory
+from notifications.services import (
+    notify_municipality_of_new_complaint,
+)
 
 from .account_forms import (
     CitizenAccountForm,
@@ -30,8 +37,7 @@ LAST_USER_MAX_AGE = 60 * 60 * 24 * 365
 
 
 def remember_username(request, response, username):
-    # المعلومة المحفوظة اسم المستخدم فقط.
-    # هذا الملف لا يمنح صلاحية الدخول إلى الحساب.
+    # حفظ اسم المستخدم فقط، دون منح صلاحية الدخول.
     value = signing.dumps(
         username,
         salt=LAST_USER_SALT,
@@ -70,7 +76,6 @@ def get_remembered_username(request):
 
     User = get_user_model()
 
-    # لا نعرض حسابًا محذوفًا أو معطّلًا.
     user = User.objects.filter(
         username=username,
         is_active=True,
@@ -155,8 +160,6 @@ def citizen_auth(request):
     )
 
     if choice in {"login", "register"}:
-        # اختيار أحد الزرين يفتح النموذج فقط.
-        # حتى الحساب السابق يحتاج إدخال كلمة مروره.
         if request.user.is_authenticated:
             auth_logout(request)
 
@@ -274,14 +277,12 @@ def citizen_auth(request):
 @login_required
 @require_POST
 def citizen_logout(request):
-    # نحصل على الاسم قبل إنهاء الجلسة.
     username = request.user.get_username()
 
     auth_logout(request)
 
     response = redirect("citizen_portal:auth")
 
-    # يبقى الاسم فقط لعرض شاشة اختيار الحساب.
     return remember_username(
         request,
         response,
@@ -382,7 +383,7 @@ def account(request):
 
                 profile = form.save(commit=False)
 
-                # يبقى البريد القديم حتى تأكيد الجديد.
+                # يبقى البريد القديم حتى تأكيد البريد الجديد.
                 profile.email = original_email
 
                 needs_verification = bool(candidate_email) and (
@@ -461,9 +462,30 @@ def submit_complaint(request):
         )
 
         if form.is_valid():
-            complaint = form.save(commit=False)
-            complaint.citizen = request.user
-            complaint.save()
+            with transaction.atomic():
+                complaint = form.save(commit=False)
+                complaint.citizen = request.user
+                complaint.save()
+
+                ComplaintHistory.objects.create(
+                    complaint=complaint,
+                    actor=request.user,
+                    action=ComplaintHistory.Action.SUBMITTED,
+                    notes="تم تقديم البلاغ من تطبيق المواطن.",
+                    changes={
+                        "status": {
+                            "label": "الحالة",
+                            "old_value": None,
+                            "new_value": complaint.status,
+                            "old": "لم يُقدّم البلاغ",
+                            "new": complaint.get_status_display(),
+                        },
+                    },
+                )
+
+                notify_municipality_of_new_complaint(
+                    complaint
+                )
 
             return redirect(
                 "citizen_portal:complaint_success",
@@ -478,9 +500,14 @@ def submit_complaint(request):
         "citizen_portal/submit_complaint.html",
         {
             "form": form,
-            "maptiler_api_key": settings.MAPTILER_API_KEY,
+            "maptiler_api_key": getattr(
+                settings,
+                "MAPTILER_API_KEY",
+                "",
+            ),
         },
     )
+
 
 @login_required
 def complaint_success(request, reference_number):
@@ -498,12 +525,18 @@ def complaint_success(request, reference_number):
 
 
 @login_required
-@login_required
 def load_categories(request):
-    service_id = request.GET.get("service")
+    service_id = request.GET.get("service", "")
+
+    if not service_id.isascii() or not service_id.isdigit():
+        return JsonResponse([], safe=False)
+
+    # تجنب تمرير رقم أكبر من نطاق المفاتيح إلى قاعدة البيانات.
+    if len(service_id) > 19 or int(service_id) > 9223372036854775807:
+        return JsonResponse([], safe=False)
 
     categories = ServiceCategory.objects.filter(
-        service_id=service_id
+        service_id=int(service_id)
     ).order_by("name_ar")
 
     data = list(
@@ -513,7 +546,7 @@ def load_categories(request):
         )
     )
 
-    # وضع خيار "أخرى" في نهاية القائمة دائمًا
+    # وضع خيار "أخرى" في نهاية القائمة.
     data.sort(
         key=lambda category: (
             category["name_ar"].strip() in {"أخرى", "اخرى"},

@@ -1,0 +1,170 @@
+<style>
+    .ch-list {
+        display: grid;
+        gap: 16px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .ch-entry {
+        min-width: 0;
+        padding: 18px;
+        border: 1px solid #d8e8df;
+        border-inline-start: 4px solid #237d50;
+        border-radius: 14px;
+        background: #fbfdfb;
+    }
+
+    .ch-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .ch-title {
+        margin: 0;
+        color: #233d2e;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    .ch-date {
+        color: #64776c;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .ch-actor,
+    .ch-notes {
+        margin: 8px 0 0;
+        color: #405e4b;
+        font-size: 13px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .ch-changes {
+        display: grid;
+        gap: 12px;
+        margin: 16px 0 0;
+    }
+
+    .ch-change {
+        padding-top: 12px;
+        border-top: 1px solid #e0ebe4;
+    }
+
+    .ch-change dt {
+        margin-bottom: 8px;
+        color: #233d2e;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .ch-change dd {
+        display: grid;
+        gap: 7px;
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .ch-before,
+    .ch-after {
+        display: block;
+        padding: 8px 11px;
+        border-radius: 8px;
+        white-space: pre-line;
+    }
+
+    .ch-before {
+        background: #f0f3f1;
+        color: #59675f;
+    }
+
+    .ch-after {
+        background: #e8f5ec;
+        color: #236441;
+    }
+
+    @media (max-width: 560px) {
+        .ch-entry {
+            padding: 14px;
+        }
+
+        .ch-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 4px;
+        }
+    }
+</style>
+
+<section class="cd-card" aria-labelledby="complaint-history-title">
+    <h2 id="complaint-history-title">سجل إجراءات البلاغ</h2>
+
+    <ol class="ch-list">
+        {% for entry in history_entries %}
+            <li class="ch-entry">
+                <div class="ch-header">
+                    <h3 class="ch-title">
+                        {{ entry.get_action_display }}
+                    </h3>
+
+                    <time
+                        class="ch-date"
+                        datetime="{{ entry.created_at|date:'c' }}"
+                    >
+                        {{ entry.created_at|date:"Y/m/d — H:i" }}
+                    </time>
+                </div>
+
+                <p class="ch-actor">
+                    <strong>منفذ الإجراء:</strong>
+
+                    {% if entry.actor_name %}
+                        {{ entry.actor_name }}
+                    {% elif entry.actor %}
+                        {{ entry.actor.username }}
+                    {% else %}
+                        غير مسجل
+                    {% endif %}
+                </p>
+
+                {% if entry.notes %}
+                    <p class="ch-notes">
+                        {{ entry.notes|linebreaksbr }}
+                    </p>
+                {% endif %}
+
+                {% if entry.changes %}
+                    <dl class="ch-changes">
+                        {% for field_name, change in entry.changes.items %}
+                            <div class="ch-change">
+                                <dt>{{ change.label }}</dt>
+
+                                <dd>
+                                    <span class="ch-before"><strong>قبل:</strong> {{ change.old }}</span>
+                                    <span class="ch-after"><strong>بعد:</strong> {{ change.new }}</span>
+                                </dd>
+                            </div>
+                        {% endfor %}
+                    </dl>
+                {% endif %}
+            </li>
+
+        {% empty %}
+            <li>
+                <p class="cd-note">
+                    لا توجد إجراءات مسجلة لهذا البلاغ حتى الآن.
+                    يبدأ تسجيل المراجعة والإسناد من تفعيل سجل الإجراءات.
+                </p>
+            </li>
+        {% endfor %}
+    </ol>
+</section>
