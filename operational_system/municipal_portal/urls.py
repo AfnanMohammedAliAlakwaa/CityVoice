@@ -33,6 +33,11 @@ urlpatterns = [
         name="asset_excel_template",
     ),
     path(
+    "services-assets/<int:asset_id>/update/",
+    views.asset_update,
+    name="asset_update",
+),
+    path(
         "notifications/",
         views.notification_list,
         name="notification_list",

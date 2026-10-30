@@ -114,6 +114,117 @@
                 width: calc(100% - 24px);
             }
         }
+        .mp-message {
+    position: relative;
+    max-height: 180px;
+    padding-inline-end: 52px;
+    opacity: 1;
+    transform: translateY(0);
+    overflow: hidden;
+    transition:
+        opacity 0.35s ease,
+        transform 0.35s ease,
+        max-height 0.35s ease,
+        margin 0.35s ease,
+        padding 0.35s ease,
+        border-width 0.35s ease;
+}
+
+.mp-message.is-dismissing {
+    max-height: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-width: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+.mp-message__close {
+    position: absolute;
+    top: 50%;
+    inset-inline-end: 18px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    font-size: 22px;
+    line-height: 26px;
+    cursor: pointer;
+    opacity: 0.65;
+    transform: translateY(-50%);
+    transition:
+        opacity 0.2s ease,
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.mp-message__close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.08);
+}
+.mp-user-avatar-button {
+    position: relative;
+    padding: 0;
+    border: 0;
+    cursor: pointer;
+    overflow: visible;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.mp-user-avatar-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(20, 99, 58, 0.22);
+}
+
+.mp-user-avatar-button:active {
+    transform: scale(0.94);
+}
+
+.mp-user-avatar-button:focus-visible {
+    outline: 3px solid #9bd2b4;
+    outline-offset: 3px;
+}
+
+.mp-user-avatar-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.mp-user-avatar-letter {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.mp-user-avatar-button.is-uploading {
+    cursor: wait;
+    opacity: 0.72;
+    animation: avatar-upload-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes avatar-upload-pulse {
+    from {
+        transform: scale(0.94);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -333,29 +444,83 @@
                         </strong>
                     </span>
 
-                    <span
-                        class="mp-user-avatar"
-                        aria-hidden="true"
+                    <button
+                        type="button"
+                        class="mp-user-avatar mp-user-avatar-button"
+                        id="avatar-file-open"
+                        aria-label="تغيير الصورة الشخصية"
+                        title="اضغط لتغيير الصورة الشخصية"
                     >
-                        {{ request.user.first_name|first|default:"م" }}
-                    </span>
+                        {% if request.user.avatar %}
+                            <img
+                                src="{{ request.user.avatar.url }}"
+                                alt="الصورة الشخصية"
+                                class="mp-user-avatar-image"
+                            >
+                        {% else %}
+                            <span class="mp-user-avatar-letter">
+                                {{ request.user.first_name|first|default:request.user.username|first|default:"م" }}
+                            </span>
+                        {% endif %}
+                    </button>
+
+                    <form
+                        method="post"
+                        enctype="multipart/form-data"
+                        action="{% url 'accounts:update_avatar' %}"
+                        id="avatar-upload-form"
+                        hidden
+                    >
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="next"
+                            value="{{ request.get_full_path }}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="action"
+                            value="upload"
+                        >
+
+                        <input
+                            type="file"
+                            name="avatar"
+                            id="avatar-file-input"
+                            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                        >
+                    </form>
                 </div>
             </div>
         </header>
 
         <main class="mp-content">
             {% if messages %}
-                <div class="mp-messages">
-                    {% for message in messages %}
-                        <div
-                            class="mp-message mp-message--{{ message.tags }}"
-                            role="status"
-                        >
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+    <div class="mp-messages" id="system-messages">
+        {% for message in messages %}
+            <div
+                class="mp-message mp-message--{{ message.tags }}"
+                data-system-message
+                role="alert"
+            >
+                <span class="mp-message__text">
+                    {{ message }}
+                </span>
+
+                <button
+                    type="button"
+                    class="mp-message__close"
+                    data-message-close
+                    aria-label="إغلاق الرسالة"
+                >
+                    ×
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
             {% block content %}{% endblock %}
         </main>
@@ -638,5 +803,123 @@
 </script>
 
 {% block extra_js %}{% endblock %}
+<script>
+(function () {
+    function initializeMessages() {
+        const messages = document.querySelectorAll(
+            "[data-system-message]"
+        );
+
+        messages.forEach(function (message, index) {
+            if (message.dataset.dismissReady === "true") {
+                return;
+            }
+
+            message.dataset.dismissReady = "true";
+
+            const closeButton = message.querySelector(
+                "[data-message-close]"
+            );
+
+            let timer = null;
+
+            function dismissMessage() {
+                clearTimeout(timer);
+                message.classList.add("is-dismissing");
+
+                window.setTimeout(function () {
+                    message.remove();
+                }, 400);
+            }
+
+            function startTimer() {
+                clearTimeout(timer);
+
+                timer = window.setTimeout(
+                    dismissMessage,
+                    5000 + (index * 400)
+                );
+            }
+
+            function pauseTimer() {
+                clearTimeout(timer);
+            }
+
+            if (closeButton) {
+                closeButton.addEventListener(
+                    "click",
+                    dismissMessage
+                );
+            }
+
+            message.addEventListener(
+                "mouseenter",
+                pauseTimer
+            );
+
+            message.addEventListener(
+                "mouseleave",
+                startTimer
+            );
+
+            startTimer();
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            initializeMessages
+        );
+    } else {
+        initializeMessages();
+    }
+})();
+</script>
+<script>
+(function () {
+    const avatarButton = document.getElementById("avatar-file-open");
+    const fileInput = document.getElementById("avatar-file-input");
+    const uploadForm = document.getElementById("avatar-upload-form");
+
+    if (!avatarButton || !fileInput || !uploadForm) {
+        return;
+    }
+
+    avatarButton.addEventListener("click", function () {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener("change", function () {
+        const file = fileInput.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (file.size > 3 * 1024 * 1024) {
+            alert("حجم الصورة يجب ألا يتجاوز 3 ميجابايت.");
+            fileInput.value = "";
+            return;
+        }
+
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            alert("يرجى اختيار صورة بصيغة JPG أو PNG أو WEBP.");
+            fileInput.value = "";
+            return;
+        }
+
+        avatarButton.classList.add("is-uploading");
+        avatarButton.disabled = true;
+        uploadForm.submit();
+    });
+})();
+</script>
 </body>
 </html>

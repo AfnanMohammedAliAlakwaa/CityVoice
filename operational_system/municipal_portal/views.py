@@ -9,11 +9,13 @@ from django.db import transaction
 from django.db.models import Count, OuterRef, Q, Subquery
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from openpyxl import Workbook, load_workbook
-
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.worksheet.datavalidation import DataValidation
 from assets.models import AssetType, MunicipalAsset
 from complaints.models import Complaint
 from locations.models import Neighborhood
@@ -23,7 +25,7 @@ from notifications.models import Notification
 
 from .decorators import municipal_required
 from .forms import AssetExcelUploadForm, MunicipalAssetForm
-
+from .asset_etl import AssetETLError, process_asset_excel
 
 User = get_user_model()
 
@@ -162,6 +164,26 @@ def services_assets(request):
                 ),
             }
         )
+        editing_asset = None
+    asset_form = MunicipalAssetForm()
+
+    edit_asset_id = request.GET.get(
+        "edit",
+        "",
+    ).strip()
+
+    if edit_asset_id.isdigit():
+        editing_asset = get_object_or_404(
+            MunicipalAsset.objects.select_related(
+                "asset_type",
+                "asset_type__service",
+            ),
+            pk=int(edit_asset_id),
+        )
+
+        asset_form = MunicipalAssetForm(
+            instance=editing_asset,
+        )    
 
     return render(
         request,
@@ -170,7 +192,8 @@ def services_assets(request):
             "services": services,
             "assets": assets,
             "service_sections": service_sections,
-            "asset_form": MunicipalAssetForm(),
+            "asset_form": asset_form,
+"editing_asset": editing_asset,
             "excel_form": AssetExcelUploadForm(),
         },
     )
@@ -199,21 +222,76 @@ def asset_create(request):
 
     error_messages = []
 
-    for field_errors in form.errors.values():
-        for error in field_errors:
-            error_messages.append(str(error))
+    for field_name, field_errors in form.errors.items():
+        if field_name == "__all__":
+            field_label = ""
+        else:
+            field = form.fields.get(field_name)
+            field_label = (
+                field.label
+                if field is not None
+                else field_name
+        )
+
+    for error in field_errors:
+        if field_label:
+            error_messages.append(
+                f"{field_label}: {error}"
+            )
+        else:
+            error_messages.append(
+                str(error)
+            )
 
     messages.error(
-        request,
-        "تعذر إضافة الأصل: "
-        + "، ".join(error_messages),
-    )
+    request,
+    (
+        "تعذر حفظ الأصل. يرجى تصحيح البيانات التالية: "
+        + " • ".join(error_messages)
+    ),
+)
 
     return redirect(
         "municipal_portal:services_assets",
     )
 
+@municipal_required
+@require_POST
+def asset_update(request, asset_id):
+    asset = get_object_or_404(
+        MunicipalAsset,
+        pk=asset_id,
+    )
 
+    form = MunicipalAssetForm(
+        request.POST,
+        instance=asset,
+    )
+
+    if form.is_valid():
+        updated_asset = form.save()
+
+        messages.success(
+            request,
+            (
+                f"تم تحديث الأصل "
+                f"{updated_asset.asset_code} بنجاح."
+            ),
+        )
+
+        return redirect(
+            "municipal_portal:services_assets"
+        )
+
+    messages.error(
+        request,
+        "تعذر تحديث الأصل. تحققي من الحقول المدخلة.",
+    )
+
+    return redirect(
+        f"{reverse('municipal_portal:services_assets')}"
+        f"?edit={asset.pk}"
+    )
 @municipal_required
 @require_POST
 def asset_create(request):
@@ -262,65 +340,21 @@ def asset_import(request):
     )
 
     if not form.is_valid():
-        messages.error(
-            request,
-            "يرجى اختيار ملف Excel صحيح بصيغة xlsx.",
-        )
+        error_messages = []
 
-        return redirect(
-            "municipal_portal:services_assets",
-        )
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                error_messages.append(str(error))
 
-    excel_file = form.cleaned_data[
-        "excel_file"
-    ]
-
-    try:
-        workbook = load_workbook(
-            excel_file,
-            data_only=True,
-        )
-
-        worksheet = workbook.active
-
-    except Exception:
-        messages.error(
-            request,
-            "تعذر قراءة ملف Excel.",
-        )
-
-        return redirect(
-            "municipal_portal:services_assets",
-        )
-
-    expected_headers = [
-        "asset_code",
-        "service",
-        "asset_type",
-        "name_ar",
-        "neighborhood",
-        "address",
-        "latitude",
-        "longitude",
-        "status",
-        "condition",
-        "installation_date",
-        "notes",
-    ]
-
-    received_headers = [
-        str(cell.value).strip()
-        if cell.value is not None
-        else ""
-        for cell in worksheet[1]
-    ]
-
-    if received_headers != expected_headers:
         messages.error(
             request,
             (
-                "أعمدة ملف Excel غير صحيحة. "
-                "استخدمي النموذج الذي يتم تنزيله من النظام."
+                "تعذر رفع ملف Excel. "
+                + (
+                    " ".join(error_messages)
+                    if error_messages
+                    else "يرجى اختيار ملف صالح بصيغة xlsx."
+                )
             ),
         )
 
@@ -328,355 +362,332 @@ def asset_import(request):
             "municipal_portal:services_assets",
         )
 
-    status_values = {
-        value
-        for value, label
-        in MunicipalAsset.Status.choices
-    }
-
-    condition_values = {
-        value
-        for value, label
-        in MunicipalAsset.Condition.choices
-    }
-
-    assets_to_create = []
-    errors = []
-    codes_in_file = set()
-
-    for row_number, row in enumerate(
-        worksheet.iter_rows(
-            min_row=2,
-            values_only=True,
-        ),
-        start=2,
-    ):
-        if not any(
-            value not in (None, "")
-            for value in row
-        ):
-            continue
-
-        (
-            asset_code,
-            service_name,
-            asset_type_name,
-            name_ar,
-            neighborhood_name,
-            address,
-            latitude,
-            longitude,
-            status,
-            condition,
-            installation_date,
-            notes,
-        ) = row
-
-        asset_code = str(
-            asset_code or ""
-        ).strip()
-
-        service_name = str(
-            service_name or ""
-        ).strip()
-
-        asset_type_name = str(
-            asset_type_name or ""
-        ).strip()
-
-        status = str(
-            status or "operational"
-        ).strip()
-
-        condition = str(
-            condition or "good"
-        ).strip()
-
-        if not asset_code:
-            errors.append(
-                f"الصف {row_number}: رمز الأصل مطلوب."
-            )
-            continue
-
-        if asset_code in codes_in_file:
-            errors.append(
-                (
-                    f"الصف {row_number}: رمز الأصل "
-                    f"{asset_code} مكرر داخل الملف."
-                )
-            )
-            continue
-
-        if MunicipalAsset.objects.filter(
-            asset_code=asset_code,
-        ).exists():
-            errors.append(
-                (
-                    f"الصف {row_number}: الأصل "
-                    f"{asset_code} موجود مسبقًا."
-                )
-            )
-            continue
-
-        codes_in_file.add(asset_code)
-
-        try:
-            service = MunicipalService.objects.get(
-                name_ar__iexact=service_name,
-            )
-        except MunicipalService.DoesNotExist:
-            errors.append(
-                (
-                    f"الصف {row_number}: الخدمة "
-                    f"{service_name} غير موجودة."
-                )
-            )
-            continue
-
-        try:
-            asset_type = AssetType.objects.get(
-                service=service,
-                name_ar__iexact=asset_type_name,
-            )
-        except AssetType.DoesNotExist:
-            errors.append(
-                (
-                    f"الصف {row_number}: نوع الأصل "
-                    f"{asset_type_name} غير موجود "
-                    f"ضمن خدمة {service.name_ar}."
-                )
-            )
-            continue
-
-        neighborhood = None
-
-        if neighborhood_name:
-            neighborhood = Neighborhood.objects.filter(
-                name_ar__iexact=str(
-                    neighborhood_name
-                ).strip(),
-            ).first()
-
-            if neighborhood is None:
-                errors.append(
-                    (
-                        f"الصف {row_number}: الحي "
-                        f"{neighborhood_name} غير موجود."
-                    )
-                )
-                continue
-
-        try:
-            latitude_value = float(latitude)
-            longitude_value = float(longitude)
-
-            if not -90 <= latitude_value <= 90:
-                raise ValueError
-
-            if not -180 <= longitude_value <= 180:
-                raise ValueError
-
-        except (TypeError, ValueError):
-            errors.append(
-                (
-                    f"الصف {row_number}: "
-                    "الإحداثيات غير صحيحة."
-                )
-            )
-            continue
-
-        if status not in status_values:
-            errors.append(
-                (
-                    f"الصف {row_number}: "
-                    f"حالة التشغيل {status} غير صحيحة."
-                )
-            )
-            continue
-
-        if condition not in condition_values:
-            errors.append(
-                (
-                    f"الصف {row_number}: "
-                    f"الحالة الفنية {condition} غير صحيحة."
-                )
-            )
-            continue
-
-        parsed_installation_date = None
-
-        if installation_date:
-            try:
-                if isinstance(
-                    installation_date,
-                    datetime,
-                ):
-                    parsed_installation_date = (
-                        installation_date.date()
-                    )
-
-                elif isinstance(
-                    installation_date,
-                    date,
-                ):
-                    parsed_installation_date = (
-                        installation_date
-                    )
-
-                else:
-                    parsed_installation_date = (
-                        date.fromisoformat(
-                            str(
-                                installation_date
-                            ).strip()
-                        )
-                    )
-
-            except ValueError:
-                errors.append(
-                    (
-                        f"الصف {row_number}: "
-                        "تاريخ التركيب غير صحيح. "
-                        "استخدمي YYYY-MM-DD."
-                    )
-                )
-                continue
-
-        asset = MunicipalAsset(
-            asset_code=asset_code,
-            asset_type=asset_type,
-            name_ar=str(
-                name_ar or ""
-            ).strip(),
-            neighborhood=neighborhood,
-            address=str(
-                address or ""
-            ).strip(),
-            location=Point(
-                longitude_value,
-                latitude_value,
-                srid=4326,
-            ),
-            status=status,
-            condition=condition,
-            installation_date=(
-                parsed_installation_date
-            ),
-            notes=str(
-                notes or ""
-            ).strip(),
+    try:
+        result = process_asset_excel(
+            form.cleaned_data["excel_file"]
         )
 
-        assets_to_create.append(asset)
+    except AssetETLError as error:
+        messages.error(
+            request,
+            str(error),
+        )
 
-    if errors:
-        for error in errors[:10]:
-            messages.error(
-                request,
-                error,
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    except Exception as error:
+        messages.error(
+            request,
+        (
+                "حدث خطأ أثناء معالجة ملف Excel: "
+                f"{type(error).__name__}: {error}"
+        ),
+    )
+
+        return redirect(
+            "municipal_portal:services_assets",
+    )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    if result.processed == 0:
+        messages.warning(
+            request,
+            (
+                "لم يعثر النظام على صفوف بيانات داخل الملف. "
+                f"تم تجاهل {result.empty_rows} صف فارغ."
+            ),
+        )
+
+        return redirect(
+            "municipal_portal:services_assets",
+        )
+
+    if result.added > 0:
+        messages.success(
+            request,
+            f"تمت إضافة {result.added} أصل جديد بنجاح.",
+        )
+
+    if result.updated > 0:
+        messages.success(
+            request,
+            f"تم تحديث بيانات {result.updated} أصل بنجاح.",
+        )
+
+    if result.unchanged > 0:
+        messages.info(
+            request,
+            (
+                f"لم تتغير بيانات {result.unchanged} أصل، "
+                "لذلك لم يحتج النظام إلى تحديثها."
+            ),
+        )
+
+    if result.empty_rows > 0:
+        messages.info(
+            request,
+            (
+                f"تم تجاهل {result.empty_rows} "
+                "صف فارغ في ملف Excel."
+            ),
+        )
+
+    if result.rejected > 0:
+        messages.warning(
+            request,
+            (
+                f"تعذر استيراد {result.rejected} صف. "
+                "تم استيراد بقية الصفوف الصحيحة."
+            ),
+        )
+
+        rejected_rows = [
+            row
+            for row in result.rows
+            if row.status == "rejected"
+        ]
+
+        for row in rejected_rows[:10]:
+            asset_description = (
+                f" للأصل «{row.asset_code}»"
+                if row.asset_code
+                else ""
             )
 
-        if len(errors) > 10:
             messages.error(
                 request,
                 (
-                    f"يوجد {len(errors) - 10} "
-                    "أخطاء إضافية في الملف."
+                    f"الصف {row.row_number}"
+                    f"{asset_description}: "
+                    f"{row.message}"
                 ),
             )
 
-        return redirect(
-            "municipal_portal:services_assets",
-        )
+        if len(rejected_rows) > 10:
+            messages.error(
+                request,
+                (
+                    f"يوجد {len(rejected_rows) - 10} "
+                    "صفوف مرفوضة إضافية لم تُعرض."
+                ),
+            )
 
-    if not assets_to_create:
+    for warning in result.warnings[:10]:
         messages.warning(
             request,
-            "لا توجد صفوف صالحة للاستيراد.",
+            warning,
         )
 
-        return redirect(
-            "municipal_portal:services_assets",
+    if len(result.warnings) > 10:
+        messages.warning(
+            request,
+            (
+                f"يوجد {len(result.warnings) - 10} "
+                "تنبيهات إضافية لم تُعرض."
+            ),
         )
 
-    with transaction.atomic():
-        MunicipalAsset.objects.bulk_create(
-            assets_to_create,
-        )
-
-    messages.success(
+    messages.info(
         request,
         (
-            f"تم استيراد {len(assets_to_create)} "
-            "أصل بنجاح."
+            "ملخص الاستيراد: "
+            f"أضيف {result.added}، "
+            f"حُدّث {result.updated}، "
+            f"دون تغيير {result.unchanged}، "
+            f"مرفوض {result.rejected}."
         ),
     )
 
     return redirect(
         "municipal_portal:services_assets",
     )
-
-
 @municipal_required
 def asset_excel_template(request):
     workbook = Workbook()
-
     worksheet = workbook.active
+
     worksheet.title = "الأصول البلدية"
+    worksheet.sheet_view.rightToLeft = True
+    worksheet.freeze_panes = "A2"
+    worksheet.auto_filter.ref = "A1:L200"
 
     headers = [
-        "asset_code",
-        "service",
-        "asset_type",
-        "name_ar",
-        "neighborhood",
-        "address",
-        "latitude",
-        "longitude",
-        "status",
-        "condition",
-        "installation_date",
-        "notes",
+        "رمز الأصل *",
+        "الخدمة *",
+        "اسم الأصل",
+        "الحي",
+        "العنوان",
+        "حالة التشغيل *",
+        "الحالة الفنية *",
+        "تاريخ التركيب",
+        "تاريخ آخر صيانة",
+        "خط العرض *",
+        "خط الطول *",
+        "ملاحظات",
     ]
 
     worksheet.append(headers)
 
+    # صف توضيحي يمكن للمستخدم حذفه
     worksheet.append(
         [
             "LIGHT-001",
             "الإنارة العامة",
-            "عمود إنارة",
-            "عمود إنارة شارع الزبيري",
+            "إنارة حي النهضة",
             "",
-            "شارع الزبيري",
+            "حي النهضة - شارع الزبيري",
+            "يعمل",
+            "جيدة",
+            "2026-01-15",
+            "2026-09-20",
             15.3694000,
             44.1910000,
-            "operational",
-            "good",
-            "2026-01-15",
             "",
         ]
     )
 
+    green_fill = PatternFill(
+        fill_type="solid",
+        fgColor="218653",
+    )
+
+    light_green_fill = PatternFill(
+        fill_type="solid",
+        fgColor="EAF5EF",
+    )
+
+    white_font = Font(
+        color="FFFFFF",
+        bold=True,
+        size=12,
+    )
+
+    thin_green = Side(
+        style="thin",
+        color="CFE3D7",
+    )
+
+    border = Border(
+        left=thin_green,
+        right=thin_green,
+        top=thin_green,
+        bottom=thin_green,
+    )
+
+    for cell in worksheet[1]:
+        cell.fill = green_fill
+        cell.font = white_font
+        cell.alignment = Alignment(
+            horizontal="center",
+            vertical="center",
+        )
+        cell.border = border
+
+    for row in worksheet.iter_rows(
+        min_row=2,
+        max_row=200,
+        min_col=1,
+        max_col=len(headers),
+    ):
+        for cell in row:
+            cell.alignment = Alignment(
+                horizontal="right",
+                vertical="center",
+            )
+            cell.border = border
+
+    for cell in worksheet[2]:
+        cell.fill = light_green_fill
+
+    worksheet.row_dimensions[1].height = 30
+    worksheet.row_dimensions[2].height = 26
+
     widths = {
         "A": 18,
         "B": 24,
-        "C": 22,
-        "D": 32,
-        "E": 22,
-        "F": 34,
-        "G": 18,
-        "H": 18,
-        "I": 24,
+        "C": 28,
+        "D": 22,
+        "E": 35,
+        "F": 22,
+        "G": 20,
+        "H": 20,
+        "I": 22,
         "J": 18,
-        "K": 22,
+        "K": 18,
         "L": 35,
     }
 
     for column, width in widths.items():
-        worksheet.column_dimensions[
-            column
-        ].width = width
+        worksheet.column_dimensions[column].width = width
+
+    # قائمة الخدمات الموجودة فعليًا في قاعدة البيانات
+    service_names = list(
+        MunicipalService.objects
+        .order_by("name_ar")
+        .values_list("name_ar", flat=True)
+    )
+
+    if service_names:
+        service_formula = '"{}"'.format(
+            ",".join(service_names)
+        )
+
+        service_validation = DataValidation(
+            type="list",
+            formula1=service_formula,
+            allow_blank=False,
+        )
+
+        worksheet.add_data_validation(
+            service_validation
+        )
+
+        service_validation.add("B2:B200")
+
+    status_validation = DataValidation(
+        type="list",
+        formula1='"يعمل,يحتاج صيانة,تحت الصيانة,خارج الخدمة"',
+        allow_blank=False,
+    )
+
+    condition_validation = DataValidation(
+        type="list",
+        formula1='"جيدة,مقبولة,سيئة,حرجة"',
+        allow_blank=False,
+    )
+
+    worksheet.add_data_validation(
+        status_validation
+    )
+
+    worksheet.add_data_validation(
+        condition_validation
+    )
+
+    status_validation.add("F2:F200")
+    condition_validation.add("G2:G200")
+
+    for row_number in range(2, 201):
+        worksheet[
+            f"H{row_number}"
+        ].number_format = "yyyy-mm-dd"
+
+        worksheet[
+            f"I{row_number}"
+        ].number_format = "yyyy-mm-dd"
+
+        worksheet[
+            f"J{row_number}"
+        ].number_format = "0.0000000"
+
+        worksheet[
+            f"K{row_number}"
+        ].number_format = "0.0000000"
 
     output = BytesIO()
     workbook.save(output)
@@ -690,11 +701,9 @@ def asset_excel_template(request):
         ),
     )
 
-    response[
-        "Content-Disposition"
-    ] = (
+    response["Content-Disposition"] = (
         'attachment; '
-        'filename="cityvoice_assets_template.xlsx"'
+        'filename="cityvoice_assets_ar.xlsx"'
     )
 
     return response

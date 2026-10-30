@@ -246,15 +246,77 @@
     }
 
     .asset-edit-link {
-        display: inline-block;
-        padding: 6px 10px;
-        color: var(--mp-green-dark);
-        background: #ffffff;
-        border: 1px solid var(--mp-border);
-        border-radius: 8px;
-        font-weight: 700;
-        text-decoration: none;
-    }
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 6px 13px;
+
+    color: #17613b;
+    background: #ffffff;
+
+    border: 1px solid #cfe2d6;
+    border-radius: 10px;
+
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+
+    box-shadow: 0 3px 9px rgba(24, 97, 59, 0.05);
+
+    overflow: hidden;
+    cursor: pointer;
+
+    transition:
+        color 0.18s ease,
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+.asset-edit-link:hover {
+    color: #ffffff;
+    background: #287e50;
+    border-color: #287e50;
+
+    box-shadow:
+        0 7px 16px rgba(24, 97, 59, 0.18);
+
+    transform: translateY(-2px);
+}
+
+.asset-edit-link:focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px rgba(40, 126, 80, 0.16),
+        0 7px 16px rgba(24, 97, 59, 0.14);
+}
+
+.asset-edit-link:active {
+    box-shadow:
+        0 2px 6px rgba(24, 97, 59, 0.14);
+
+    transform: translateY(0) scale(0.96);
+}
+#asset-create-panel .asset-action-button {
+    transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        background-color 0.16s ease;
+}
+
+#asset-create-panel .asset-action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 16px rgba(24, 97, 59, 0.17);
+}
+
+#asset-create-panel .asset-action-button:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 2px 6px rgba(24, 97, 59, 0.12);
+}
 
     .asset-empty {
         padding: 45px 20px;
@@ -527,6 +589,158 @@
             font-size: 12px;
         }
     }
+    /* تنسيق نموذج إضافة الأصل بصورة مدمجة وناعمة */
+
+#asset-create-panel {
+    width: min(1120px, 100%);
+    margin: 0 auto 20px;
+    padding: 22px 24px 24px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #dcebe2;
+    border-radius: 22px;
+    box-shadow: 0 14px 38px rgba(25, 83, 51, 0.08);
+}
+
+#asset-create-panel h2 {
+    margin: 0 0 18px;
+    padding-bottom: 13px;
+    color: #183d2b;
+    border-bottom: 1px solid #e6efe9;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+#asset-create-panel .asset-form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px 12px;
+}
+
+/* العنوان يمتد على عمودين */
+#asset-create-panel .asset-form-field:nth-child(5) {
+    grid-column: span 2;
+}
+
+/* الملاحظات تكون آخر حقل وبعرض النموذج كاملًا */
+#asset-create-panel .asset-form-field:nth-child(12) {
+    grid-column: 1 / -1;
+}
+
+/* جعل مربع الملاحظات مدمجًا */
+#asset-create-panel .asset-form-field:nth-child(12) textarea {
+    min-height: 68px;
+}
+#asset-create-panel .asset-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+#asset-create-panel .asset-form-field label {
+    color: #284b39;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+#asset-create-panel .asset-form-field label span {
+    color: #b74848;
+}
+
+#asset-create-panel .asset-form-field input,
+#asset-create-panel .asset-form-field select,
+#asset-create-panel .asset-form-field textarea {
+    width: 100%;
+    min-height: 39px;
+    padding: 8px 11px;
+    color: #203e2f;
+    background: #f9fcfa;
+    border: 1px solid #d7e7de;
+    border-radius: 11px;
+    outline: none;
+    font-size: 13px;
+    transition:
+        border-color 0.18s ease,
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+#asset-create-panel .asset-form-field input:hover,
+#asset-create-panel .asset-form-field select:hover,
+#asset-create-panel .asset-form-field textarea:hover {
+    border-color: #b6d5c3;
+}
+
+#asset-create-panel .asset-form-field input:focus,
+#asset-create-panel .asset-form-field select:focus,
+#asset-create-panel .asset-form-field textarea:focus {
+    background: #ffffff;
+    border-color: #5fa77d;
+    box-shadow: 0 0 0 3px rgba(42, 132, 82, 0.10);
+}
+
+#asset-create-panel .asset-form-field textarea {
+    min-height: 72px;
+    max-height: 110px;
+    resize: vertical;
+}
+
+#asset-create-panel .asset-form-field small {
+    color: #718278;
+    font-size: 10px;
+}
+
+#asset-create-panel .asset-form-buttons {
+    display: flex;
+    justify-content: flex-start;
+    gap: 7px;
+    margin-top: 18px;
+    padding-top: 15px;
+    border-top: 1px solid #e8f0eb;
+}
+
+#asset-create-panel .asset-form-buttons .asset-action-button {
+    min-height: 35px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+/* الشاشات المتوسطة */
+@media (max-width: 1150px) {
+    #asset-create-panel .asset-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #asset-create-panel .asset-form-field:nth-child(5) {
+    grid-column: span 2;
+}
+
+#asset-create-panel .asset-form-field:nth-child(12) {
+    grid-column: 1 / -1;
+}
+}
+
+/* الهاتف */
+@media (max-width: 650px) {
+    #asset-create-panel {
+        padding: 17px 15px 19px;
+        border-radius: 17px;
+    }
+
+    #asset-create-panel .asset-form-grid {
+        grid-template-columns: 1fr;
+        gap: 11px;
+    }
+
+    #asset-create-panel .asset-form-field {
+        grid-column: 1 !important;
+    }
+
+    #asset-create-panel .asset-form-buttons {
+        flex-direction: row;
+    }
+}
 </style>
 {% endblock %}
 
@@ -568,14 +782,26 @@
 </div>
 
 <section
-    class="asset-form-panel"
+    class="asset-form-panel {% if editing_asset %}is-visible{% endif %}"
     id="asset-create-panel"
 >
-    <h2>إضافة أصل بلدي جديد</h2>
-
+<h2>
+    {% if editing_asset %}
+        تعديل الأصل:
+        <bdi>{{ editing_asset.asset_code }}</bdi>
+    {% else %}
+        إضافة أصل بلدي جديد
+    {% endif %}
+</h2>
     <form
         method="post"
-        action="{% url 'municipal_portal:asset_create' %}"
+        action="
+    {% if editing_asset %}
+        {% url 'municipal_portal:asset_update' editing_asset.pk %}
+    {% else %}
+        {% url 'municipal_portal:asset_create' %}
+    {% endif %}
+"
     >
         {% csrf_token %}
 
@@ -604,8 +830,11 @@
                 type="submit"
                 class="asset-action-button"
             >
-                حفظ الأصل
-            </button>
+{% if editing_asset %}
+    حفظ التعديلات
+{% else %}
+    حفظ الأصل
+{% endif %}            </button>
 
             <button
                 type="button"
@@ -842,7 +1071,7 @@
                                         <td>
                                             {% if request.user.is_staff %}
                                                 <a
-                                                    href="{% url 'admin:assets_municipalasset_change' asset.pk %}"
+                                                    href="{% url 'municipal_portal:services_assets' %}?edit={{ asset.pk }}#asset-create-panel"
                                                     class="asset-edit-link"
                                                 >
                                                     تعديل
@@ -1042,5 +1271,6 @@
             });
         });
 })();
+
 </script>
 {% endblock %}
