@@ -5,27 +5,30 @@ from django.urls import include, path
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    
     path(
-    "accounts/",
-    include("accounts.urls"),
-),
-
+        "admin/",
+        admin.site.urls,
+    ),
+    path(
+        "accounts/",
+        include("accounts.urls"),
+    ),
     path(
         "locations/",
         include("locations.urls"),
     ),
     path(
-    "municipality/",
-    include("municipal_portal.urls"),
-),
-
+        "municipality/",
+        include("municipal_portal.urls"),
+    ),
+    path(
+        "maintenance/",
+        include("field_worker_portal.urls"),
+    ),
     path(
         "feedback/",
         include("feedback.urls"),
     ),
-
     path(
         "",
         include("citizen_portal.urls"),

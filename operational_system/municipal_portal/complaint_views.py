@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from complaints.models import Complaint, ComplaintHistory
-from maintenance.models import WorkOrder
+from maintenance.models import MaintenanceTeam, WorkOrder
 
 from .complaint_forms import (
     ComplaintAssignmentForm,
@@ -19,7 +19,13 @@ from .decorators import municipal_required
 def get_work_order(complaint):
     return (
         WorkOrder.objects
-        .select_related("assigned_to", "assigned_by")
+        .select_related(
+            "team",
+            "team__leader",
+            "assigned_to",
+            "assigned_by",
+            "accepted_by",
+        )
         .filter(complaint=complaint)
         .first()
     )
@@ -42,7 +48,7 @@ def add_validation_errors(form, error):
 
 
 def complaint_snapshot(complaint):
-    """نسخة من القيم قبل التعديل أو بعده."""
+    """نسخة من بيانات البلاغ قبل التعديل أو بعده."""
 
     return {
         "service": {
@@ -97,6 +103,192 @@ def get_changes(before, after):
     return changes
 
 
+def user_label(user):
+    full_name = user.get_full_name().strip()
+    username = user.get_username()
+
+    if full_name:
+        return f"{full_name} — {username}"
+
+    return username
+
+
+def assign_team_to_complaint(request, complaint, form):
+    """
+    استدعاء هذه الدالة داخل transaction.atomic،
+    وبعد قفل البلاغ والتحقق من صحة النموذج.
+    """
+
+    selected_team = form.cleaned_data["team"]
+
+    # قفل الفريق دون ضم جداول أخرى إلى استعلام القفل.
+    team = (
+        MaintenanceTeam.objects
+        .select_for_update()
+        .filter(pk=selected_team.pk)
+        .first()
+    )
+
+    if team is None:
+        form.add_error(
+            "team",
+            "الفريق المحدد لم يعد موجودًا.",
+        )
+        return False
+
+    if not team.is_active:
+        form.add_error(
+            "team",
+            "الفريق المحدد لم يعد نشطًا.",
+        )
+        return False
+
+    if team.service_id != complaint.service_id:
+        form.add_error(
+            "team",
+            "الفريق المحدد غير مختص بخدمة البلاغ.",
+        )
+        return False
+
+    if not team.service.is_active:
+        form.add_error(
+            "team",
+            "الخدمة التابعة للفريق غير نشطة.",
+        )
+        return False
+
+    User = get_user_model()
+
+    # قفل الحسابات بترتيب ثابت أثناء إصدار أمر العمل.
+    locked_users = {
+        user.pk: user
+        for user in (
+            User.objects
+            .select_for_update()
+            .filter(
+                pk__in=[
+                    team.leader_id,
+                    request.user.pk,
+                ]
+            )
+            .order_by("pk")
+        )
+    }
+
+    leader = locked_users.get(team.leader_id)
+    issuer = locked_users.get(request.user.pk)
+
+    if (
+        leader is None
+        or not leader.is_active
+        or leader.role != User.Role.FIELD_WORKER
+    ):
+        form.add_error(
+            "team",
+            "قائد الفريق لا يملك حساب صيانة نشطًا.",
+        )
+        return False
+
+    if (
+        issuer is None
+        or not issuer.is_active
+        or issuer.role not in {
+            User.Role.MUNICIPAL_EMPLOYEE,
+            User.Role.MUNICIPAL_MANAGER,
+        }
+    ):
+        form.add_error(
+            None,
+            "إصدار أمر العمل يتطلب حسابًا نشطًا "
+            "بدور موظف البلدية أو مدير البلدية.",
+        )
+        return False
+
+    work_order = form.save(commit=False)
+
+    work_order.complaint = complaint
+    work_order.team = team
+    work_order.assigned_to = leader
+    work_order.assigned_by = issuer
+    work_order.status = WorkOrder.Status.ASSIGNED
+    work_order.scheduled_for = None
+
+    try:
+        work_order.full_clean()
+    except ValidationError as error:
+        add_validation_errors(form, error)
+        return False
+
+    before = complaint_snapshot(complaint)
+
+    work_order.save()
+
+    complaint.status = Complaint.Status.ASSIGNED
+    complaint.save(
+        update_fields=[
+            "status",
+            "updated_at",
+        ]
+    )
+
+    after = complaint_snapshot(complaint)
+    changes = get_changes(before, after)
+
+    leader_name = user_label(leader)
+
+    changes["team"] = {
+        "label": "فريق الصيانة",
+        "old_value": None,
+        "new_value": team.pk,
+        "old": "لم يُحدد فريق",
+        "new": team.name,
+    }
+
+    changes["assigned_to"] = {
+        "label": "قائد الفريق وقت الإسناد",
+        "old_value": None,
+        "new_value": leader.pk,
+        "old": "لم يُسند",
+        "new": leader_name,
+    }
+
+    changes["work_order"] = {
+        "label": "رقم أمر العمل",
+        "old_value": None,
+        "new_value": work_order.pk,
+        "old": "لا يوجد",
+        "new": str(work_order.pk),
+    }
+
+    if work_order.instructions:
+        changes["instructions"] = {
+            "label": "تعليمات التنفيذ",
+            "old_value": "",
+            "new_value": work_order.instructions,
+            "old": "لا توجد",
+            "new": work_order.instructions,
+        }
+
+    ComplaintHistory.objects.create(
+        complaint=complaint,
+        actor=issuer,
+        action=ComplaintHistory.Action.ASSIGNED,
+        notes=(
+            f"تم إنشاء أمر العمل وإسناده إلى فريق "
+            f"«{team.name}»، بقيادة {leader_name}."
+        ),
+        changes=changes,
+    )
+
+    messages.success(
+        request,
+        f"تم إسناد البلاغ إلى فريق «{team.name}» "
+        "وإنشاء أمر العمل وتسجيل الإجراء.",
+    )
+
+    return True
+
+
 @municipal_required
 @require_http_methods(["GET", "POST"])
 def complaint_detail(request, reference_number):
@@ -117,6 +309,7 @@ def complaint_detail(request, reference_number):
     )
 
     assignment_form = ComplaintAssignmentForm(
+        complaint=complaint,
         prefix="assignment",
     )
 
@@ -131,8 +324,7 @@ def complaint_detail(request, reference_number):
                     .get(pk=complaint.pk)
                 )
 
-                # تؤخذ النسخة قبل فحص ModelForm؛
-                # لأن فحصه قد يغير بيانات instance في الذاكرة.
+                # أخذ النسخة قبل فحص ModelForm.
                 before = complaint_snapshot(
                     locked_complaint
                 )
@@ -179,10 +371,7 @@ def complaint_detail(request, reference_number):
                         reviewed_complaint
                     )
 
-                    changes = get_changes(
-                        before,
-                        after,
-                    )
+                    changes = get_changes(before, after)
 
                     if changes:
                         reviewed_complaint.save(
@@ -238,6 +427,7 @@ def complaint_detail(request, reference_number):
 
                 assignment_form = ComplaintAssignmentForm(
                     request.POST,
+                    complaint=locked_complaint,
                     prefix="assignment",
                 )
 
@@ -260,158 +450,17 @@ def complaint_detail(request, reference_number):
                     )
 
                 elif assignment_form.is_valid():
-                    User = get_user_model()
-
-                    # مؤقتًا نستخدم حسابات الصيانة النشطة.
-                    worker = (
-                        User.objects
-                        .select_for_update()
-                        .filter(
-                            pk=assignment_form.cleaned_data[
-                                "assigned_to"
-                            ].pk,
-                            role=User.Role.FIELD_WORKER,
-                            is_active=True,
-                        )
-                        .first()
+                    assigned = assign_team_to_complaint(
+                        request,
+                        locked_complaint,
+                        assignment_form,
                     )
 
-                    issuer = (
-                        User.objects
-                        .select_for_update()
-                        .get(pk=request.user.pk)
-                    )
-
-                    allowed_issuer_roles = {
-                        User.Role.MUNICIPAL_EMPLOYEE,
-                        User.Role.MUNICIPAL_MANAGER,
-                    }
-
-                    if worker is None:
-                        assignment_form.add_error(
-                            "assigned_to",
-                            "الحساب المحدد لم يعد متاحًا. "
-                            "اختر حسابًا آخر.",
+                    if assigned:
+                        return redirect(
+                            "municipal_portal:complaint_detail",
+                            reference_number=reference_number,
                         )
-
-                    elif (
-                        not issuer.is_active
-                        or issuer.role not in allowed_issuer_roles
-                    ):
-                        assignment_form.add_error(
-                            None,
-                            "إصدار أمر العمل يتطلب حسابًا نشطًا "
-                            "بدور موظف البلدية أو مدير البلدية.",
-                        )
-
-                    else:
-                        work_order = assignment_form.save(
-                            commit=False
-                        )
-
-                        work_order.complaint = locked_complaint
-                        work_order.assigned_to = worker
-                        work_order.assigned_by = issuer
-                        work_order.status = (
-                            WorkOrder.Status.ASSIGNED
-                        )
-
-                        work_order.scheduled_for = None
-
-                        try:
-                            work_order.full_clean()
-
-                        except ValidationError as error:
-                            add_validation_errors(
-                                assignment_form,
-                                error,
-                            )
-
-                        else:
-                            before = complaint_snapshot(
-                                locked_complaint
-                            )
-
-                            work_order.save()
-
-                            locked_complaint.status = (
-                                Complaint.Status.ASSIGNED
-                            )
-
-                            locked_complaint.save(
-                                update_fields=[
-                                    "status",
-                                    "updated_at",
-                                ]
-                            )
-
-                            after = complaint_snapshot(
-                                locked_complaint
-                            )
-
-                            changes = get_changes(
-                                before,
-                                after,
-                            )
-
-                            worker_name = (
-                                worker.get_full_name().strip()
-                            )
-
-                            worker_label = (
-                                f"{worker_name} — {worker.username}"
-                                if worker_name
-                                else worker.username
-                            )
-
-                            changes["assigned_to"] = {
-                                "label": "مستلم أمر العمل",
-                                "old_value": None,
-                                "new_value": worker.pk,
-                                "old": "لم يُسند",
-                                "new": worker_label,
-                            }
-
-                            changes["work_order"] = {
-                                "label": "رقم أمر العمل",
-                                "old_value": None,
-                                "new_value": work_order.pk,
-                                "old": "لا يوجد",
-                                "new": str(work_order.pk),
-                            }
-
-                            if work_order.instructions:
-                                changes["instructions"] = {
-                                    "label": "تعليمات التنفيذ",
-                                    "old_value": "",
-                                    "new_value": work_order.instructions,
-                                    "old": "لا توجد",
-                                    "new": work_order.instructions,
-                                }
-
-                            ComplaintHistory.objects.create(
-                                complaint=locked_complaint,
-                                actor=issuer,
-                                action=(
-                                    ComplaintHistory.Action.ASSIGNED
-                                ),
-                                notes=(
-                                    "تم إنشاء أمر العمل وإسناده "
-                                    f"إلى {worker_label}."
-                                ),
-                                changes=changes,
-                            )
-
-                            messages.success(
-                                request,
-                                "تم إنشاء أمر العمل وإسناد البلاغ "
-                                "وتسجيل الإجراء.",
-                            )
-
-                            return redirect(
-                                "municipal_portal:complaint_detail",
-                                reference_number=reference_number,
-                            )
 
         else:
             messages.error(
@@ -426,10 +475,16 @@ def complaint_detail(request, reference_number):
 
         complaint.refresh_from_db()
 
+        # تحديث النموذج غير المرسل من البيانات الفعلية.
         if action == "assign":
             review_form = ComplaintReviewForm(
                 instance=complaint,
                 prefix="review",
+            )
+        else:
+            assignment_form = ComplaintAssignmentForm(
+                complaint=complaint,
+                prefix="assignment",
             )
 
     work_order = get_work_order(complaint)
@@ -445,6 +500,11 @@ def complaint_detail(request, reference_number):
     can_assign = (
         complaint.status == Complaint.Status.UNDER_REVIEW
         and work_order is None
+    )
+
+    has_available_teams = (
+        assignment_form.fields["team"]
+        .queryset.exists()
     )
 
     history_entries = (
@@ -463,6 +523,7 @@ def complaint_detail(request, reference_number):
             "assignment_form": assignment_form,
             "can_review": can_review,
             "can_assign": can_assign,
+            "has_available_teams": has_available_teams,
             "history_entries": history_entries,
             "maptiler_api_key": getattr(
                 settings,

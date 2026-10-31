@@ -307,7 +307,6 @@
         margin-top: 16px;
     }
 
-    /* نافذة سجل البلاغ */
     .cd-history-dialog {
         width: min(760px, calc(100% - 32px));
         max-height: calc(100vh - 40px);
@@ -356,7 +355,6 @@
         border-radius: 0;
     }
 
-    /* العنوان موجود في شريط النافذة بدل تكراره داخلها. */
     .cd-history-dialog #complaint-history-title {
         display: none;
     }
@@ -462,7 +460,6 @@
         <span class="cd-tag cd-tag--{{ complaint.status }}">
             {{ complaint.get_status_display }}
         </span>
-
         <span class="cd-tag">
             الأولوية: {{ complaint.get_priority_display }}
         </span>
@@ -479,45 +476,29 @@
                         <dt>الخدمة</dt>
                         <dd>{{ complaint.service.name_ar }}</dd>
                     </div>
-
                     <div>
                         <dt>التصنيف</dt>
                         <dd>{{ complaint.category.name_ar }}</dd>
                     </div>
-
                     <div>
                         <dt>تاريخ التقديم</dt>
-                        <dd>
-                            {{ complaint.created_at|date:"Y/m/d — H:i" }}
-                        </dd>
+                        <dd>{{ complaint.created_at|date:"Y/m/d — H:i" }}</dd>
                     </div>
-
                     <div>
                         <dt>آخر تحديث</dt>
-                        <dd>
-                            {{ complaint.updated_at|date:"Y/m/d — H:i" }}
-                        </dd>
+                        <dd>{{ complaint.updated_at|date:"Y/m/d — H:i" }}</dd>
                     </div>
-
                     <div>
                         <dt>الحي</dt>
-                        <dd>
-                            {{ complaint.neighborhood|default:"غير محدد" }}
-                        </dd>
+                        <dd>{{ complaint.neighborhood|default:"غير محدد" }}</dd>
                     </div>
-
                     <div>
                         <dt>الأصل المرتبط</dt>
-                        <dd>
-                            {{ complaint.asset|default:"غير محدد" }}
-                        </dd>
+                        <dd>{{ complaint.asset|default:"غير محدد" }}</dd>
                     </div>
-
                     <div class="cd-wide">
                         <dt>العنوان</dt>
-                        <dd>
-                            {{ complaint.address|default:"لم يُضف عنوان" }}
-                        </dd>
+                        <dd>{{ complaint.address|default:"لم يُضف عنوان" }}</dd>
                     </div>
                 </dl>
             </section>
@@ -546,7 +527,6 @@
                             loading="lazy"
                         >
                     </a>
-
                     <p class="cd-caption">
                         اضغط على الصورة لعرضها بحجم أكبر.
                     </p>
@@ -624,27 +604,20 @@
                                 {% endif %}
                             </dd>
                         </div>
-
                         <div>
                             <dt>اسم المستخدم</dt>
                             <dd>{{ complaint.citizen.username }}</dd>
                         </div>
-
                         <div>
                             <dt>رقم الهاتف</dt>
                             <dd>
-                                <bdi>
-                                    {{ complaint.citizen.phone_number|default:"غير مسجل" }}
-                                </bdi>
+                                <bdi>{{ complaint.citizen.phone_number|default:"غير مسجل" }}</bdi>
                             </dd>
                         </div>
-
                         <div class="cd-wide">
                             <dt>البريد الإلكتروني</dt>
                             <dd>
-                                <bdi>
-                                    {{ complaint.citizen.email|default:"غير مسجل" }}
-                                </bdi>
+                                <bdi>{{ complaint.citizen.email|default:"غير مسجل" }}</bdi>
                             </dd>
                         </div>
                     </dl>
@@ -665,31 +638,19 @@
                 {% endif %}
 
                 {% if can_review %}
-                    <form
-                        method="post"
-                        class="cd-form"
-                        data-review-form
-                    >
+                    <form method="post" class="cd-form" data-review-form>
                         {% csrf_token %}
-
-                        <input
-                            type="hidden"
-                            name="action"
-                            value="review"
-                        >
+                        <input type="hidden" name="action" value="review">
 
                         {% for field in review_form %}
                             <div class="cd-field">
                                 <label for="{{ field.id_for_label }}">
                                     {{ field.label }}
                                 </label>
-
                                 {{ field }}
 
                                 {% if field.help_text %}
-                                    <p class="cd-help">
-                                        {{ field.help_text }}
-                                    </p>
+                                    <p class="cd-help">{{ field.help_text }}</p>
                                 {% endif %}
 
                                 {{ field.errors }}
@@ -718,9 +679,7 @@
                 {% else %}
                     <p class="cd-note">
                         الحالة الحالية:
-                        <strong>
-                            {{ complaint.get_status_display }}
-                        </strong>
+                        <strong>{{ complaint.get_status_display }}</strong>
 
                         {% if work_order %}
                             <br>
@@ -741,11 +700,30 @@
 
                 {% if work_order %}
                     <dl class="cd-info">
+
                         <div class="cd-wide">
-                            <dt>قائد الفريق</dt>
+                            <dt>فريق الصيانة</dt>
+                            <dd>
+                                {% if work_order.team %}
+                                    {{ work_order.team.name }}
+                                {% else %}
+                                    لم يُربط بفريق — إسناد سابق إلى حساب فردي.
+                                {% endif %}
+                            </dd>
+                        </div>
+
+                        <div class="cd-wide">
+                            <dt>
+                                {% if work_order.team %}
+                                    قائد الفريق وقت الإسناد
+                                {% else %}
+                                    مستلم أمر العمل
+                                {% endif %}
+                            </dt>
                             <dd>
                                 {% if work_order.assigned_to.get_full_name %}
                                     {{ work_order.assigned_to.get_full_name }}
+                                    — {{ work_order.assigned_to.username }}
                                 {% else %}
                                     {{ work_order.assigned_to.username }}
                                 {% endif %}
@@ -759,9 +737,7 @@
 
                         <div>
                             <dt>تاريخ إنشاء أمر العمل</dt>
-                            <dd>
-                                {{ work_order.created_at|date:"Y/m/d — H:i" }}
-                            </dd>
+                            <dd>{{ work_order.created_at|date:"Y/m/d — H:i" }}</dd>
                         </div>
 
                         <div class="cd-wide">
@@ -786,21 +762,37 @@
                             </dd>
                         </div>
 
+                        {% if work_order.accepted_at %}
+                            <div>
+                                <dt>تاريخ قبول المهمة</dt>
+                                <dd>{{ work_order.accepted_at|date:"Y/m/d — H:i" }}</dd>
+                            </div>
+                        {% endif %}
+
+                        {% if work_order.accepted_by %}
+                            <div>
+                                <dt>قُبلت بواسطة</dt>
+                                <dd>
+                                    {% if work_order.accepted_by.get_full_name %}
+                                        {{ work_order.accepted_by.get_full_name }}
+                                    {% else %}
+                                        {{ work_order.accepted_by.username }}
+                                    {% endif %}
+                                </dd>
+                            </div>
+                        {% endif %}
+
                         {% if work_order.started_at %}
                             <div>
                                 <dt>تاريخ بدء التنفيذ</dt>
-                                <dd>
-                                    {{ work_order.started_at|date:"Y/m/d — H:i" }}
-                                </dd>
+                                <dd>{{ work_order.started_at|date:"Y/m/d — H:i" }}</dd>
                             </div>
                         {% endif %}
 
                         {% if work_order.completed_at %}
                             <div>
                                 <dt>تاريخ إكمال المهمة</dt>
-                                <dd>
-                                    {{ work_order.completed_at|date:"Y/m/d — H:i" }}
-                                </dd>
+                                <dd>{{ work_order.completed_at|date:"Y/m/d — H:i" }}</dd>
                             </div>
                         {% endif %}
 
@@ -836,15 +828,10 @@
                     </dl>
 
                 {% elif can_assign %}
-                    {% if assignment_form.assigned_to.field.queryset.exists %}
+                    {% if has_available_teams %}
                         <form method="post" class="cd-form">
                             {% csrf_token %}
-
-                            <input
-                                type="hidden"
-                                name="action"
-                                value="assign"
-                            >
+                            <input type="hidden" name="action" value="assign">
 
                             {% for field in assignment_form %}
                                 <div class="cd-field">
@@ -853,23 +840,36 @@
                                     </label>
 
                                     {{ field }}
+
+                                    {% if field.help_text %}
+                                        <p class="cd-help">{{ field.help_text }}</p>
+                                    {% endif %}
+
                                     {{ field.errors }}
                                 </div>
                             {% endfor %}
 
+                            <p class="cd-note">
+                                تظهر الفرق النشطة المختصة بخدمة البلاغ فقط.
+                                يُحدد قائد الفريق مستلمًا لأمر العمل تلقائيًا.
+                            </p>
+
                             <button type="submit" class="cd-button">
-                                إسناد البلاغ وإنشاء أمر العمل
+                                إسناد البلاغ للفريق وإنشاء أمر العمل
                             </button>
                         </form>
                     {% else %}
                         <p class="cd-note">
-                            لا توجد حسابات صيانة نشطة متاحة للإسناد.
+                            لا يوجد فريق صيانة متاح لخدمة
+                            «{{ complaint.service.name_ar }}».
+                            يلزم وجود فريق نشط مختص بهذه الخدمة
+                            وقائد بحساب صيانة نشط.
                         </p>
                     {% endif %}
 
                 {% elif complaint.status == "submitted" %}
                     <p class="cd-note">
-                        راجع البلاغ أولًا قبل إسناده إلى قائد الفريق.
+                        راجع البلاغ أولًا قبل إسناده إلى فريق الصيانة.
                     </p>
                 {% else %}
                     <p class="cd-note">
@@ -951,10 +951,7 @@
 
     dialog.addEventListener("close", function () {
         document.documentElement.classList.remove("cd-history-open");
-
-        openButton.focus({
-            preventScroll: true
-        });
+        openButton.focus({ preventScroll: true });
     });
 })();
 </script>
