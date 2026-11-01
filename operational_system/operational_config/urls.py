@@ -25,6 +25,10 @@ urlpatterns = [
         "feedback/",
         include("feedback.urls"),
     ),
+    path(
+        "worker/",
+        include("field_worker_portal.urls"),
+    ),
 
     path(
         "",

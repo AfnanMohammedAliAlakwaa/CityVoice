@@ -1,0 +1,350 @@
+{% extends "field_worker_portal/base.html" %}
+
+{% block title %}تسجيل دخول العامل | CityVoice{% endblock %}
+
+{% block content %}
+<main class="login-page" dir="rtl">
+    <section class="login-card">
+        <div class="login-logo">
+            <span class="login-logo-mark">CV</span>
+
+            <div>
+                <strong>CityVoice</strong>
+                <small>بوابة العامل الميداني</small>
+            </div>
+        </div>
+
+        <header class="login-header">
+            <h1>تسجيل الدخول</h1>
+            <p>أدخل بيانات حساب العامل الميداني.</p>
+        </header>
+
+        
+
+        {% if error_message %}
+            <div class="login-message login-message--error">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        <form method="post" class="login-form" novalidate>
+            {% csrf_token %}
+
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            <div class="login-field">
+                <label for="username">اسم المستخدم</label>
+
+                <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    value="{{ username|default:'' }}"
+                    autocomplete="username"
+                    placeholder="أدخل اسم المستخدم"
+                    autofocus
+                    required
+                >
+            </div>
+
+            <div class="login-field">
+                <label for="password">كلمة المرور</label>
+
+                <div class="password-wrapper">
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="أدخل كلمة المرور"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        id="password-toggle"
+                        aria-label="إظهار كلمة المرور"
+                    >
+                        إظهار
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="login-submit">
+                تسجيل الدخول
+            </button>
+        </form>
+    </section>
+</main>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-page {
+    width: 100%;
+    min-height: calc(100vh - 110px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    margin: 0 auto;
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(40, 126, 80, 0.08),
+            transparent 42%
+        ),
+        #f4faf6;
+    box-sizing: border-box;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 34px;
+    border: 1px solid #d7e7dd;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 18px 48px rgba(22, 77, 47, 0.10);
+    box-sizing: border-box;
+}
+
+    .login-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 11px;
+        margin-bottom: 28px;
+        color: #17643e;
+    }
+
+    .login-logo-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: #287e50;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 800;
+        direction: ltr;
+    }
+
+    .login-logo div {
+        display: grid;
+        gap: 2px;
+    }
+
+    .login-logo strong {
+        font-size: 21px;
+        line-height: 1.2;
+    }
+
+    .login-logo small {
+        color: #788a80;
+        font-size: 12px;
+    }
+
+    .login-header {
+        margin-bottom: 26px;
+        text-align: center;
+    }
+
+    .login-header h1 {
+        margin: 0 0 8px;
+        color: #143d29;
+        font-size: 28px;
+    }
+
+    .login-header p {
+        margin: 0;
+        color: #73847b;
+        font-size: 14px;
+    }
+
+    .login-form {
+        display: grid;
+        gap: 19px;
+    }
+
+    .login-field {
+        display: grid;
+        gap: 8px;
+    }
+
+    .login-field label {
+        color: #254b36;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .login-field input {
+        width: 100%;
+        min-height: 49px;
+        padding: 11px 14px;
+        border: 1px solid #cedfd5;
+        border-radius: 11px;
+        outline: none;
+        background: #fbfdfc;
+        color: #173b2a;
+        font: inherit;
+        font-size: 15px;
+        box-sizing: border-box;
+        transition:
+            border-color 0.2s,
+            box-shadow 0.2s,
+            background 0.2s;
+    }
+
+    .login-field input:focus {
+        border-color: #287e50;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(40, 126, 80, 0.12);
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-wrapper input {
+        padding-left: 75px;
+    }
+
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        left: 9px;
+        transform: translateY(-50%);
+        padding: 6px 10px;
+        border: 0;
+        border-radius: 7px;
+        background: #eaf5ee;
+        color: #287e50;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .login-submit {
+        min-height: 50px;
+        margin-top: 3px;
+        padding: 11px 18px;
+        border: 0;
+        border-radius: 11px;
+        background: #287e50;
+        color: #ffffff;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+            background 0.2s,
+            transform 0.2s;
+    }
+
+    .login-submit:hover {
+        background: #1e6b42;
+    }
+
+    .login-submit:active {
+        transform: translateY(1px);
+    }
+
+    .login-messages {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .login-message {
+        padding: 11px 13px;
+        border-radius: 9px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .login-message--error {
+        border: 1px solid #f1c4c8;
+        background: #fff1f2;
+        color: #a73542;
+    }
+
+    .login-message--success {
+        border: 1px solid #bfe1cb;
+        background: #edf8f1;
+        color: #17683d;
+    }
+
+    .login-message--warning {
+        border: 1px solid #ead49d;
+        background: #fff8e6;
+        color: #805d09;
+    }
+
+    @media (max-width: 560px) {
+        .login-page {
+            align-items: flex-start;
+            padding: 18px 14px;
+        }
+
+        .login-card {
+            margin-top: 35px;
+            padding: 27px 20px;
+            border-radius: 16px;
+        }
+
+        .login-header h1 {
+            font-size: 25px;
+        }
+    }
+    .login-page > .login-card {
+    margin-inline: auto !important;
+}
+
+@media (max-width: 560px) {
+    .login-page {
+        min-height: calc(100vh - 90px);
+        align-items: center;
+        padding: 18px 14px;
+    }
+
+    .login-card {
+        margin: 0 auto;
+        padding: 27px 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const passwordInput = document.getElementById("password");
+        const toggleButton = document.getElementById("password-toggle");
+
+        if (!passwordInput || !toggleButton) {
+            return;
+        }
+
+        toggleButton.addEventListener("click", function () {
+            const isHidden = passwordInput.type === "password";
+
+            passwordInput.type = isHidden ? "text" : "password";
+            toggleButton.textContent = isHidden ? "إخفاء" : "إظهار";
+            toggleButton.setAttribute(
+                "aria-label",
+                isHidden
+                    ? "إخفاء كلمة المرور"
+                    : "إظهار كلمة المرور"
+            );
+        });
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "field_worker_portal/base.html" %}
+
+{% block title %}الرئيسية | بوابة العامل{% endblock %}
+
+{% block extra_css %}
+    .dash-head { margin-bottom:20px; } .dash-head h1 { margin:0 0 6px; font-size:27px; } .dash-head p { margin:0; color:var(--muted); }
+    .dash-card { padding:28px; border:1px solid var(--line); border-radius:17px; background:#fff; }
+    .dash-card h2 { margin:0 0 9px; font-size:20px; } .dash-card p { margin:0; color:var(--muted); line-height:1.8; }
+{% endblock %}
+
+{% block content %}
+<header class="dash-head">
+    <h1>مرحبًا، {{ request.user.get_full_name|default:request.user.username }}</h1>
+    <p>هذه الصفحة الرئيسية الأولية لبوابة العامل الميداني.</p>
+</header>
+<section class="dash-card">
+    <h2>تم إعداد الهيكل الأساسي بنجاح</h2>
+    <p>المرحلة التالية: قائمة المهام، تفاصيل أمر العمل، قبول المهمة، بدء التنفيذ، ثم رفع ملاحظات وصورة الإنجاز.</p>
+</section>
+{% endblock %}

@@ -139,25 +139,30 @@ class WorkOrder(models.Model):
     def save(self, *args, **kwargs):
         now = timezone.now()
 
-        if (
-            self.status == self.Status.ACCEPTED
-            and self.accepted_at is None
-        ):
+        if self.status == self.Status.ACCEPTED and self.accepted_at is None:
             self.accepted_at = now
-
-        if (
-            self.status == self.Status.IN_PROGRESS
-            and self.started_at is None
-        ):
+        if self.status == self.Status.IN_PROGRESS and self.started_at is None:
             self.started_at = now
-
-        if (
-            self.status == self.Status.COMPLETED
-            and self.completed_at is None
-        ):
+        if self.status == self.Status.COMPLETED and self.completed_at is None:
             self.completed_at = now
 
         super().save(*args, **kwargs)
+
+        complaint_status = None
+        if self.status in [self.Status.ASSIGNED, self.Status.ACCEPTED]:
+            complaint_status = "assigned"
+        elif self.status == self.Status.IN_PROGRESS:
+            complaint_status = "in_progress"
+        elif self.status == self.Status.COMPLETED:
+            complaint_status = "resolved"
+
+        if complaint_status and self.complaint.status != complaint_status:
+            self.complaint.status = complaint_status
+            self.complaint.save(update_fields=["status", "updated_at"])
+
+# استبدلي دالة save الحالية داخل class WorkOrder بهذه الدالة.
+# CANCELLED لا يغيّر البلاغ تلقائياً، وإغلاق البلاغ يبقى قرار البلدية.
+
 
     def __str__(self):
         return (

@@ -85,7 +85,7 @@
 
     .cl-filter-grid {
         display: grid;
-        grid-template-columns: 2fr repeat(3, minmax(0, 1fr));
+        grid-template-columns: 2fr repeat(4, minmax(0, 1fr));
         gap: 14px;
     }
 
@@ -111,6 +111,14 @@
         color: #263f33;
         font: inherit;
         font-size: 13px;
+    }
+
+    .cl-field select.cl-select-placeholder {
+        color: #8b9b93;
+    }
+
+    .cl-field select option {
+        color: #263f33;
     }
 
     .cl-filter-actions {
@@ -382,6 +390,117 @@
         margin-top: 20px;
     }
 
+    .cl-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 22px;
+    }
+
+    .cl-page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 11px;
+        border: 1px solid #d4e5da;
+        border-radius: 10px;
+        background: #fff;
+        color: #287e50;
+        font-size: 12px;
+        text-decoration: none;
+    }
+
+    .cl-page-link:hover,
+    .cl-page-link.is-current {
+        border-color: #287e50;
+        background: #287e50;
+        color: #fff;
+    }
+
+    .cl-date-dialog {
+        width: min(430px, calc(100% - 28px));
+        border: 0;
+        border-radius: 20px;
+        padding: 0;
+        background: #fff;
+        color: #263f33;
+        box-shadow: 0 24px 80px rgba(15, 54, 34, .24);
+    }
+
+    .cl-date-dialog::backdrop {
+        background: rgba(15, 45, 30, .46);
+        backdrop-filter: blur(4px);
+    }
+
+    .cl-dialog-inner {
+        padding: 20px;
+    }
+
+    .cl-dialog-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 14px;
+    }
+
+    .cl-dialog-head h3 {
+        margin: 0 0 4px;
+        font-size: 18px;
+    }
+
+    .cl-dialog-close {
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 50%;
+        background: #eef6f1;
+        color: #426253;
+        font-size: 21px;
+        cursor: pointer;
+    }
+
+    .cl-dialog-group {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+        margin-top: 9px;
+        padding: 11px;
+        border: 1px solid #e1ece6;
+        border-radius: 13px;
+        background: #fbfdfc;
+    }
+
+    .cl-dialog-group-title {
+        grid-column: 1 / -1;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .cl-dialog-group .cl-field label {
+        margin-bottom: 4px;
+        font-size: 11px;
+    }
+
+    .cl-dialog-group .cl-field input {
+        min-height: 36px;
+        padding: 7px 8px;
+        background: #fff;
+        font-size: 12px;
+    }
+
+    .cl-dialog-actions {
+        display: flex;
+        gap: 9px;
+        margin-top: 14px;
+        padding-top: 13px;
+        border-top: 1px solid #edf3ef;
+    }
+
     .complaints-page a:focus-visible,
     .complaints-page button:focus-visible,
     .complaints-page input:focus-visible,
@@ -393,7 +512,7 @@
 
     @media (max-width: 1100px) {
         .cl-filter-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
     }
 
@@ -413,6 +532,14 @@
 
         .cl-filter-grid {
             grid-template-columns: minmax(0, 1fr);
+        }
+
+        .cl-dialog-group {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .cl-dialog-group-title {
+            grid-column: auto;
         }
 
         .cl-filter-actions .cl-button,
@@ -475,6 +602,7 @@
         method="get"
         action="{% url 'municipal_portal:complaint_list' %}"
         class="cl-filters"
+        id="complaint-filter-form"
         aria-label="البحث وتصفية البلاغات"
     >
         <div class="cl-filter-grid">
@@ -491,7 +619,12 @@
 
             <div class="cl-field">
                 <label for="complaint-status">الحالة</label>
-                <select name="status" id="complaint-status">
+                <select
+                    name="status"
+                    id="complaint-status"
+                    class="{% if not selected_status %}cl-select-placeholder{% endif %}"
+                    data-placeholder-value=""
+                >
                     <option value="">جميع الحالات</option>
                     {% for value, label in status_choices %}
                         <option
@@ -506,7 +639,12 @@
 
             <div class="cl-field">
                 <label for="complaint-priority">الأولوية</label>
-                <select name="priority" id="complaint-priority">
+                <select
+                    name="priority"
+                    id="complaint-priority"
+                    class="{% if not selected_priority %}cl-select-placeholder{% endif %}"
+                    data-placeholder-value=""
+                >
                     <option value="">جميع الأولويات</option>
                     {% for value, label in priority_choices %}
                         <option
@@ -521,7 +659,12 @@
 
             <div class="cl-field">
                 <label for="complaint-service">الخدمة</label>
-                <select name="service" id="complaint-service">
+                <select
+                    name="service"
+                    id="complaint-service"
+                    class="{% if not selected_service %}cl-select-placeholder{% endif %}"
+                    data-placeholder-value=""
+                >
                     <option value="">جميع الخدمات</option>
                     {% for service in services %}
                         <option
@@ -533,6 +676,24 @@
                     {% endfor %}
                 </select>
             </div>
+
+            <div class="cl-field">
+                <label for="complaint-period">الفترة الزمنية</label>
+                <select
+                    name="period"
+                    id="complaint-period"
+                    class="{% if selected_period == 'all' %}cl-select-placeholder{% endif %}"
+                    data-placeholder-value="all"
+                >
+                    <option value="all" {% if selected_period == "all" %}selected{% endif %}>جميع الفترات</option>
+                    <option value="hour" {% if selected_period == "hour" %}selected{% endif %}>آخر ساعة</option>
+                    <option value="today" {% if selected_period == "today" %}selected{% endif %}>اليوم</option>
+                    <option value="week" {% if selected_period == "week" %}selected{% endif %}>آخر 7 أيام</option>
+                    <option value="month" {% if selected_period == "month" %}selected{% endif %}>هذا الشهر</option>
+                    <option value="custom" {% if selected_period == "custom" %}selected{% endif %}>فترة مخصصة</option>
+                </select>
+            </div>
+
         </div>
 
         <div class="cl-filter-actions">
@@ -555,13 +716,13 @@
 
     <div class="cl-results-heading">
         <h2>
-            {% if search_query or selected_status or selected_priority or selected_service %}
+            {% if has_active_filters %}
                 نتائج البحث
             {% else %}
                 جميع البلاغات
             {% endif %}
 
-            <span class="cl-count">{{ complaints|length }}</span>
+            <span class="cl-count">{{ total_results }}</span>
         </h2>
 
         <p class="cl-muted">
@@ -737,7 +898,7 @@
 
         {% empty %}
             <section class="cl-empty">
-                {% if search_query or selected_status or selected_priority or selected_service %}
+                {% if has_active_filters %}
                     <h2>لا توجد بلاغات مطابقة</h2>
                     <p class="cl-muted">
                         غيّر كلمات البحث أو أزل بعض الفلاتر.
@@ -757,12 +918,108 @@
             </section>
         {% endfor %}
     </div>
+
+    {% if complaints.paginator.num_pages > 1 %}
+        <nav class="cl-pagination" aria-label="صفحات البلاغات">
+            {% if complaints.has_previous %}
+                <a class="cl-page-link" href="?{{ query_string }}&page={{ complaints.previous_page_number }}">السابق</a>
+            {% endif %}
+
+            {% for page_number in complaints.paginator.page_range %}
+                {% if page_number == complaints.number %}
+                    <span class="cl-page-link is-current" aria-current="page">{{ page_number }}</span>
+                {% elif page_number >= complaints.number|add:"-2" and page_number <= complaints.number|add:"2" %}
+                    <a class="cl-page-link" href="?{{ query_string }}&page={{ page_number }}">{{ page_number }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if complaints.has_next %}
+                <a class="cl-page-link" href="?{{ query_string }}&page={{ complaints.next_page_number }}">التالي</a>
+            {% endif %}
+        </nav>
+    {% endif %}
 </div>
+
+<dialog class="cl-date-dialog" id="complaint-date-dialog">
+    <form method="get" class="cl-dialog-inner">
+        <input type="hidden" name="q" value="{{ search_query }}">
+        <input type="hidden" name="status" value="{{ selected_status }}">
+        <input type="hidden" name="priority" value="{{ selected_priority }}">
+        <input type="hidden" name="service" value="{{ selected_service }}">
+        <input type="hidden" name="period" value="custom">
+
+        <div class="cl-dialog-head">
+            <div>
+                <h3>تحديد فترة مخصصة</h3>
+                <p class="cl-muted">اختاري التاريخ، ويمكن تحديد الوقت عند الحاجة.</p>
+            </div>
+            <button type="button" class="cl-dialog-close" id="complaint-dialog-close" aria-label="إغلاق">×</button>
+        </div>
+
+        <div class="cl-dialog-group">
+            <div class="cl-dialog-group-title">التاريخ</div>
+            <div class="cl-field"><label for="date-from">من تاريخ</label><input id="date-from" type="date" name="date_from" value="{{ date_from }}" required></div>
+            <div class="cl-field"><label for="date-to">إلى تاريخ</label><input id="date-to" type="date" name="date_to" value="{{ date_to }}" required></div>
+        </div>
+
+        <div class="cl-dialog-group">
+            <div class="cl-dialog-group-title">الوقت <span class="cl-muted">— اختياري</span></div>
+            <div class="cl-field"><label for="time-from">من وقت</label><input id="time-from" type="time" name="time_from" value="{{ time_from }}"></div>
+            <div class="cl-field"><label for="time-to">إلى وقت</label><input id="time-to" type="time" name="time_to" value="{{ time_to }}"></div>
+        </div>
+
+        <div class="cl-dialog-actions">
+            <button type="submit" class="cl-button">تطبيق الفترة</button>
+            <button type="button" class="cl-button cl-button-secondary" id="complaint-dialog-cancel">إلغاء</button>
+        </div>
+    </form>
+</dialog>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 (function () {
+    document.querySelectorAll("select[data-placeholder-value]").forEach(select => {
+        const updatePlaceholderStyle = () => {
+            select.classList.toggle(
+                "cl-select-placeholder",
+                select.value === select.dataset.placeholderValue
+            );
+        };
+
+        select.addEventListener("change", updatePlaceholderStyle);
+        updatePlaceholderStyle();
+    });
+
+    const periodSelect = document.getElementById("complaint-period");
+    const dialog = document.getElementById("complaint-date-dialog");
+    const closeButton = document.getElementById("complaint-dialog-close");
+    const cancelButton = document.getElementById("complaint-dialog-cancel");
+    const originalPeriod = "{{ selected_period|escapejs }}";
+
+    function closeDateDialog() {
+        dialog.close();
+        periodSelect.value = originalPeriod;
+        periodSelect.classList.toggle(
+            "cl-select-placeholder",
+            originalPeriod === "all"
+        );
+    }
+
+    periodSelect.addEventListener("change", () => {
+        if (periodSelect.value === "custom") {
+            dialog.showModal();
+        }
+    });
+
+    closeButton.addEventListener("click", closeDateDialog);
+    cancelButton.addEventListener("click", closeDateDialog);
+    dialog.addEventListener("click", event => {
+        if (event.target === dialog) {
+            closeDateDialog();
+        }
+    });
+
     document.querySelectorAll("[data-close-complaint]").forEach(button => {
         button.addEventListener("click", () => {
             const card = button.closest("details");

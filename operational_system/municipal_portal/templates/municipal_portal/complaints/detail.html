@@ -834,6 +834,19 @@
                             </div>
                         {% endif %}
                     </dl>
+                    <div class="cd-actions" style="margin-top: 18px;">
+    <span class="cd-note">
+        رقم أمر العمل:
+        <strong><bdi>WO-{{ work_order.pk|stringformat:"06d" }}</bdi></strong>
+    </span>
+
+    <a
+        href="{% url 'municipal_portal:work_order_list' %}?q={{ complaint.reference_number|urlencode }}"
+        class="cd-button cd-button--secondary"
+    >
+        عرض أمر العمل
+    </a>
+</div>
 
                 {% elif can_assign %}
                     {% if assignment_form.assigned_to.field.queryset.exists %}

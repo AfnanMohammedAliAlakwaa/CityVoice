@@ -1,302 +1,83 @@
 {% extends "municipal_portal/base.html" %}
-
-{% block title %}
-لوحة التحكم | CityVoice
-{% endblock %}
-
-{% block page_title %}
-لوحة التحكم
-{% endblock %}
-
+{% block title %}لوحة التحكم | CityVoice{% endblock %}
+{% block page_title %}لوحة التحكم{% endblock %}
 {% block content %}
+<style>
+.mp-compact-filters{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}.mp-filter-box{position:relative}.mp-panel .mp-filter-select{appearance:none!important;width:138px!important;min-width:138px!important;height:36px!important;min-height:36px!important;border:1px solid #d9e7df!important;border-radius:10px!important;background:#f9fcfa!important;color:#315844!important;padding:0 12px 0 30px!important;font-family:inherit!important;font-size:13px!important;font-weight:600!important;line-height:34px!important;cursor:pointer;box-shadow:none!important;transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease}.mp-panel .mp-filter-select:hover{background:#fff!important;border-color:#9bc9ae!important}.mp-panel .mp-filter-select:focus{background:#fff!important;border-color:#238454!important;box-shadow:0 0 0 2px rgba(35,132,84,.09)!important;outline:none}.mp-filter-box:after{content:"⌄";position:absolute;left:11px;bottom:7px;color:#238454;pointer-events:none;font-size:14px;line-height:1}.mp-filter-label{display:block;color:#75877d;font-size:11px;font-weight:500;margin:0 3px 4px}.mp-custom-range{display:none;align-items:end;gap:7px;flex-wrap:wrap;width:100%;margin-top:7px;padding:10px;background:#f7fbf8;border:1px solid #deebe4;border-radius:12px}.mp-custom-range.is-visible{display:flex}.mp-custom-range label{display:grid;gap:4px;color:#61746a;font-size:11px}.mp-custom-range input{height:36px!important;min-height:36px!important;border:1px solid #d6e5dc!important;border-radius:9px!important;padding:0 9px!important;font-size:12px!important}.mp-filter-summary{color:#73847b;font-size:12px;margin-top:6px}.mp-filter-summary strong{color:#176a42}@media(max-width:700px){.mp-panel-header{align-items:flex-start;flex-direction:column}.mp-compact-filters{width:100%}.mp-filter-box{flex:1}.mp-panel .mp-filter-select{width:100%!important;min-width:0!important}}
+.mp-date-dialog{width:min(460px,calc(100% - 30px));max-width:100%;border:0;border-radius:22px;padding:0;overflow:hidden;background:#fff;color:#173d2a;box-shadow:0 24px 80px rgba(15,54,34,.24)}.mp-date-dialog::backdrop{background:rgba(15,45,30,.46);backdrop-filter:blur(4px)}.mp-date-dialog-inner{padding:24px;box-sizing:border-box}.mp-date-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:20px}.mp-date-dialog-head h3{margin:0 0 5px;font-size:20px}.mp-date-dialog-head p{margin:0;color:#718078;font-size:13px}.mp-dialog-close{width:34px;height:34px;border:0;border-radius:50%;background:#f0f7f3;color:#426253;font-size:21px;cursor:pointer;transition:.18s}.mp-dialog-close:hover{background:#e1f0e7;color:#176a42;transform:rotate(6deg)}.mp-date-fields{display:grid;grid-template-columns:1fr;gap:10px}.mp-date-range{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;padding:13px;border:1px solid #e1ece6;border-radius:15px;background:#fbfdfc}.mp-date-range-title{grid-column:1/-1;color:#23533a;font-size:13px;font-weight:700}.mp-date-field{display:grid;gap:6px;min-width:0;color:#6b7d73;font-size:11px;font-weight:600}.mp-date-field input{width:100%;height:40px!important;min-height:40px!important;border:1px solid #d8e6de!important;border-radius:10px!important;background:#fff!important;padding:0 9px!important;font:inherit!important;font-size:12px!important;color:#254d39!important;box-sizing:border-box}.mp-date-field input:focus{outline:none;border-color:#238454!important;box-shadow:0 0 0 3px rgba(35,132,84,.09)!important}.mp-time-optional{font-weight:400;color:#8a9991}.mp-dialog-actions{display:flex;justify-content:flex-start;gap:9px;margin-top:18px;padding-top:16px;border-top:1px solid #edf3ef}.mp-dialog-actions .mp-button{min-height:40px;padding:8px 18px}.mp-dialog-cancel{background:#fff!important;color:#286044!important;border:1px solid #d6e5dc!important}@media(max-width:600px){.mp-date-dialog-inner{padding:19px}}@media(max-width:400px){.mp-date-range{grid-template-columns:1fr}}
+.mp-date-range{grid-template-columns:1fr}
+.mp-date-dialog{width:min(420px,calc(100% - 28px))}
+.mp-date-dialog-inner{padding:19px 20px}
+.mp-date-dialog-head{margin-bottom:13px}
+.mp-date-dialog-head h3{font-size:18px}
+.mp-date-dialog-head p{font-size:12px}
+.mp-date-fields{gap:8px}
+.mp-date-range{gap:6px;padding:9px 11px;border-radius:13px}
+.mp-date-range-title{font-size:12px;margin-bottom:1px}
+.mp-date-field{gap:3px;font-size:11px}
+.mp-date-field-title{display:flex;align-items:center;gap:5px}
+.mp-date-field input{height:34px!important;min-height:34px!important;border-radius:9px!important}
+.mp-dialog-actions{margin-top:12px;padding-top:12px}
+.mp-dialog-actions .mp-button{min-height:36px;padding:6px 15px}
+.mp-date-range{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.mp-date-group-note{font-size:10px;font-weight:400;color:#8a9991;margin-right:4px}
+@media(max-width:400px){.mp-date-range{grid-template-columns:1fr}}
+</style>
 
 <div class="mp-page-heading">
-    <div>
-        <h1>نظرة عامة</h1>
-
-        <p>
-            متابعة البلاغات وأوامر العمل في بلدية معين.
-        </p>
-    </div>
-
-    <div class="mp-actions">
-        <a
-            href="{% url 'municipal_portal:complaint_list' %}"
-            class="mp-button"
-        >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect
-                    x="5"
-                    y="3"
-                    width="14"
-                    height="18"
-                    rx="3"
-                ></rect>
-                <path d="M9 8h6M9 12h6M9 16h4"></path>
-            </svg>
-
-            عرض جميع البلاغات
-        </a>
-
-        <a
-            href="{% url 'municipal_portal:work_order_list' %}"
-            class="mp-button mp-button--secondary"
-        >
-            عرض أوامر العمل
-        </a>
-    </div>
+ <div><h1>نظرة عامة</h1><p>متابعة البلاغات وأوامر العمل في بلدية معين.</p></div>
+ <div class="mp-actions"><a href="{% url 'municipal_portal:complaint_list' %}" class="mp-button">عرض جميع البلاغات</a><a href="{% url 'municipal_portal:work_order_list' %}" class="mp-button mp-button--secondary">عرض أوامر العمل</a></div>
 </div>
 
 <section class="mp-stats" aria-label="إحصائيات البلاغات">
-
-    <article class="mp-stat-card">
-        <span class="mp-stat-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect
-                    x="5"
-                    y="3"
-                    width="14"
-                    height="18"
-                    rx="3"
-                ></rect>
-                <path d="M9 8h6M9 12h6M9 16h4"></path>
-            </svg>
-        </span>
-
-        <span class="mp-stat-content">
-            <span>إجمالي البلاغات</span>
-            <strong>{{ total_count }}</strong>
-        </span>
-    </article>
-
-    <article class="mp-stat-card mp-stat-card--gold">
-        <span class="mp-stat-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="9"></circle>
-                <path d="M12 7v5l3 2"></path>
-            </svg>
-        </span>
-
-        <span class="mp-stat-content">
-            <span>بلاغات جديدة</span>
-            <strong>{{ submitted_count }}</strong>
-        </span>
-    </article>
-
-    <article class="mp-stat-card mp-stat-card--blue">
-        <span class="mp-stat-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 12a8 8 0 1 0 3-6"></path>
-                <path d="M4 4v5h5"></path>
-            </svg>
-        </span>
-
-        <span class="mp-stat-content">
-            <span>قيد المراجعة</span>
-            <strong>{{ under_review_count }}</strong>
-        </span>
-    </article>
-
-    <article class="mp-stat-card mp-stat-card--orange">
-        <span class="mp-stat-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M14 6 18 2l4 4-4 4"></path>
-                <path d="m18 6-7.5 7.5"></path>
-                <path d="M4 20l4-1 11-11"></path>
-            </svg>
-        </span>
-
-        <span class="mp-stat-content">
-            <span>تم الإسناد</span>
-            <strong>{{ assigned_count }}</strong>
-        </span>
-    </article>
-
-    <article class="mp-stat-card mp-stat-card--orange">
-        <span class="mp-stat-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 20h16"></path>
-                <path d="M6 16 16 6l2 2L8 18H6Z"></path>
-            </svg>
-        </span>
-
-        <span class="mp-stat-content">
-            <span>قيد التنفيذ</span>
-            <strong>{{ in_progress_count }}</strong>
-        </span>
-    </article>
-
-    <article class="mp-stat-card">
-        <span class="mp-stat-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="9"></circle>
-                <path d="m8 12 3 3 5-6"></path>
-            </svg>
-        </span>
-
-        <span class="mp-stat-content">
-            <span>تم حلها</span>
-            <strong>{{ resolved_count }}</strong>
-        </span>
-    </article>
-    <article class="mp-stat-card mp-stat-card--blue">
-    <span class="mp-stat-icon">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect
-                x="4"
-                y="5"
-                width="16"
-                height="15"
-                rx="3"
-            ></rect>
-            <path d="M8 5V3h8v2M9 12h6"></path>
-        </svg>
-    </span>
-
-    <span class="mp-stat-content">
-        <span>بلاغات مغلقة</span>
-        <strong>{{ closed_count }}</strong>
-    </span>
-</article>
-
-    <article class="mp-stat-card mp-stat-card--blue">
-        <span class="mp-stat-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M14 6 18 2l4 4-4 4"></path>
-                <path d="m18 6-7.5 7.5"></path>
-                <path d="M6 18h12"></path>
-            </svg>
-        </span>
-
-        <span class="mp-stat-content">
-            <span>أوامر عمل نشطة</span>
-            <strong>{{ active_work_orders_count }}</strong>
-        </span>
-    </article>
-
+ <article class="mp-stat-card"><span class="mp-stat-icon">≡</span><span class="mp-stat-content"><span>إجمالي البلاغات</span><strong>{{ total_count }}</strong></span></article>
+ <article class="mp-stat-card mp-stat-card--gold"><span class="mp-stat-icon">◷</span><span class="mp-stat-content"><span>بلاغات جديدة</span><strong>{{ submitted_count }}</strong></span></article>
+ <article class="mp-stat-card mp-stat-card--blue"><span class="mp-stat-icon">↶</span><span class="mp-stat-content"><span>قيد المراجعة</span><strong>{{ under_review_count }}</strong></span></article>
+ <article class="mp-stat-card mp-stat-card--orange"><span class="mp-stat-icon">⌁</span><span class="mp-stat-content"><span>تم الإسناد</span><strong>{{ assigned_count }}</strong></span></article>
+ <article class="mp-stat-card mp-stat-card--orange"><span class="mp-stat-icon">⌕</span><span class="mp-stat-content"><span>قيد التنفيذ</span><strong>{{ in_progress_count }}</strong></span></article>
+ <article class="mp-stat-card"><span class="mp-stat-icon">✓</span><span class="mp-stat-content"><span>تم حلها</span><strong>{{ resolved_count }}</strong></span></article>
+ <article class="mp-stat-card mp-stat-card--blue"><span class="mp-stat-icon">□</span><span class="mp-stat-content"><span>بلاغات مغلقة</span><strong>{{ closed_count }}</strong></span></article>
+ <article class="mp-stat-card mp-stat-card--blue"><span class="mp-stat-icon">⚒</span><span class="mp-stat-content"><span>أوامر عمل نشطة</span><strong>{{ active_work_orders_count }}</strong></span></article>
 </section>
 
 <section class="mp-panel">
-    <div class="mp-panel-header">
-        <div>
-            <h2>أحدث البلاغات</h2>
-        </div>
-
-        <a href="{% url 'municipal_portal:complaint_list' %}">
-            عرض جميع البلاغات
-        </a>
-    </div>
-
-    {% if recent_complaints %}
-        <div class="mp-table-wrap">
-            <table class="mp-table">
-                <thead>
-                    <tr>
-                        <th>الرقم المرجعي</th>
-                        <th>الخدمة والتصنيف</th>
-                        <th>المواطن</th>
-                        <th>الأولوية</th>
-                        <th>الحالة</th>
-                        <th>تاريخ التقديم</th>
-                        <th>التفاصيل</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for complaint in recent_complaints %}
-                        <tr>
-                            <td>
-                                <a
-                                    href="{% url 'municipal_portal:complaint_detail' complaint.reference_number %}"
-                                    class="mp-reference"
-                                >
-                                    <bdi>
-                                        {{ complaint.reference_number }}
-                                    </bdi>
-                                </a>
-                            </td>
-
-                            <td>
-                                <span class="mp-cell-main">
-                                    <strong>
-                                        {{ complaint.service.name_ar }}
-                                    </strong>
-
-                                    <small>
-                                        {{ complaint.category.name_ar }}
-                                    </small>
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="mp-cell-main">
-                                    <strong>
-                                        {{ complaint.citizen.get_full_name|default:complaint.citizen.username }}
-                                    </strong>
-
-                                    <small>
-                                        {{ complaint.citizen.phone_number|default:"لا يوجد رقم" }}
-                                    </small>
-                                </span>
-                            </td>
-
-                            <td>
-                                <span
-                                    class="mp-priority mp-priority--{{ complaint.priority }}"
-                                >
-                                    {{ complaint.get_priority_display }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <span
-                                    class="mp-status mp-status--{{ complaint.status }}"
-                                >
-                                    {{ complaint.get_status_display }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <time
-                                    datetime="{{ complaint.created_at|date:'c' }}"
-                                >
-                                    {{ complaint.created_at|date:"Y/m/d" }}
-                                </time>
-                            </td>
-
-                            <td>
-                                <a
-                                    href="{% url 'municipal_portal:complaint_detail' complaint.reference_number %}"
-                                    class="mp-button mp-button--secondary"
-                                >
-                                    فتح
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="mp-empty">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect
-                    x="5"
-                    y="3"
-                    width="14"
-                    height="18"
-                    rx="3"
-                ></rect>
-                <path d="M9 8h6M9 12h6M9 16h4"></path>
-            </svg>
-
-            <strong>لا توجد بلاغات حتى الآن</strong>
-
-            <p>
-                ستظهر البلاغات الجديدة هنا بمجرد إرسالها من بوابة المواطن.
-            </p>
-        </div>
-    {% endif %}
+ <div class="mp-panel-header">
+  <div><h2>أحدث البلاغات</h2><div class="mp-filter-summary">{{ period_label }} · <strong>{{ filtered_count }}</strong> نتيجة</div></div>
+  <form method="get" id="dashboard-filters" class="mp-compact-filters">
+   <div class="mp-filter-box"><label class="mp-filter-label" for="status-filter">حالة البلاغ</label><select class="mp-filter-select" id="status-filter" name="status">{% for value, label in status_options %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+   <div class="mp-filter-box"><label class="mp-filter-label" for="period-filter">الفترة الزمنية</label><select class="mp-filter-select" id="period-filter" name="period"><option value="hour" {% if selected_period == 'hour' %}selected{% endif %}>آخر ساعة</option><option value="today" {% if selected_period == 'today' %}selected{% endif %}>اليوم</option><option value="week" {% if selected_period == 'week' %}selected{% endif %}>آخر 7 أيام</option><option value="month" {% if selected_period == 'month' %}selected{% endif %}>هذا الشهر</option><option value="all" {% if selected_period == 'all' %}selected{% endif %}>جميع الفترات</option><option value="custom" {% if selected_period == 'custom' %}selected{% endif %}>فترة مخصصة</option></select></div>
+  </form>
+ </div>
+ {% if recent_complaints %}
+ <div class="mp-table-wrap"><table class="mp-table"><thead><tr><th>الرقم المرجعي</th><th>الخدمة والتصنيف</th><th>المواطن</th><th>الأولوية</th><th>الحالة</th><th>تاريخ التقديم</th><th>التفاصيل</th></tr></thead><tbody>
+ {% for complaint in recent_complaints %}<tr><td><a href="{% url 'municipal_portal:complaint_detail' complaint.reference_number %}" class="mp-reference"><bdi>{{ complaint.reference_number }}</bdi></a></td><td><span class="mp-cell-main"><strong>{{ complaint.service.name_ar }}</strong><small>{{ complaint.category.name_ar }}</small></span></td><td><span class="mp-cell-main"><strong>{{ complaint.citizen.get_full_name|default:complaint.citizen.username }}</strong><small>{{ complaint.citizen.phone_number|default:"لا يوجد رقم" }}</small></span></td><td><span class="mp-priority mp-priority--{{ complaint.priority }}">{{ complaint.get_priority_display }}</span></td><td><span class="mp-status mp-status--{{ complaint.status }}">{{ complaint.get_status_display }}</span></td><td><time datetime="{{ complaint.created_at|date:'c' }}">{{ complaint.created_at|date:"Y/m/d" }}</time></td><td><a href="{% url 'municipal_portal:complaint_detail' complaint.reference_number %}" class="mp-button mp-button--secondary">فتح</a></td></tr>{% endfor %}
+ </tbody></table></div>
+ {% else %}<div class="mp-empty"><strong>لا توجد بلاغات مطابقة</strong><p>غيّري حالة البلاغ أو الفترة الزمنية لعرض نتائج أخرى.</p></div>{% endif %}
 </section>
-
+<dialog class="mp-date-dialog" id="custom-date-dialog">
+ <form method="get" class="mp-date-dialog-inner">
+  <input type="hidden" name="period" value="custom">
+  <input type="hidden" name="status" value="{{ selected_status }}">
+  <div class="mp-date-dialog-head">
+   <div><h3>تحديد فترة مخصصة</h3><p>اختار التاريخ، ويمكنك إضافة وقت محدد عند الحاجة.</p></div>
+   <button type="button" class="mp-dialog-close" id="dialog-close" aria-label="إغلاق">×</button>
+  </div>
+  <div class="mp-date-fields">
+   <div class="mp-date-range">
+    <div class="mp-date-range-title">التاريخ</div>
+    <label class="mp-date-field">من تاريخ<input type="date" name="date_from" value="{{ date_from }}" required></label>
+    <label class="mp-date-field">إلى تاريخ<input type="date" name="date_to" value="{{ date_to }}" required></label>
+   </div>
+   <div class="mp-date-range">
+    <div class="mp-date-range-title">الوقت <span class="mp-date-group-note">اختياري</span></div>
+    <label class="mp-date-field">من وقت<input type="time" name="time_from" value="{{ time_from }}"></label>
+    <label class="mp-date-field">إلى وقت<input type="time" name="time_to" value="{{ time_to }}"></label>
+   </div>
+  </div>
+  <div class="mp-dialog-actions"><button type="submit" class="mp-button">تطبيق الفترة</button><button type="button" class="mp-button mp-dialog-cancel" id="dialog-cancel">إلغاء</button></div>
+ </form>
+</dialog>
+<script>
+(function(){const form=document.getElementById('dashboard-filters'),status=document.getElementById('status-filter'),period=document.getElementById('period-filter'),dialog=document.getElementById('custom-date-dialog'),close=document.getElementById('dialog-close'),cancel=document.getElementById('dialog-cancel'),current='{{ selected_period|escapejs }}';status.addEventListener('change',()=>form.submit());period.addEventListener('change',()=>{if(period.value==='custom'){dialog.showModal()}else{form.submit()}});function closeDialog(){dialog.close();period.value=current}close.addEventListener('click',closeDialog);cancel.addEventListener('click',closeDialog);dialog.addEventListener('click',e=>{if(e.target===dialog)closeDialog()})})();
+</script>
 {% endblock %}

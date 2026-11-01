@@ -1,0 +1,321 @@
+{% extends "municipal_portal/base.html" %}
+
+{% block title %}أوامر العمل | CityVoice{% endblock %}
+{% block page_title %}إدارة أوامر العمل{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wo-page { --wo-green:#287e50; --wo-border:#d8e7de; --wo-muted:#718279; color:#173b2a; }
+    .wo-heading { margin-bottom:18px; }
+    .wo-heading h1 { margin:0 0 4px; font-size:25px; }
+    .wo-heading p { margin:0; color:var(--wo-muted); font-size:14px; }
+    .wo-button { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:36px; padding:6px 12px; border:1px solid var(--wo-green); border-radius:9px; background:var(--wo-green); color:#fff; font:inherit; font-size:12px; font-weight:700; text-decoration:none; cursor:pointer; }
+    .wo-button--secondary { background:#fff; color:var(--wo-green); border-color:var(--wo-border); }
+    .wo-filters { display:grid; grid-template-columns:minmax(220px,1.6fr) repeat(4,minmax(125px,.65fr)); align-items:end; gap:10px; margin-bottom:15px; padding:14px 16px; border:1px solid var(--wo-border); border-radius:14px; background:#fff; }
+    .wo-field { display:grid; gap:6px; min-width:0; }
+    .wo-field label { font-size:12px; font-weight:700; }
+    .wo-field input,.wo-field select { width:100%; min-height:38px; padding:7px 10px; border:1px solid var(--wo-border); border-radius:9px; background:#f9fcfa; color:#263f33; font:inherit; font-size:12px; box-sizing:border-box; }
+    .wo-field select.wo-placeholder { color:#8b9b93; }
+    .wo-field select option { color:#263f33; }
+    .wo-filter-actions { display:flex; gap:8px; }
+    .wo-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:18px; }
+    .wo-stat { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; border:1px solid var(--wo-border); border-radius:12px; background:#fff; }
+    .wo-stat span { color:var(--wo-muted); font-size:12px; } .wo-stat strong { font-size:19px; }
+    .wo-results-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .wo-results-head h2 { margin:0; font-size:19px; }
+    .wo-count { display:inline-flex; align-items:center; justify-content:center; min-width:31px; height:31px; border-radius:50%; background:#eaf6ef; color:var(--wo-green); font-size:12px; font-weight:800; }
+    .wo-list { display:grid; gap:12px; }
+    .wo-card { padding:14px 16px; border:1px solid var(--wo-border); border-inline-start:4px solid var(--wo-green); border-radius:14px; background:#fff; }
+    .wo-card--assigned { border-inline-start-color:#d39c24; }
+    .wo-card--accepted { border-inline-start-color:#3678b8; }
+    .wo-card--in_progress { border-inline-start-color:#cb741a; }
+    .wo-card--completed { border-inline-start-color:#287e50; }
+    .wo-card--cancelled { border-inline-start-color:#b64b58; }
+    .wo-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:11px; }
+    .wo-reference { display:block; margin-bottom:4px; color:var(--wo-muted); font-size:11px; }
+    .wo-card h3 { margin:0; font-size:16px; }
+    .wo-status { display:inline-flex; padding:4px 9px; border-radius:999px; background:#eaf6ef; color:#17683d; font-size:11px; font-weight:700; white-space:nowrap; }
+    .wo-card--assigned .wo-status { background:#fff2cf; color:#8b6200; }
+    .wo-card--accepted .wo-status { background:#e9f2ff; color:#28649f; }
+    .wo-card--in_progress .wo-status { background:#fff0e2; color:#a95009; }
+    .wo-card--cancelled .wo-status { background:#fdecef; color:#9d3443; }
+    .wo-badges { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+    .wo-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)) auto; align-items:end; gap:10px 16px; margin:0; }
+    .wo-summary dt,.wo-dialog-info dt { margin-bottom:4px; color:var(--wo-muted); font-size:11px; }
+    .wo-summary dd,.wo-dialog-info dd { margin:0; font-size:13px; font-weight:650; overflow-wrap:anywhere; }
+    .wo-empty { padding:45px 20px; border:1px solid var(--wo-border); border-radius:16px; background:#fff; text-align:center; }
+    .wo-empty h2 { margin:0 0 7px; font-size:19px; }
+    .wo-empty p { margin:0; color:var(--wo-muted); font-size:13px; }
+
+    .wo-dialog { width:min(620px,calc(100% - 28px)); max-height:88vh; padding:0; border:0; border-radius:18px; background:#fff; color:#173b2a; box-shadow:0 22px 60px rgba(18,55,38,.25); overflow:hidden; }
+    .wo-dialog::backdrop { background:rgba(20,48,35,.48); backdrop-filter:blur(3px); }
+    .wo-dialog-inner { max-height:88vh; overflow:auto; }
+    .wo-dialog-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:18px 20px 14px; border-bottom:1px solid #edf3ef; }
+    .wo-dialog-head h2 { margin:0 0 4px; font-size:20px; }
+    .wo-dialog-reference { margin:0; color:var(--wo-muted); font-size:12px; }
+    .wo-dialog-x { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; padding:0; border:0; border-radius:50%; background:#f0f7f3; color:#315d48; font-size:22px; line-height:1; cursor:pointer; }
+    .wo-dialog-body { padding:16px 20px; }
+    .wo-dialog-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .wo-dialog-top h3 { margin:0; font-size:17px; }
+    .wo-dialog-info { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px 18px; margin:0 0 15px; }
+    .wo-dialog-section { margin-top:12px; padding:11px 13px; border-radius:10px; background:#f5faf7; }
+    .wo-dialog-section strong { display:block; margin-bottom:5px; font-size:12px; }
+    .wo-dialog-section p { margin:0; color:#405e4b; font-size:13px; line-height:1.7; }
+    .wo-completion-photo { display:block; width:100%; max-height:280px; margin-top:8px; border-radius:10px; object-fit:contain; background:#eef5f1; }
+    .wo-dialog-actions { display:flex; align-items:center; justify-content:flex-start; gap:8px; padding:13px 20px 18px; border-top:1px solid #edf3ef; }
+    .wo-dialog-actions .wo-button { min-width:92px; }
+    .wo-pagination { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:7px; margin-top:18px; }
+    .wo-page-link { display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:34px; padding:0 9px; border:1px solid var(--wo-border); border-radius:8px; background:#fff; color:var(--wo-green); font-size:12px; font-weight:700; text-decoration:none; }
+    .wo-page-link--active { background:var(--wo-green); color:#fff; border-color:var(--wo-green); }
+    .wo-date-dialog { width:min(470px,calc(100% - 28px)); padding:0; border:0; border-radius:16px; box-shadow:0 22px 60px rgba(18,55,38,.25); }
+    .wo-date-dialog::backdrop { background:rgba(20,48,35,.48); backdrop-filter:blur(3px); }
+    .wo-date-inner { padding:19px; } .wo-date-inner h2 { margin:0 0 6px; font-size:19px; } .wo-date-inner p { margin:0 0 15px; color:var(--wo-muted); font-size:13px; }
+    .wo-date-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; } .wo-date-actions { display:flex; gap:8px; margin-top:15px; }
+    body.wo-dialog-open { overflow:hidden; }
+
+    @media (max-width:1200px) { .wo-filters { grid-template-columns:repeat(3,minmax(0,1fr)); } .wo-filter-actions { grid-column:1/-1; } }
+    @media (max-width:900px) { .wo-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .wo-summary-action { grid-column:1/-1; } }
+    @media (max-width:700px) { .wo-stats { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:560px) { .wo-filters { grid-template-columns:1fr; padding:14px; } .wo-filter-actions { grid-column:auto; } .wo-summary,.wo-dialog-info,.wo-date-grid { grid-template-columns:1fr; } .wo-card-head { gap:8px; } .wo-dialog-head,.wo-dialog-body { padding-inline:15px; } .wo-dialog-actions { padding-inline:15px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="wo-page">
+    <header class="wo-heading">
+        <h1>أوامر العمل</h1>
+        <p>متابعة الأوامر المسندة إلى العاملين الميدانيين وحالة تنفيذها.</p>
+    </header>
+
+    <form method="get" class="wo-filters" id="work-order-filter-form">
+        <div class="wo-field">
+            <label for="work-order-search">البحث</label>
+            <input id="work-order-search" type="search" name="q" value="{{ search_query }}" placeholder="رقم البلاغ، العامل أو تعليمات التنفيذ">
+        </div>
+        <div class="wo-field">
+            <label for="work-order-status">الحالة</label>
+            <select id="work-order-status" name="status" class="{% if not selected_status %}wo-placeholder{% endif %}" data-placeholder-value="">
+                <option value="">جميع الحالات</option>
+                <option value="assigned" {% if selected_status == "assigned" %}selected{% endif %}>تم الإسناد</option>
+                <option value="accepted" {% if selected_status == "accepted" %}selected{% endif %}>تم قبول المهمة</option>
+                <option value="in_progress" {% if selected_status == "in_progress" %}selected{% endif %}>قيد التنفيذ</option>
+                <option value="completed" {% if selected_status == "completed" %}selected{% endif %}>تم الإنجاز</option>
+                <option value="cancelled" {% if selected_status == "cancelled" %}selected{% endif %}>ملغي</option>
+            </select>
+        </div>
+        <div class="wo-field">
+            <label for="work-order-service">الخدمة</label>
+            <select id="work-order-service" name="service" class="{% if not selected_service %}wo-placeholder{% endif %}" data-placeholder-value="">
+                <option value="">جميع الخدمات</option>
+                {% for service in services %}
+                    <option value="{{ service.pk }}" {% if selected_service == service.pk|stringformat:"s" %}selected{% endif %}>{{ service.name_ar }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="wo-field">
+            <label for="work-order-period">الفترة الزمنية</label>
+            <select id="work-order-period" name="period" class="{% if selected_period == 'all' %}wo-placeholder{% endif %}" data-placeholder-value="all">
+                <option value="all" {% if selected_period == "all" %}selected{% endif %}>جميع الفترات</option>
+                <option value="hour" {% if selected_period == "hour" %}selected{% endif %}>آخر ساعة</option>
+                <option value="today" {% if selected_period == "today" %}selected{% endif %}>اليوم</option>
+                <option value="week" {% if selected_period == "week" %}selected{% endif %}>آخر 7 أيام</option>
+                <option value="month" {% if selected_period == "month" %}selected{% endif %}>هذا الشهر</option>
+                <option value="custom" {% if selected_period == "custom" %}selected{% endif %}>فترة مخصصة</option>
+            </select>
+        </div>
+        <div class="wo-field">
+            <label for="work-order-worker">قائد الفريق</label>
+            <select id="work-order-worker" name="worker" class="{% if not selected_worker %}wo-placeholder{% endif %}" data-placeholder-value="">
+                <option value="">جميع العاملين</option>
+                {% for worker in workers %}<option value="{{ worker.pk }}" {% if selected_worker == worker.pk|stringformat:"s" %}selected{% endif %}>{{ worker.get_full_name|default:worker.username }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="wo-filter-actions">
+            <button type="submit" class="wo-button">بحث وتصفية</button>
+            <a href="{% url 'municipal_portal:work_order_list' %}" class="wo-button wo-button--secondary">مسح الفلاتر</a>
+        </div>
+    </form>
+
+    <section class="wo-stats" aria-label="ملخص أوامر العمل">
+        <article class="wo-stat"><span>إجمالي النتائج</span><strong>{{ stats.total }}</strong></article>
+        <article class="wo-stat"><span>قيد التنفيذ</span><strong>{{ stats.in_progress }}</strong></article>
+        <article class="wo-stat"><span>تم إنجازها</span><strong>{{ stats.completed }}</strong></article>
+    </section>
+
+    <div class="wo-results-head">
+        <h2>جميع أوامر العمل</h2>
+        <span class="wo-count">{{ page_obj.paginator.count }}</span>
+    </div>
+
+    {% if work_orders %}
+        <div class="wo-list">
+            {% for order in work_orders %}
+                <article class="wo-card wo-card--{{ order.status }}">
+                    <div class="wo-card-head">
+                        <div>
+                            <span class="wo-reference"><bdi>WO-{{ order.pk|stringformat:"06d" }}</bdi> · البلاغ <bdi>{{ order.complaint.reference_number }}</bdi></span>
+                            <h3>{{ order.complaint.service.name_ar }}</h3>
+                        </div>
+                        <div class="wo-badges">
+                            <span class="wo-status">
+                                {% if order.status == "assigned" %}تم الإسناد{% elif order.status == "accepted" %}تم قبول المهمة{% elif order.status == "in_progress" %}قيد التنفيذ{% elif order.status == "completed" %}تم الإنجاز{% elif order.status == "cancelled" %}ملغي{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <dl class="wo-summary">
+                        <div><dt>قائد الفريق</dt><dd>{{ order.assigned_to.get_full_name|default:order.assigned_to.username }}</dd></div>
+                        <div><dt>الأولوية</dt><dd>{{ order.complaint.get_priority_display }}</dd></div>
+                        <div><dt>آخر تحديث</dt><dd>{{ order.updated_at|date:"Y/m/d — H:i" }}</dd></div>
+                        <div class="wo-summary-action"><button type="button" class="wo-button wo-open-dialog" data-dialog-id="work-order-dialog-{{ order.pk }}">عرض التفاصيل</button></div>
+                    </dl>
+                </article>
+
+                <dialog class="wo-dialog" id="work-order-dialog-{{ order.pk }}" aria-labelledby="work-order-title-{{ order.pk }}">
+                    <div class="wo-dialog-inner">
+                        <header class="wo-dialog-head">
+                            <div>
+                                <h2 id="work-order-title-{{ order.pk }}">تفاصيل أمر العمل</h2>
+                                <p class="wo-dialog-reference"><bdi>WO-{{ order.pk|stringformat:"06d" }}</bdi> · البلاغ <bdi>{{ order.complaint.reference_number }}</bdi></p>
+                            </div>
+                            <button type="button" class="wo-dialog-x wo-close-dialog" aria-label="إغلاق">×</button>
+                        </header>
+
+                        <div class="wo-dialog-body">
+                            <div class="wo-dialog-top">
+                                <h3>{{ order.complaint.service.name_ar }}</h3>
+                                <div class="wo-badges">
+                                    <span class="wo-status">
+                                        {% if order.status == "assigned" %}تم الإسناد{% elif order.status == "accepted" %}تم قبول المهمة{% elif order.status == "in_progress" %}قيد التنفيذ{% elif order.status == "completed" %}تم الإنجاز{% elif order.status == "cancelled" %}ملغي{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <dl class="wo-dialog-info">
+                                <div><dt>قائد الفريق</dt><dd>{{ order.assigned_to.get_full_name|default:order.assigned_to.username }}</dd></div>
+                                <div><dt>أُسند بواسطة</dt><dd>{% if order.assigned_by %}{{ order.assigned_by.get_full_name|default:order.assigned_by.username }}{% else %}غير متاح{% endif %}</dd></div>
+                                <div><dt>أولوية البلاغ</dt><dd>{{ order.complaint.get_priority_display }}</dd></div>
+                                <div><dt>تاريخ الإنشاء</dt><dd>{{ order.created_at|date:"Y/m/d — H:i" }}</dd></div>
+                                <div><dt>آخر تحديث</dt><dd>{{ order.updated_at|date:"Y/m/d — H:i" }}</dd></div>
+                                {% if order.accepted_at %}<div><dt>قبول المهمة</dt><dd>{{ order.accepted_at|date:"Y/m/d — H:i" }}</dd></div>{% endif %}
+                                {% if order.started_at %}<div><dt>بدء التنفيذ</dt><dd>{{ order.started_at|date:"Y/m/d — H:i" }}</dd></div>{% endif %}
+                                {% if order.completed_at %}<div><dt>إكمال المهمة</dt><dd>{{ order.completed_at|date:"Y/m/d — H:i" }}</dd></div>{% endif %}
+                            </dl>
+
+                            <section class="wo-dialog-section">
+                                <strong>تعليمات التنفيذ</strong>
+                                <p>{{ order.instructions|default:"لا توجد تعليمات إضافية"|linebreaksbr }}</p>
+                            </section>
+
+                            {% if order.completion_notes %}
+                                <section class="wo-dialog-section">
+                                    <strong>ملاحظات الإنجاز</strong>
+                                    <p>{{ order.completion_notes|linebreaksbr }}</p>
+                                </section>
+                            {% endif %}
+
+                            {% if order.completion_photo %}
+                                <section class="wo-dialog-section">
+                                    <strong>صورة الإنجاز</strong>
+                                    <a href="{{ order.completion_photo.url }}" target="_blank" rel="noopener">
+                                        <img class="wo-completion-photo" src="{{ order.completion_photo.url }}" alt="صورة إنجاز أمر العمل {{ order.pk }}">
+                                    </a>
+                                </section>
+                            {% endif %}
+                        </div>
+
+                        <footer class="wo-dialog-actions">
+                            <a href="{% url 'municipal_portal:complaint_detail' order.complaint.reference_number %}" class="wo-button">عرض البلاغ</a>
+                            <button type="button" class="wo-button wo-button--secondary wo-close-dialog">إغلاق</button>
+                        </footer>
+                    </div>
+                </dialog>
+            {% endfor %}
+        </div>
+        {% if page_obj.paginator.num_pages > 1 %}
+            <nav class="wo-pagination" aria-label="صفحات أوامر العمل">
+                {% if page_obj.has_previous %}<a class="wo-page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ page_obj.previous_page_number }}">السابق</a>{% endif %}
+                {% for number in page_obj.paginator.page_range %}
+                    {% if number == page_obj.number %}<span class="wo-page-link wo-page-link--active">{{ number }}</span>
+                    {% elif number >= page_obj.number|add:"-2" and number <= page_obj.number|add:"2" %}<a class="wo-page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ number }}">{{ number }}</a>{% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}<a class="wo-page-link" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ page_obj.next_page_number }}">التالي</a>{% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="wo-empty">
+            <h2>لا توجد أوامر عمل مطابقة</h2>
+            <p>غيّري البحث أو حالة أمر العمل لعرض نتائج أخرى.</p>
+        </div>
+    {% endif %}
+</section>
+
+<dialog class="wo-date-dialog" id="work-order-date-dialog">
+    <div class="wo-date-inner">
+        <h2>تحديد فترة مخصصة</h2>
+        <p>اختاري تاريخ بداية ونهاية إنشاء أوامر العمل.</p>
+        <div class="wo-date-grid">
+            <div class="wo-field"><label for="date-from">من تاريخ</label><input id="date-from" type="date" name="date_from" value="{{ date_from }}" form="work-order-filter-form"></div>
+            <div class="wo-field"><label for="date-to">إلى تاريخ</label><input id="date-to" type="date" name="date_to" value="{{ date_to }}" form="work-order-filter-form"></div>
+        </div>
+        <div class="wo-date-actions">
+            <button type="submit" form="work-order-filter-form" class="wo-button">تطبيق الفترة</button>
+            <button type="button" class="wo-button wo-button--secondary" id="close-date-dialog">إلغاء</button>
+        </div>
+    </div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    document.querySelectorAll("select[data-placeholder-value]").forEach(function (select) {
+        function updatePlaceholder() {
+            select.classList.toggle("wo-placeholder", select.value === select.dataset.placeholderValue);
+        }
+        select.addEventListener("change", updatePlaceholder);
+        updatePlaceholder();
+    });
+
+    document.querySelectorAll(".wo-open-dialog").forEach(function (button) {
+        button.addEventListener("click", function () {
+            var dialog = document.getElementById(button.dataset.dialogId);
+            if (dialog) {
+                dialog.showModal();
+                document.body.classList.add("wo-dialog-open");
+            }
+        });
+    });
+
+    document.querySelectorAll(".wo-dialog").forEach(function (dialog) {
+        dialog.querySelectorAll(".wo-close-dialog").forEach(function (button) {
+            button.addEventListener("click", function () { dialog.close(); });
+        });
+        dialog.addEventListener("click", function (event) {
+            if (event.target === dialog) { dialog.close(); }
+        });
+        dialog.addEventListener("close", function () {
+            if (!document.querySelector(".wo-dialog[open]")) {
+                document.body.classList.remove("wo-dialog-open");
+            }
+        });
+    });
+
+    var periodSelect = document.getElementById("work-order-period");
+    var dateDialog = document.getElementById("work-order-date-dialog");
+    var closeDateDialog = document.getElementById("close-date-dialog");
+    if (periodSelect && dateDialog && closeDateDialog) {
+        periodSelect.addEventListener("change", function () {
+            if (periodSelect.value === "custom") { dateDialog.showModal(); }
+        });
+        if (periodSelect.value === "custom" && (!document.getElementById("date-from").value || !document.getElementById("date-to").value)) {
+            dateDialog.showModal();
+        }
+        closeDateDialog.addEventListener("click", function () { dateDialog.close(); });
+        dateDialog.addEventListener("click", function (event) {
+            if (event.target === dateDialog) { dateDialog.close(); }
+        });
+    }
+})();
+</script>
+{% endblock %}

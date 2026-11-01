@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#17643f">
+    <title>{% block title %}بوابة العامل | CityVoice{% endblock %}</title>
+    <style>
+        :root { --green:#17643f; --green-2:#258454; --ink:#173b2a; --muted:#718279; --line:#d9e7de; --bg:#f2f8f4; --white:#fff; --danger:#a93646; }
+        * { box-sizing:border-box; }
+        html { font-family:Tahoma,Arial,sans-serif; color:var(--ink); background:var(--bg); }
+        body { min-height:100vh; margin:0; background:linear-gradient(145deg,#f8fcf9 0%,#eaf5ee 100%); }
+        button,input { font:inherit; }
+        .fw-shell { min-height:100vh; display:grid; grid-template-rows:auto 1fr; }
+        .fw-header { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:72px; padding:12px clamp(18px,4vw,52px); background:rgba(255,255,255,.94); border-bottom:1px solid var(--line); }
+        .fw-brand { display:flex; align-items:center; gap:11px; color:var(--ink); text-decoration:none; }
+        .fw-logo { display:grid; place-items:center; width:42px; height:42px; border-radius:13px; background:var(--green); color:#fff; font-size:20px; font-weight:900; }
+        .fw-brand strong { display:block; font-size:17px; } .fw-brand small { color:var(--muted); }
+        .fw-user { display:flex; align-items:center; gap:10px; }
+        .fw-user-name { font-size:13px; font-weight:700; }
+        .fw-logout { min-height:36px; padding:6px 12px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--green); cursor:pointer; }
+        .fw-main { width:min(1160px,calc(100% - 32px)); margin:0 auto; padding:28px 0 44px; }
+        .fw-messages { display:grid; gap:8px; margin-bottom:16px; }
+        .fw-message { padding:11px 14px; border:1px solid var(--line); border-radius:10px; background:#fff; font-size:13px; }
+        .fw-message.error { color:var(--danger); border-color:#efcbd0; background:#fff8f9; }
+        .fw-message.success { color:var(--green); background:#f2fbf6; }
+        @media (max-width:600px) { .fw-header { min-height:64px; padding:10px 16px; } .fw-brand small,.fw-user-name { display:none; } .fw-main { width:min(100% - 24px,1160px); padding-top:20px; } }
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+<div class="fw-shell">
+    <header class="fw-header">
+        <a class="fw-brand" href="{% url 'field_worker_portal:dashboard' %}">
+            <span class="fw-logo">CV</span>
+            <span><strong>CityVoice</strong><small>بوابة العامل الميداني</small></span>
+        </a>
+        {% if request.user.is_authenticated %}
+            <div class="fw-user">
+                <span class="fw-user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                <form method="post" action="{% url 'field_worker_portal:logout' %}">
+                    {% csrf_token %}
+                    <button class="fw-logout" type="submit">تسجيل الخروج</button>
+                </form>
+            </div>
+        {% endif %}
+    </header>
+    <main class="fw-main">
+        {% if messages %}
+            <div class="fw-messages">
+                {% for message in messages %}<div class="fw-message {{ message.tags }}">{{ message }}</div>{% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+</body>
+</html>
