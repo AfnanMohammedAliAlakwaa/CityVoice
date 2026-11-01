@@ -1,12 +1,26 @@
 from django.urls import path
 
-from . import complaint_views, notification_views, views
-
-
+from . import (
+    auth_views,
+    complaint_views,
+    notification_views,
+    views,
+    work_order_views,
+)
 app_name = "municipal_portal"
 
 
 urlpatterns = [
+    path(
+        "login/",
+        auth_views.municipal_login,
+        name="login",
+    ),
+    path(
+        "logout/",
+        auth_views.municipal_logout,
+        name="logout",
+    ),
     path(
         "",
         views.dashboard,
@@ -67,11 +81,17 @@ urlpatterns = [
         complaint_views.complaint_detail,
         name="complaint_detail",
     ),
+    
     path(
         "work-orders/",
         views.work_order_list,
         name="work_order_list",
     ),
+    path(
+    "work-orders/<int:work_order_id>/reassign/",
+    work_order_views.reassign_work_order,
+    name="work_order_reassign",
+),
     path(
         "workers/",
         views.worker_list,

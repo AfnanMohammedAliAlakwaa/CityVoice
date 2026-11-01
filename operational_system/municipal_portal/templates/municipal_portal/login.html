@@ -1,0 +1,372 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <meta name="theme-color" content="#17643f">
+
+    <title>تسجيل دخول البلدية | CityVoice</title>
+
+    <style>
+        :root {
+            --green: #17643f;
+            --green-light: #288757;
+            --green-soft: #edf8f2;
+            --ink: #173b2a;
+            --muted: #74857c;
+            --line: #d7e7dd;
+            --danger: #b63747;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: Tahoma, Arial, sans-serif;
+            color: var(--ink);
+            background: #f1f8f4;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background:
+                radial-gradient(
+                    circle at 15% 15%,
+                    rgba(39, 139, 88, .1),
+                    transparent 30%
+                ),
+                linear-gradient(
+                    145deg,
+                    #f8fcf9,
+                    #e9f5ed
+                );
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .login-page {
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .login-card {
+            width: min(100%, 470px);
+            padding: 36px;
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, .97);
+            box-shadow:
+                0 22px 65px
+                rgba(22, 91, 55, .11);
+        }
+
+        .login-brand {
+            margin-bottom: 27px;
+            text-align: center;
+        }
+
+        .login-logo {
+            display: block;
+            width: 165px;
+            max-height: 85px;
+            margin: 0 auto 20px;
+            object-fit: contain;
+        }
+
+        .login-brand h1 {
+            margin: 0 0 9px;
+            font-size: 28px;
+        }
+
+        .login-brand p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .login-badge {
+            display: inline-flex;
+            margin-bottom: 13px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--green-soft);
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .messages {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .message {
+            padding: 11px 13px;
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            background: var(--green-soft);
+            color: var(--green);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .message.error {
+            border-color: #efc8ce;
+            background: #fff5f6;
+            color: var(--danger);
+        }
+
+        .login-form {
+            display: grid;
+            gap: 17px;
+        }
+
+        .form-field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .form-field label {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-field input {
+            width: 100%;
+            min-height: 52px;
+            padding: 11px 14px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            outline: 0;
+            background: #f9fcfa;
+            color: var(--ink);
+            transition:
+                border-color .2s,
+                box-shadow .2s;
+        }
+
+        .form-field input:focus {
+            border-color: var(--green-light);
+            box-shadow:
+                0 0 0 4px
+                rgba(40, 135, 87, .11);
+        }
+
+        .password-input {
+            padding-left: 75px !important;
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            min-height: 36px;
+            padding: 5px 10px;
+            transform: translateY(-50%);
+            border: 0;
+            border-radius: 8px;
+            background: var(--green-soft);
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .login-submit {
+            min-height: 52px;
+            margin-top: 4px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(
+                135deg,
+                var(--green),
+                var(--green-light)
+            );
+            color: #fff;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow:
+                0 12px 25px
+                rgba(23, 100, 63, .2);
+        }
+
+        .login-submit:hover {
+            filter: brightness(1.04);
+        }
+
+        .login-note {
+            margin: 20px 0 0;
+            padding: 12px;
+            border-radius: 11px;
+            background: #f5faf7;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.8;
+            text-align: center;
+        }
+
+        @media (max-width: 540px) {
+            .login-page {
+                padding: 14px;
+            }
+
+            .login-card {
+                padding: 27px 20px;
+                border-radius: 19px;
+            }
+
+            .login-brand h1 {
+                font-size: 24px;
+            }
+
+            .login-logo {
+                width: 145px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main class="login-page">
+    <section class="login-card">
+        <header class="login-brand">
+            <img
+                class="login-logo"
+                src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                alt="CityVoice"
+            >
+
+            <span class="login-badge">
+                بوابة بلدية معين
+            </span>
+
+            <h1>تسجيل الدخول</h1>
+
+            <p>
+                أدخل بيانات حساب موظف البلدية
+                للوصول إلى النظام التشغيلي.
+            </p>
+        </header>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" class="login-form">
+            {% csrf_token %}
+
+            {% if next %}
+                <input
+                    type="hidden"
+                    name="next"
+                    value="{{ next }}"
+                >
+            {% endif %}
+
+            <div class="form-field">
+                <label for="municipal-username">
+                    اسم المستخدم
+                </label>
+
+                <input
+                    id="municipal-username"
+                    type="text"
+                    name="username"
+                    value="{{ username }}"
+                    autocomplete="username"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="municipal-password">
+                    كلمة المرور
+                </label>
+
+                <div class="input-wrapper">
+                    <input
+                        id="municipal-password"
+                        class="password-input"
+                        type="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        data-password-toggle
+                    >
+                        إظهار
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="login-submit">
+                الدخول إلى بوابة البلدية
+            </button>
+        </form>
+
+        <p class="login-note">
+            هذه البوابة مخصصة لموظفي ومديري البلدية فقط.
+            تتم إدارة الحسابات من خلال مدير النظام.
+        </p>
+    </section>
+</main>
+
+<script>
+(function () {
+    const passwordInput = document.querySelector(
+        "#municipal-password"
+    );
+
+    const toggleButton = document.querySelector(
+        "[data-password-toggle]"
+    );
+
+    if (!passwordInput || !toggleButton) {
+        return;
+    }
+
+    toggleButton.addEventListener("click", function () {
+        const isHidden =
+            passwordInput.type === "password";
+
+        passwordInput.type =
+            isHidden ? "text" : "password";
+
+        toggleButton.textContent =
+            isHidden ? "إخفاء" : "إظهار";
+    });
+})();
+</script>
+</body>
+</html>

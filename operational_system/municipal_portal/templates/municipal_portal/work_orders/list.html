@@ -72,6 +72,73 @@
     .wo-date-inner { padding:19px; } .wo-date-inner h2 { margin:0 0 6px; font-size:19px; } .wo-date-inner p { margin:0 0 15px; color:var(--wo-muted); font-size:13px; }
     .wo-date-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; } .wo-date-actions { display:flex; gap:8px; margin-top:15px; }
     body.wo-dialog-open { overflow:hidden; }
+    .wo-reassign {
+    margin-top: 14px;
+    border: 1px solid #e2ece6;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.wo-reassign summary {
+    padding: 11px 13px;
+    color: var(--wo-green);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.wo-reassign-form {
+    display: grid;
+    gap: 11px;
+    padding: 0 13px 13px;
+}
+
+.wo-reassign-form select,
+.wo-reassign-form textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--wo-border);
+    border-radius: 9px;
+    background: #f9fcfa;
+    color: #263f33;
+    font: inherit;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.wo-reassign-form textarea {
+    min-height: 85px;
+    resize: vertical;
+}
+
+.wo-reassign-warning {
+    margin: 0;
+    color: #85661f;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+.wo-history {
+    display: grid;
+    gap: 9px;
+    margin-top: 9px;
+}
+
+.wo-history-item {
+    padding: 9px 11px;
+    border-inline-start: 3px solid var(--wo-green);
+    border-radius: 8px;
+    background: #fff;
+}
+
+.wo-history-item p {
+    margin: 0 0 4px;
+}
+
+.wo-history-item small {
+    color: var(--wo-muted);
+    font-size: 11px;
+}
 
     @media (max-width:1200px) { .wo-filters { grid-template-columns:repeat(3,minmax(0,1fr)); } .wo-filter-actions { grid-column:1/-1; } }
     @media (max-width:900px) { .wo-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .wo-summary-action { grid-column:1/-1; } }
@@ -189,6 +256,72 @@
                                         {% if order.status == "assigned" %}تم الإسناد{% elif order.status == "accepted" %}تم قبول المهمة{% elif order.status == "in_progress" %}قيد التنفيذ{% elif order.status == "completed" %}تم الإنجاز{% elif order.status == "cancelled" %}ملغي{% endif %}
                                     </span>
                                 </div>
+                                {% if order.status == "assigned" %}
+    <details class="wo-reassign">
+        <summary>إعادة إسناد أمر العمل</summary>
+
+        <form
+            method="post"
+            action="{% url 'municipal_portal:work_order_reassign' order.pk %}"
+            class="wo-reassign-form"
+        >
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="next"
+                value="{{ request.get_full_path }}"
+            >
+
+            <div class="wo-field">
+                <label for="new-worker-{{ order.pk }}">
+                    قائد الفريق الجديد
+                </label>
+
+                <select
+                    id="new-worker-{{ order.pk }}"
+                    name="assigned_to"
+                    required
+                >
+                    <option value="">
+                        اختر قائد الفريق
+                    </option>
+
+                    {% for worker in workers %}
+                        {% if worker.pk != order.assigned_to_id %}
+                            <option value="{{ worker.pk }}">
+                                {{ worker.get_full_name|default:worker.username }}
+                            </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="wo-field">
+                <label for="reassignment-reason-{{ order.pk }}">
+                    سبب إعادة الإسناد
+                </label>
+
+                <textarea
+                    id="reassignment-reason-{{ order.pk }}"
+                    name="reason"
+                    required
+                    maxlength="1000"
+                    placeholder="مثال: لم يقبل قائد الفريق المهمة خلال الوقت المحدد."
+                ></textarea>
+            </div>
+
+            <p class="wo-reassign-warning">
+                يمكن إعادة الإسناد قبل قبول قائد الفريق للمهمة فقط،
+                وسيُحفظ القائد السابق والسبب والتاريخ في السجل.
+            </p>
+
+            <button type="submit" class="wo-button">
+                تأكيد إعادة الإسناد
+            </button>
+        </form>
+    </details>
+{% endif %}
                             </div>
 
                             <dl class="wo-dialog-info">
@@ -206,6 +339,43 @@
                                 <strong>تعليمات التنفيذ</strong>
                                 <p>{{ order.instructions|default:"لا توجد تعليمات إضافية"|linebreaksbr }}</p>
                             </section>
+                            {% with assignment_history=order.assignment_history.all %}
+    {% if assignment_history %}
+        <section class="wo-dialog-section">
+            <strong>سجل إعادة الإسناد</strong>
+
+            <div class="wo-history">
+                {% for history in assignment_history %}
+                    <article class="wo-history-item">
+                        <p>
+                            من
+                            <b>
+                                {{ history.previous_assigned_to.get_full_name|default:history.previous_assigned_to.username }}
+                            </b>
+                            إلى
+                            <b>
+                                {{ history.new_assigned_to.get_full_name|default:history.new_assigned_to.username }}
+                            </b>
+                        </p>
+
+                        <p>
+                            السبب: {{ history.reason }}
+                        </p>
+
+                        <small>
+                            {{ history.created_at|date:"Y/m/d — H:i" }}
+
+                            {% if history.reassigned_by %}
+                                · بواسطة
+                                {{ history.reassigned_by.get_full_name|default:history.reassigned_by.username }}
+                            {% endif %}
+                        </small>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+{% endwith %}
 
                             {% if order.completion_notes %}
                                 <section class="wo-dialog-section">

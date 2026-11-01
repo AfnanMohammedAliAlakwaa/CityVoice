@@ -982,9 +982,20 @@ def complaint_detail(request, reference_number):
 
 @municipal_required
 def work_order_list(request):
-    work_orders = WorkOrder.objects.select_related(
-        "complaint", "complaint__service", "assigned_to", "assigned_by"
+    work_orders = (
+    WorkOrder.objects
+    .select_related(
+        "complaint",
+        "complaint__service",
+        "assigned_to",
+        "assigned_by",
     )
+    .prefetch_related(
+        "assignment_history__previous_assigned_to",
+        "assignment_history__new_assigned_to",
+        "assignment_history__reassigned_by",
+    )
+)
     search_query = request.GET.get("q", "").strip()
     selected_status = request.GET.get("status", "").strip()
     selected_service = request.GET.get("service", "").strip()
@@ -1038,7 +1049,18 @@ def work_order_list(request):
     query_params = request.GET.copy()
     query_params.pop("page", None)
     User = get_user_model()
-    workers = User.objects.filter(role="field_worker", is_active=True, assigned_work_orders__isnull=False).distinct().order_by("first_name", "last_name", "username")
+    workers = (
+    User.objects
+    .filter(
+        role=User.Role.FIELD_WORKER,
+        is_active=True,
+    )
+    .order_by(
+        "first_name",
+        "last_name",
+        "username",
+    )
+)
 
     return render(request, "municipal_portal/work_orders/list.html", {
         "work_orders": page_obj.object_list, "page_obj": page_obj, "stats": stats,

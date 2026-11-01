@@ -311,3 +311,87 @@ class ComplaintAssignmentForm(forms.ModelForm):
         return (
             self.cleaned_data.get("instructions") or ""
         ).strip()
+        
+class WorkOrderReassignmentForm(forms.Form):
+    assigned_to = forms.ModelChoiceField(
+            queryset=get_user_model().objects.none(),
+            label="قائد الفريق الجديد",
+            empty_label="اختر قائد الفريق الجديد",
+            widget=forms.Select(
+                attrs={
+                "class": "mc-input",
+            }
+        ),
+        error_messages={
+            "required": "اختر قائد الفريق الجديد.",
+            "invalid_choice": "قائد الفريق المحدد غير متاح.",
+        },
+    )
+
+    reason = forms.CharField(
+        label="سبب إعادة الإسناد",
+        max_length=1000,
+        widget=forms.Textarea(
+            attrs={
+                "class": "mc-input",
+                "rows": 3,
+                "placeholder": (
+                    "اكتب سبب تحويل أمر العمل إلى قائد فريق آخر."
+                ),
+            }
+        ),
+        error_messages={
+            "required": "اكتب سبب إعادة الإسناد.",
+        },
+    )
+
+    def __init__(
+        self,
+        *args,
+        current_worker=None,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        User = get_user_model()
+
+        workers = User.objects.filter(
+            role=User.Role.FIELD_WORKER,
+            is_active=True,
+        )
+
+        if current_worker:
+            workers = workers.exclude(
+                pk=current_worker.pk,
+            )
+
+        self.fields["assigned_to"].queryset = (
+            workers.order_by(
+                "first_name",
+                "last_name",
+                "username",
+            )
+        )
+
+        self.fields[
+            "assigned_to"
+        ].label_from_instance = self.worker_label
+
+    @staticmethod
+    def worker_label(user):
+        full_name = user.get_full_name().strip()
+
+        if full_name:
+            return f"{full_name} — {user.username}"
+
+        return user.username
+
+    def clean_reason(self):
+        reason = self.cleaned_data["reason"].strip()
+
+        if len(reason) < 5:
+            raise forms.ValidationError(
+                "اكتب سببًا واضحًا لإعادة الإسناد."
+            )
+
+        return reason

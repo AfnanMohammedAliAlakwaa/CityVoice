@@ -1,58 +1,267 @@
+{% load static %}
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#17643f">
-    <title>{% block title %}بوابة العامل | CityVoice{% endblock %}</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+
+    <meta name="theme-color" content="#f3faf6">
+
+    <title>
+        {% block title %}بوابة العامل | CityVoice{% endblock %}
+    </title>
+
     <style>
-        :root { --green:#17643f; --green-2:#258454; --ink:#173b2a; --muted:#718279; --line:#d9e7de; --bg:#f2f8f4; --white:#fff; --danger:#a93646; }
-        * { box-sizing:border-box; }
-        html { font-family:Tahoma,Arial,sans-serif; color:var(--ink); background:var(--bg); }
-        body { min-height:100vh; margin:0; background:linear-gradient(145deg,#f8fcf9 0%,#eaf5ee 100%); }
-        button,input { font:inherit; }
-        .fw-shell { min-height:100vh; display:grid; grid-template-rows:auto 1fr; }
-        .fw-header { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:72px; padding:12px clamp(18px,4vw,52px); background:rgba(255,255,255,.94); border-bottom:1px solid var(--line); }
-        .fw-brand { display:flex; align-items:center; gap:11px; color:var(--ink); text-decoration:none; }
-        .fw-logo { display:grid; place-items:center; width:42px; height:42px; border-radius:13px; background:var(--green); color:#fff; font-size:20px; font-weight:900; }
-        .fw-brand strong { display:block; font-size:17px; } .fw-brand small { color:var(--muted); }
-        .fw-user { display:flex; align-items:center; gap:10px; }
-        .fw-user-name { font-size:13px; font-weight:700; }
-        .fw-logout { min-height:36px; padding:6px 12px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--green); cursor:pointer; }
-        .fw-main { width:min(1160px,calc(100% - 32px)); margin:0 auto; padding:28px 0 44px; }
-        .fw-messages { display:grid; gap:8px; margin-bottom:16px; }
-        .fw-message { padding:11px 14px; border:1px solid var(--line); border-radius:10px; background:#fff; font-size:13px; }
-        .fw-message.error { color:var(--danger); border-color:#efcbd0; background:#fff8f9; }
-        .fw-message.success { color:var(--green); background:#f2fbf6; }
-        @media (max-width:600px) { .fw-header { min-height:64px; padding:10px 16px; } .fw-brand small,.fw-user-name { display:none; } .fw-main { width:min(100% - 24px,1160px); padding-top:20px; } }
+        :root {
+            --green: #16824f;
+            --green-dark: #075f39;
+            --green-soft: #e8f7ee;
+            --ink: #153c2a;
+            --muted: #7a8b82;
+            --line: #dcebe2;
+            --background: #f5faf7;
+            --white: #ffffff;
+            --orange: #d9832d;
+            --orange-soft: #fff1df;
+            --blue: #3078bd;
+            --blue-soft: #eaf3ff;
+            --danger: #b23b4b;
+            --shadow: 0 10px 30px rgba(16, 83, 51, .07);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100%;
+            background: var(--background);
+            font-family: Tahoma, Arial, sans-serif;
+            color: var(--ink);
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background:
+                linear-gradient(
+                    180deg,
+                    #edf8f2 0,
+                    #f8fcfa 260px,
+                    #f5faf7 100%
+                );
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        button,
+        a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .fw-shell {
+            width: 100%;
+            min-height: 100vh;
+            padding-bottom: 82px;
+        }
+
+        .fw-main {
+            width: min(100%, 640px);
+            margin: 0 auto;
+            padding: 0 16px 28px;
+        }
+
+        .fw-messages {
+            display: grid;
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .fw-message {
+            padding: 11px 13px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--white);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .fw-message.error {
+            color: var(--danger);
+            border-color: #efcbd0;
+            background: #fff7f8;
+        }
+
+        .fw-message.success {
+            color: var(--green-dark);
+            background: #eefaf3;
+        }
+
+        .fw-bottom-nav {
+            position: fixed;
+            right: 50%;
+            bottom: 0;
+            z-index: 100;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            width: min(100%, 640px);
+            min-height: 70px;
+            padding:
+                8px 16px
+                calc(8px + env(safe-area-inset-bottom));
+            transform: translateX(50%);
+            border-top: 1px solid var(--line);
+            background: rgba(255, 255, 255, .96);
+            box-shadow: 0 -8px 24px rgba(15, 75, 47, .06);
+            backdrop-filter: blur(14px);
+        }
+
+        .fw-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: 0;
+            background: transparent;
+            color: #829088;
+            font-size: 11px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .fw-nav-item svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .fw-nav-item.active {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .fw-nav-item.active .fw-nav-icon {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 32px;
+            border-radius: 16px;
+            background: var(--green-soft);
+        }
+
+        @media (min-width: 641px) {
+            body {
+                padding: 24px 0;
+            }
+
+            .fw-shell {
+                width: 640px;
+                margin: 0 auto;
+                overflow: hidden;
+                border: 1px solid var(--line);
+                border-radius: 30px;
+                background: var(--background);
+                box-shadow: var(--shadow);
+            }
+
+            .fw-bottom-nav {
+                bottom: 24px;
+                overflow: hidden;
+                border-right: 1px solid var(--line);
+                border-left: 1px solid var(--line);
+                border-radius: 0 0 30px 30px;
+            }
+        }
+
         {% block extra_css %}{% endblock %}
     </style>
 </head>
+
 <body>
 <div class="fw-shell">
-    <header class="fw-header">
-        <a class="fw-brand" href="{% url 'field_worker_portal:dashboard' %}">
-            <span class="fw-logo">CV</span>
-            <span><strong>CityVoice</strong><small>بوابة العامل الميداني</small></span>
-        </a>
-        {% if request.user.is_authenticated %}
-            <div class="fw-user">
-                <span class="fw-user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
-                <form method="post" action="{% url 'field_worker_portal:logout' %}">
-                    {% csrf_token %}
-                    <button class="fw-logout" type="submit">تسجيل الخروج</button>
-                </form>
-            </div>
-        {% endif %}
-    </header>
     <main class="fw-main">
         {% if messages %}
             <div class="fw-messages">
-                {% for message in messages %}<div class="fw-message {{ message.tags }}">{{ message }}</div>{% endfor %}
+                {% for message in messages %}
+                    <div class="fw-message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
             </div>
         {% endif %}
+
         {% block content %}{% endblock %}
     </main>
+
+    {% if request.user.is_authenticated %}
+        <nav class="fw-bottom-nav" aria-label="التنقل الرئيسي">
+            <a
+                class="fw-nav-item active"
+                href="{% url 'field_worker_portal:dashboard' %}"
+            >
+                <span class="fw-nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 11.5 12 4l9 7.5"></path>
+                        <path d="M5.5 10v10h13V10"></path>
+                        <path d="M9.5 20v-6h5v6"></path>
+                    </svg>
+                </span>
+                <span>الرئيسية</span>
+            </a>
+
+            <a
+                class="fw-nav-item"
+                href="#assigned-tasks"
+            >
+                <span class="fw-nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect
+                            x="5"
+                            y="3"
+                            width="14"
+                            height="18"
+                            rx="2"
+                        ></rect>
+                        <path d="M9 8h6"></path>
+                        <path d="M9 12h6"></path>
+                        <path d="M9 16h4"></path>
+                    </svg>
+                </span>
+                <span>المهام</span>
+            </a>
+
+            <button
+                class="fw-nav-item"
+                type="button"
+                data-open-account
+            >
+                <span class="fw-nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="8" r="4"></circle>
+                        <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+                    </svg>
+                </span>
+                <span>حسابي</span>
+            </button>
+        </nav>
+    {% endif %}
 </div>
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>

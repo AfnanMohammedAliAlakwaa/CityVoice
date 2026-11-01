@@ -4,56 +4,1149 @@
 
 {% block content %}
 
+<style>
+    .success-card {
+        width: min(100%, 760px);
+        margin: 28px auto;
+        padding: clamp(24px, 5vw, 48px);
+        text-align: center;
+        overflow: hidden;
+    }
+
+    /* حركة إرسال البلاغ من الهاتف */
+.complaint-animation {
+    position: relative;
+    width: min(100%, 520px);
+    height: 210px;
+    margin: 0 auto 26px;
+    overflow: hidden;
+    direction: ltr;
+}
+
+.phone-citizen {
+    position: absolute;
+    bottom: 20px;
+    left: 8px;
+    width: 105px;
+    height: 150px;
+    color: #17643f;
+    opacity: 0;
+    animation: sender-appear 0.45s ease forwards;
+}
+
+.citizen-head {
+    position: absolute;
+    top: 4px;
+    left: 35px;
+    width: 37px;
+    height: 37px;
+    border: 4px solid #17643f;
+    border-radius: 50%;
+    background: #f2faf5;
+}
+
+.citizen-body {
+    position: absolute;
+    top: 46px;
+    left: 24px;
+    width: 58px;
+    height: 66px;
+    border: 4px solid #17643f;
+    border-bottom: 0;
+    border-radius: 32px 32px 8px 8px;
+    background: #e8f6ed;
+}
+
+.citizen-phone {
+    position: absolute;
+    z-index: 4;
+    top: 47px;
+    right: 2px;
+    width: 29px;
+    height: 49px;
+    border: 3px solid #258454;
+    border-radius: 7px;
+    background: #ffffff;
+    box-shadow: 0 7px 15px rgba(23, 100, 63, 0.17);
+    transform-origin: bottom left;
+    animation: lift-phone 0.55s ease 0.35s both;
+}
+
+.citizen-phone::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    right: 4px;
+    left: 4px;
+    height: 27px;
+    border-radius: 3px;
+    background: #e4f4ea;
+}
+
+.citizen-phone span {
+    position: absolute;
+    right: 9px;
+    bottom: 4px;
+    width: 6px;
+    height: 2px;
+    border-radius: 5px;
+    background: #258454;
+}
+
+.phone-citizen strong,
+.municipality-receiver strong {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* إشارات الاتصال */
+.digital-path {
+    position: absolute;
+    right: 105px;
+    bottom: 87px;
+    left: 105px;
+    height: 3px;
+}
+
+.signal {
+    position: absolute;
+    top: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #80bd98;
+    opacity: 0;
+}
+
+.signal-one {
+    left: 16%;
+    animation: signal-pulse 0.7s ease 0.75s infinite;
+}
+
+.signal-two {
+    left: 50%;
+    animation: signal-pulse 0.7s ease 0.92s infinite;
+}
+
+.signal-three {
+    left: 84%;
+    animation: signal-pulse 0.7s ease 1.09s infinite;
+}
+
+/* الرسالة الخارجة من الهاتف */
+.flying-message {
+    position: absolute;
+    z-index: 8;
+    bottom: 79px;
+    left: 92px;
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 36px;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #258454;
+    box-shadow: 0 8px 20px rgba(23, 100, 63, 0.22);
+    opacity: 0;
+}
+
+.flying-message::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 0 0 0 3px;
+    background: #ffffff;
+    transform: rotate(45deg);
+}
+
+.flying-message svg {
+    position: relative;
+    z-index: 2;
+    width: 25px;
+    height: 25px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* مبنى البلدية */
+.municipality-receiver {
+    position: absolute;
+    right: 7px;
+    bottom: 20px;
+    width: 105px;
+    height: 150px;
+    color: #17643f;
+    opacity: 0;
+    animation: receiver-appear 0.45s ease 0.15s forwards;
+}
+
+.municipality-building {
+    position: absolute;
+    top: 18px;
+    left: 15px;
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 82px;
+    border: 1px solid #cfe4d7;
+    border-radius: 18px;
+    background: #f2faf5;
+    box-shadow: 0 8px 20px rgba(23, 100, 63, 0.08);
+}
+
+.municipality-building svg {
+    width: 55px;
+    height: 55px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.receive-light {
+    position: absolute;
+    inset: 0;
+    border: 3px solid #55ab78;
+    border-radius: 18px;
+    opacity: 0;
+    animation: receive-flash 0.65s ease 2.25s forwards;
+}
+
+/* علامة الاستلام */
+.phone-success-check {
+    position: absolute;
+    z-index: 10;
+    top: 4px;
+    right: 5px;
+    display: grid;
+    place-items: center;
+    width: 51px;
+    height: 51px;
+    border: 5px solid #ffffff;
+    border-radius: 50%;
+    background: #258454;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(37, 132, 84, 0.25);
+    font-size: 29px;
+    font-weight: 900;
+    opacity: 0;
+    transform: scale(0.3);
+    animation: phone-check-appear 0.5s cubic-bezier(.2, 1.6, .4, 1) 2.35s forwards;
+}
+
+@keyframes sender-appear {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes receiver-appear {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes lift-phone {
+    from {
+        transform: translateY(12px) rotate(12deg);
+    }
+
+    to {
+        transform: translateY(0) rotate(-5deg);
+    }
+}
+
+@keyframes signal-pulse {
+    0% {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+}
+
+@keyframes message-transfer {
+    0% {
+        opacity: 0;
+        transform: translate(0, 8px) scale(0.6);
+    }
+
+    12% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+
+    45% {
+        transform: translate(165px, -18px) scale(1.03) rotate(-3deg);
+    }
+
+    80% {
+        opacity: 1;
+        transform: translate(330px, 0) scale(0.9) rotate(2deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(365px, 6px) scale(0.35);
+    }
+}
+
+@keyframes receive-flash {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    45% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1.18);
+    }
+}
+
+@keyframes phone-check-appear {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 600px) {
+    .complaint-animation {
+        height: 190px;
+    }
+
+    .phone-citizen,
+    .municipality-receiver {
+        width: 88px;
+        transform: scale(0.88);
+    }
+
+    .phone-citizen {
+        left: 0;
+        transform-origin: bottom left;
+    }
+
+    .municipality-receiver {
+        right: 0;
+        transform-origin: bottom right;
+    }
+
+    .digital-path {
+        right: 78px;
+        left: 78px;
+    }
+
+    .flying-message {
+        left: 72px;
+    }
+
+    @keyframes message-transfer {
+        0% {
+            opacity: 0;
+            transform: translate(0, 8px) scale(0.6);
+        }
+
+        12% {
+            opacity: 1;
+            transform: translate(0, 0) scale(1);
+        }
+
+        48% {
+            transform: translate(calc(50vw - 105px), -18px);
+        }
+
+        82% {
+            opacity: 1;
+            transform: translate(calc(100vw - 190px), 0) scale(0.85);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translate(calc(100vw - 165px), 5px) scale(0.3);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .complaint-animation * {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+    }
+
+    .flying-message,
+    .signal {
+        display: none;
+    }
+}
+
+    /* محتوى النجاح */
+    .success-result {
+        opacity: 0;
+        transform: translateY(14px);
+        animation: result-appear 0.55s ease 2.55s forwards;
+    }
+
+    .success-result h1 {
+        margin: 0 0 18px;
+    }
+
+    .success-result > p {
+        line-height: 1.9;
+    }
+
+    .success-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+    }
+
+    @keyframes point-appear {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes show-route {
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes deliver-report {
+        0% {
+            opacity: 0;
+            transform: translateY(10px) scale(0.8);
+        }
+
+        12% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        28% {
+            transform: translateX(25%) translateY(-8px) rotate(2deg);
+        }
+
+        55% {
+            transform: translateX(260%) translateY(3px) rotate(-2deg);
+        }
+
+        82% {
+            opacity: 1;
+            transform: translateX(540%) translateY(-6px) rotate(2deg);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateX(620%) translateY(0) scale(0.65);
+        }
+    }
+
+    @keyframes municipality-receive {
+        50% {
+            transform: translateY(-5px) scale(1.05);
+        }
+    }
+
+    @keyframes check-appear {
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes result-appear {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .success-card {
+            margin: 12px auto;
+            padding: 22px 16px 32px;
+        }
+
+        .complaint-animation {
+            height: 170px;
+        }
+
+        .citizen-point,
+        .municipality-point {
+            width: 72px;
+        }
+
+        .animation-point-icon {
+            width: 52px;
+            height: 52px;
+        }
+
+        .animation-route {
+            right: 65px;
+            left: 65px;
+        }
+
+        .moving-report {
+            bottom: 65px;
+            left: 50px;
+            width: 49px;
+            height: 59px;
+        }
+
+        .delivered-check {
+            right: 13px;
+            bottom: 75px;
+            width: 48px;
+            height: 48px;
+        }
+
+        @keyframes deliver-report {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.8);
+            }
+
+            12% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            45% {
+                transform: translateX(190%) translateY(-7px);
+            }
+
+            82% {
+                opacity: 1;
+                transform: translateX(420%) translateY(-4px);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(480%) scale(0.65);
+            }
+        }
+    }
+
+    /* احترام إعداد تقليل الحركة في الهاتف */
+    @media (prefers-reduced-motion: reduce) {
+        .complaint-animation *,
+        .success-result {
+            animation-duration: 0.01ms !important;
+            animation-delay: 0ms !important;
+        }
+
+        .moving-report {
+            display: none;
+        }
+    }
+    /* الشكل المصغر والأكثر أناقة للحركة */
+.complaint-animation {
+    width: min(100%, 430px);
+    height: 145px;
+    margin: 0 auto 12px;
+}
+
+.phone-citizen,
+.municipality-receiver {
+    bottom: 8px;
+    width: 82px;
+    height: 125px;
+    scale: 0.72;
+}
+
+.phone-citizen {
+    left: 12px;
+    transform-origin: bottom left;
+}
+
+.municipality-receiver {
+    right: 12px;
+    transform-origin: bottom right;
+}
+
+.phone-citizen strong,
+.municipality-receiver strong {
+    bottom: 1px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.municipality-building {
+    top: 19px;
+    left: 7px;
+    width: 68px;
+    height: 70px;
+    border-radius: 16px;
+    box-shadow: 0 7px 18px rgba(23, 100, 63, 0.08);
+}
+
+.municipality-building svg {
+    width: 45px;
+    height: 45px;
+}
+
+.digital-path {
+    right: 82px;
+    bottom: 69px;
+    left: 82px;
+}
+
+.signal {
+    width: 5px;
+    height: 5px;
+}
+
+.flying-message {
+    bottom: 61px;
+    left: 68px;
+    width: 35px;
+    height: 29px;
+    border-radius: 8px;
+    box-shadow: 0 6px 15px rgba(23, 100, 63, 0.18);
+}
+
+.flying-message svg {
+    width: 20px;
+    height: 20px;
+}
+
+.phone-success-check {
+    top: 5px;
+    right: 7px;
+    width: 39px;
+    height: 39px;
+    border-width: 4px;
+    font-size: 22px;
+    box-shadow: 0 6px 16px rgba(37, 132, 84, 0.22);
+}
+
+/* تقريب محتوى النجاح من الحركة */
+.success-result h1 {
+    margin-top: 4px;
+    margin-bottom: 13px;
+    font-size: clamp(26px, 4vw, 38px);
+}
+
+.success-result > p {
+    max-width: 590px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* حركة أقصر وأكثر هدوءًا */
+@keyframes message-transfer {
+    0% {
+        opacity: 0;
+        transform: translate(0, 5px) scale(0.65);
+    }
+
+    15% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+
+    48% {
+        opacity: 1;
+        transform: translate(135px, -10px) scale(1);
+    }
+
+    82% {
+        opacity: 1;
+        transform: translate(270px, 0) scale(0.85);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(300px, 3px) scale(0.3);
+    }
+}
+
+@media (max-width: 600px) {
+    .success-card {
+        padding-top: 16px;
+    }
+
+    .complaint-animation {
+        width: 100%;
+        max-width: 350px;
+        height: 135px;
+        margin-bottom: 8px;
+    }
+
+    .phone-citizen,
+    .municipality-receiver {
+        bottom: 4px;
+        scale: 0.64;
+    }
+
+    .phone-citizen {
+        left: 3px;
+    }
+
+    .municipality-receiver {
+        right: 3px;
+    }
+
+    .digital-path {
+        right: 65px;
+        bottom: 62px;
+        left: 65px;
+    }
+
+    .flying-message {
+        bottom: 55px;
+        left: 54px;
+        width: 32px;
+        height: 27px;
+    }
+
+    .phone-success-check {
+        top: 7px;
+        right: 3px;
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+
+    @keyframes message-transfer {
+        0% {
+            opacity: 0;
+            transform: translate(0, 5px) scale(0.65);
+        }
+
+        15% {
+            opacity: 1;
+            transform: translate(0, 0) scale(1);
+        }
+
+        50% {
+            opacity: 1;
+            transform: translate(110px, -9px);
+        }
+
+        82% {
+            opacity: 1;
+            transform: translate(215px, 0) scale(0.82);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translate(240px, 3px) scale(0.3);
+        }
+    }
+}
+/* إبقاء معلومات النجاح ظاهرة أثناء الحركة */
+.success-result {
+    opacity: 1;
+    transform: none;
+    animation: none;
+}
+
+/* تحسين شكل رسالة البلاغ */
+.flying-message {
+    left: 70px;
+    bottom: 61px;
+
+    width: 34px;
+    height: 29px;
+
+    border: 1px solid rgba(37, 132, 84, 0.14);
+    border-radius: 9px;
+    background: #ffffff;
+
+    box-shadow:
+        0 5px 14px rgba(23, 100, 63, 0.13),
+        0 0 0 5px rgba(229, 245, 235, 0.45);
+
+    opacity: 0;
+
+    /* المسار المنحني من الهاتف إلى البلدية */
+    offset-path: path(
+        "M 0 0 C 75 -27, 210 -27, 293 0"
+    );
+    offset-distance: 0%;
+    offset-rotate: 0deg;
+
+    animation:
+        smooth-report-flight
+        2.1s
+        cubic-bezier(.45, 0, .25, 1)
+        .75s
+        forwards;
+
+    will-change:
+        offset-distance,
+        opacity,
+        scale;
+}
+
+/* ذيل صغير للرسالة */
+.flying-message::after {
+    width: 8px;
+    height: 8px;
+    bottom: -4px;
+    left: 7px;
+}
+
+/* نبض خفيف أثناء انتقال الرسالة */
+.signal {
+    animation-duration: 0.85s;
+    animation-iteration-count: 2;
+}
+
+/* حركة ناعمة ومتواصلة */
+@keyframes smooth-report-flight {
+    0% {
+        offset-distance: 0%;
+        opacity: 0;
+        scale: 0.55;
+    }
+
+    10% {
+        opacity: 1;
+        scale: 0.9;
+    }
+
+    25% {
+        opacity: 1;
+        scale: 1;
+    }
+
+    72% {
+        opacity: 1;
+        scale: 1;
+    }
+
+    90% {
+        opacity: 1;
+        scale: 0.82;
+    }
+
+    100% {
+        offset-distance: 100%;
+        opacity: 0;
+        scale: 0.35;
+    }
+}
+
+/* إضاءة ناعمة عند وصول البلاغ */
+.receive-light {
+    animation:
+        elegant-receive
+        0.75s
+        cubic-bezier(.2, .8, .3, 1)
+        2.55s
+        forwards;
+}
+
+@keyframes elegant-receive {
+    0% {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    40% {
+        opacity: 0.75;
+        transform: scale(1.07);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1.18);
+    }
+}
+
+/* ظهور علامة النجاح بهدوء */
+.phone-success-check {
+    animation:
+        elegant-check
+        0.55s
+        cubic-bezier(.22, 1.35, .45, 1)
+        2.65s
+        forwards;
+}
+
+@keyframes elegant-check {
+    0% {
+        opacity: 0;
+        transform: translateY(5px);
+        scale: 0.55;
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        scale: 1;
+    }
+}
+
+/* مسار مناسب للهاتف */
+@media (max-width: 600px) {
+    .flying-message {
+        left: 55px;
+
+        offset-path: path(
+            "M 0 0 C 65 -23, 175 -23, 235 0"
+        );
+
+        animation-duration: 1.9s;
+    }
+}
+
+/* إلغاء الحركة لمن يفضل تقليلها */
+@media (prefers-reduced-motion: reduce) {
+    .flying-message {
+        display: none;
+    }
+
+    .phone-success-check {
+        opacity: 1;
+        transform: none;
+        scale: 1;
+        animation: none;
+    }
+}
+.flying-message {
+    /* إلغاء أي حركة سابقة */
+    animation: none !important;
+
+    offset-path: path(
+        "M 0 0 C 80 -24, 210 -24, 293 0"
+    );
+    offset-distance: 0%;
+    offset-rotate: 0deg;
+
+    opacity: 0;
+    visibility: visible;
+
+    animation-name: report-send-once !important;
+    animation-duration: 1.85s !important;
+    animation-delay: 0.65s !important;
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1) !important;
+    animation-iteration-count: 1 !important;
+    animation-direction: normal !important;
+    animation-fill-mode: forwards !important;
+
+    will-change: offset-distance, opacity, scale;
+}
+
+@keyframes report-send-once {
+    0% {
+        offset-distance: 0%;
+        opacity: 0;
+        visibility: visible;
+        scale: 0.65;
+    }
+
+    10% {
+        opacity: 1;
+        scale: 0.9;
+    }
+
+    25% {
+        opacity: 1;
+        scale: 1;
+    }
+
+    75% {
+        opacity: 1;
+        scale: 1;
+    }
+
+    92% {
+        opacity: 1;
+        scale: 0.75;
+    }
+
+    99% {
+        offset-distance: 100%;
+        opacity: 0;
+        scale: 0.3;
+    }
+
+    100% {
+        offset-distance: 100%;
+        opacity: 0;
+        visibility: hidden;
+        scale: 0;
+    }
+}
+
+/* النقاط تعمل مرة واحدة فقط أيضًا */
+.signal-one {
+    animation:
+        signal-pulse 0.65s ease 0.7s 2 normal forwards !important;
+}
+
+.signal-two {
+    animation:
+        signal-pulse 0.65s ease 0.88s 2 normal forwards !important;
+}
+
+.signal-three {
+    animation:
+        signal-pulse 0.65s ease 1.06s 2 normal forwards !important;
+}
+
+/* وصول البلاغ ثم علامة الصح */
+.receive-light {
+    animation:
+        elegant-receive 0.65s ease 2.25s 1 normal forwards !important;
+}
+
+.phone-success-check {
+    animation:
+        elegant-check 0.5s cubic-bezier(.22, 1.35, .45, 1)
+        2.35s 1 normal forwards !important;
+}
+
+/* مسار الهاتف */
+@media (max-width: 600px) {
+    .flying-message {
+        offset-path: path(
+            "M 0 0 C 65 -20, 172 -20, 235 0"
+        );
+    }
+}
+</style>
+
 <section class="success-card">
-    <div class="success-icon">✓</div>
-
-    <h1>تم استلام بلاغك بنجاح</h1>
-
-    <p>
-        شكرًا لمساهمتك في تحسين خدمات المدينة.
-        يمكنك متابعة بلاغك باستخدام الرقم التالي.
-    </p>
-
-    <div class="reference-box">
-        <span>الرقم المرجعي للبلاغ</span>
-        <strong>
-            <bdi>{{ complaint.reference_number }}</bdi>
-        </strong>
-    </div>
-
-    <p>
-        الحالة الحالية:
-        <strong>{{ complaint.get_status_display }}</strong>
-    </p>
 
     <div
-        style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        "
-    >
-        <a
-            href="{% url 'citizen_portal:submit_complaint' %}"
-            class="primary-link"
-        >
-            تقديم بلاغ آخر
-        </a>
+    class="complaint-animation phone-animation"
+    role="img"
+    aria-label="إرسال البلاغ من هاتف المواطن إلى البلدية"
+>
+    <div class="phone-citizen">
+        <div class="citizen-head"></div>
 
-        <a
-            href="{% url 'citizen_portal:complaint_detail' complaint.reference_number %}"
-            class="cv-return-home"
-        >
-            تحديث حالة البلاغ
-        </a>
+        <div class="citizen-body"></div>
 
-        <a
-            href="{% url 'citizen_portal:home' %}"
-            class="cv-return-home"
-        >
-            العودة إلى الصفحة الرئيسية
-        </a>
+        <div class="citizen-phone">
+            <span></span>
+        </div>
+
+        <strong>إرسال البلاغ</strong>
+    </div>
+
+    <div class="digital-path">
+        <span class="signal signal-one"></span>
+        <span class="signal signal-two"></span>
+        <span class="signal signal-three"></span>
+    </div>
+
+    <div class="flying-message" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 5h16v11H9l-5 4z"></path>
+            <path d="M8 9h8"></path>
+            <path d="M8 12h5"></path>
+        </svg>
+    </div>
+
+    <div class="municipality-receiver">
+        <div class="municipality-building">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+                <path d="M8 25h48"></path>
+                <path d="M12 25v25"></path>
+                <path d="M22 25v25"></path>
+                <path d="M32 25v25"></path>
+                <path d="M42 25v25"></path>
+                <path d="M52 25v25"></path>
+                <path d="M7 50h50"></path>
+                <path d="M4 56h56"></path>
+                <path d="M32 7 7 20h50z"></path>
+            </svg>
+
+            <span class="receive-light"></span>
+        </div>
+
+        <strong>بلدية معين</strong>
+    </div>
+
+    <div class="phone-success-check" aria-hidden="true">✓</div>
+</div>
+
+    <div class="success-result">
+        <h1>تم استلام بلاغك بنجاح</h1>
+
+        <p>
+            شكرًا لمساهمتك في تحسين خدمات المدينة.
+            يمكنك متابعة بلاغك باستخدام الرقم التالي.
+        </p>
+
+        <div class="reference-box">
+            <span>الرقم المرجعي للبلاغ</span>
+            <strong>
+                <bdi>{{ complaint.reference_number }}</bdi>
+            </strong>
+        </div>
+
+        <p>
+            الحالة الحالية:
+            <strong>{{ complaint.get_status_display }}</strong>
+        </p>
+
+        <div class="success-actions">
+            <a
+                href="{% url 'citizen_portal:submit_complaint' %}"
+                class="primary-link"
+            >
+                تقديم بلاغ آخر
+            </a>
+
+            <a
+                href="{% url 'citizen_portal:complaint_detail' complaint.reference_number %}"
+                class="cv-return-home"
+            >
+                تحديث حالة البلاغ
+            </a>
+
+            <a
+                href="{% url 'citizen_portal:home' %}"
+                class="cv-return-home"
+            >
+                العودة إلى الصفحة الرئيسية
+            </a>
+        </div>
     </div>
 </section>
 
