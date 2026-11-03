@@ -13,6 +13,11 @@ urlpatterns = [
         name="login",
     ),
     path(
+    "account/",
+    views.account,
+    name="account",
+),
+    path(
         "logout/",
         views.worker_logout,
         name="logout",
@@ -22,6 +27,16 @@ urlpatterns = [
         views.dashboard,
         name="dashboard",
     ),
+    path(
+        "tasks/",
+        views.tasks,
+        name="tasks",
+    ),
+    path(
+    "notifications/",
+    views.notifications,
+    name="notifications",
+),
     path(
         "tasks/<int:order_id>/",
         views.task_detail,

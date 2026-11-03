@@ -123,7 +123,7 @@ def worker_order_queryset(request):
 
 
 @field_worker_required
-def dashboard(request):
+def build_dashboard_context(request, tasks_page=False):
     selected_status = request.GET.get(
         "status",
         "all",
@@ -140,7 +140,6 @@ def dashboard(request):
         selected_status = "all"
 
     worker_orders = worker_order_queryset(request)
-
     today = timezone.localdate()
 
     new_count = worker_orders.filter(
@@ -180,26 +179,81 @@ def dashboard(request):
         )
 
     else:
-        visible_orders = visible_orders.filter(
-            Q(status=WorkOrder.Status.ASSIGNED)
-            | Q(status=WorkOrder.Status.ACCEPTED)
-            | Q(status=WorkOrder.Status.IN_PROGRESS)
-        )
+        if tasks_page:
+            # في صفحة المهام يظهر الكل، بما فيه المهام المكتملة
+            visible_orders = visible_orders.filter(
+                status__in=[
+                    WorkOrder.Status.ASSIGNED,
+                    WorkOrder.Status.ACCEPTED,
+                    WorkOrder.Status.IN_PROGRESS,
+                    WorkOrder.Status.COMPLETED,
+                ],
+            )
+        else:
+            # في الرئيسية تظهر المهام الحالية فقط
+            visible_orders = visible_orders.filter(
+                Q(status=WorkOrder.Status.ASSIGNED)
+                | Q(status=WorkOrder.Status.ACCEPTED)
+                | Q(status=WorkOrder.Status.IN_PROGRESS)
+            )
 
     visible_orders = visible_orders.order_by(
         "-created_at",
     )
 
+    return {
+        "work_orders": visible_orders,
+        "selected_status": selected_status,
+        "new_count": new_count,
+        "active_count": active_count,
+        "completed_today_count": completed_today_count,
+        "tasks_page": tasks_page,
+    }
+
+
+@field_worker_required
+def dashboard(request):
     return render(
         request,
         "field_worker_portal/dashboard.html",
+        build_dashboard_context(
+            request,
+            tasks_page=False,
+        ),
+    )
+
+
+@field_worker_required
+def tasks(request):
+    return render(
+        request,
+        "field_worker_portal/dashboard.html",
+        build_dashboard_context(
+            request,
+            tasks_page=True,
+        ),
+    )
+@field_worker_required
+def notifications(request):
+    notification_orders = (
+        worker_order_queryset(request)
+        .filter(
+            status=WorkOrder.Status.ASSIGNED,
+        )
+        .order_by("-created_at")
+    )
+
+    new_notifications_count = (
+        notification_orders.count()
+    )
+
+    return render(
+        request,
+        "field_worker_portal/notifications.html",
         {
-            "work_orders": visible_orders,
-            "selected_status": selected_status,
-            "new_count": new_count,
-            "active_count": active_count,
-            "completed_today_count": (
-                completed_today_count
+            "notification_orders": notification_orders,
+            "new_notifications_count": (
+                new_notifications_count
             ),
         },
     )
@@ -369,7 +423,32 @@ def complete_task(request, order_id):
         ),
     )
 
+@field_worker_required
+def account(request):
+    worker_orders = worker_order_queryset(request)
 
+    account_stats = {
+        "assigned": worker_orders.filter(
+            status=WorkOrder.Status.ASSIGNED,
+        ).count(),
+        "active": worker_orders.filter(
+            status__in=[
+                WorkOrder.Status.ACCEPTED,
+                WorkOrder.Status.IN_PROGRESS,
+            ],
+        ).count(),
+        "completed": worker_orders.filter(
+            status=WorkOrder.Status.COMPLETED,
+        ).count(),
+    }
+
+    return render(
+        request,
+        "field_worker_portal/account.html",
+        {
+            "account_stats": account_stats,
+        },
+    )
 @require_POST
 def worker_logout(request):
     logout(request)

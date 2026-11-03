@@ -1,0 +1,308 @@
+{% extends "field_worker_portal/base.html" %}
+
+{% block title %}
+حسابي | بوابة العامل
+{% endblock %}
+
+{% block extra_css %}
+.account-page {
+    padding-top: 20px;
+}
+
+.account-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #eef9f3 100%
+        );
+    box-shadow: 0 8px 25px rgba(19, 83, 50, .05);
+}
+
+.account-back {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--green);
+    text-decoration: none;
+}
+
+.account-back svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.account-header h1 {
+    margin: 0 0 5px;
+    font-size: 23px;
+}
+
+.account-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.account-profile {
+    padding: 24px 20px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--white);
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(19, 83, 50, .05);
+}
+
+.account-avatar {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.account-avatar svg {
+    width: 38px;
+    height: 38px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.account-name {
+    margin: 0 0 5px;
+    font-size: 22px;
+}
+
+.account-role {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.account-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.account-stat {
+    padding: 16px 8px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fbfefc;
+    text-align: center;
+}
+
+.account-stat strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--green);
+    font-size: 22px;
+}
+
+.account-stat span {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.account-details {
+    margin-top: 18px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--white);
+}
+
+.account-details h2 {
+    margin: 0 0 16px;
+    font-size: 17px;
+}
+
+.account-detail {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 13px 0;
+    border-bottom: 1px solid #edf3ef;
+}
+
+.account-detail:last-child {
+    border-bottom: 0;
+}
+
+.account-detail span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.account-detail strong {
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+.account-logout {
+    margin-top: 18px;
+}
+
+.account-logout button {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #efcbd0;
+    border-radius: 14px;
+    background: #fff7f8;
+    color: var(--danger);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.account-logout button:hover {
+    background: #fdecef;
+}
+
+@media (max-width: 390px) {
+    .account-header,
+    .account-profile,
+    .account-details {
+        padding: 16px;
+    }
+
+    .account-header h1 {
+        font-size: 20px;
+    }
+
+    .account-stats {
+        gap: 7px;
+    }
+
+    .account-stat {
+        padding: 13px 5px;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<section class="account-page">
+    <header class="account-header">
+        <a
+            class="account-back"
+            href="{% url 'field_worker_portal:dashboard' %}"
+            aria-label="العودة إلى الرئيسية"
+            title="العودة إلى الرئيسية"
+        >
+            <svg viewBox="0 0 24 24">
+                <path d="m9 18 6-6-6-6"></path>
+            </svg>
+        </a>
+
+        <div>
+            <h1>حسابي</h1>
+            <p>بيانات حساب العامل الميداني.</p>
+        </div>
+    </header>
+
+    <div class="account-profile">
+        <div class="account-avatar">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+            </svg>
+        </div>
+
+        <h2 class="account-name">
+            {% if request.user.get_full_name %}
+                {{ request.user.get_full_name }}
+            {% else %}
+                {{ request.user.username }}
+            {% endif %}
+        </h2>
+
+        <p class="account-role">حساب العامل الميداني</p>
+
+        <div class="account-stats">
+            <div class="account-stat">
+                <strong>{{ account_stats.assigned }}</strong>
+                <span>مهام جديدة</span>
+            </div>
+
+            <div class="account-stat">
+                <strong>{{ account_stats.active }}</strong>
+                <span>قيد التنفيذ</span>
+            </div>
+
+            <div class="account-stat">
+                <strong>{{ account_stats.completed }}</strong>
+                <span>مهام مكتملة</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="account-details">
+        <h2>معلومات الحساب</h2>
+
+        <div class="account-detail">
+            <span>اسم المستخدم</span>
+            <strong>{{ request.user.username }}</strong>
+        </div>
+
+        <div class="account-detail">
+            <span>الاسم الكامل</span>
+            <strong>
+                {% if request.user.get_full_name %}
+                    {{ request.user.get_full_name }}
+                {% else %}
+                    غير محدد
+                {% endif %}
+            </strong>
+        </div>
+
+        <div class="account-detail">
+            <span>البريد الإلكتروني</span>
+            <strong>
+                {% if request.user.email %}
+                    {{ request.user.email }}
+                {% else %}
+                    غير محدد
+                {% endif %}
+            </strong>
+        </div>
+
+        <div class="account-detail">
+            <span>نوع الحساب</span>
+            <strong>عامل ميداني</strong>
+        </div>
+    </div>
+
+    <form
+        class="account-logout"
+        method="post"
+        action="{% url 'field_worker_portal:logout' %}"
+    >
+        {% csrf_token %}
+        <button type="submit">تسجيل الخروج</button>
+    </form>
+</section>
+{% endblock %}

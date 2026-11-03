@@ -76,11 +76,10 @@
         }
 
         .fw-main {
-            width: min(100%, 640px);
-            margin: 0 auto;
-            padding: 0 16px 28px;
-        }
-
+    width: min(100%, 640px);
+    margin: 0 auto;
+    padding: 0 16px 120px;
+}
         .fw-messages {
             display: grid;
             gap: 8px;
@@ -121,9 +120,9 @@
                 calc(8px + env(safe-area-inset-bottom));
             transform: translateX(50%);
             border-top: 1px solid var(--line);
-            background: rgba(255, 255, 255, .96);
-            box-shadow: 0 -8px 24px rgba(15, 75, 47, .06);
-            backdrop-filter: blur(14px);
+            background: var(--white);
+box-shadow: 0 -8px 24px rgba(15, 75, 47, .10);
+backdrop-filter: none;
         }
 
         .fw-nav-item {
@@ -165,28 +164,29 @@
         }
 
         @media (min-width: 641px) {
-            body {
-                padding: 24px 0;
-            }
+    body {
+        padding: 24px 0 0;
+    }
 
-            .fw-shell {
-                width: 640px;
-                margin: 0 auto;
-                overflow: hidden;
-                border: 1px solid var(--line);
-                border-radius: 30px;
-                background: var(--background);
-                box-shadow: var(--shadow);
-            }
+    .fw-shell {
+        width: 640px;
+        margin: 0 auto;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 30px 30px 0 0;
+        background: var(--background);
+        box-shadow: var(--shadow);
+    }
 
-            .fw-bottom-nav {
-                bottom: 24px;
-                overflow: hidden;
-                border-right: 1px solid var(--line);
-                border-left: 1px solid var(--line);
-                border-radius: 0 0 30px 30px;
-            }
-        }
+    .fw-bottom-nav {
+        bottom: 0;
+        overflow: hidden;
+        border-right: 1px solid var(--line);
+        border-left: 1px solid var(--line);
+        border-radius: 0;
+        background: var(--white);
+    }
+}
 
         {% block extra_css %}{% endblock %}
     </style>
@@ -210,9 +210,11 @@
     </main>
 
     {% if request.user.is_authenticated %}
+    {% with current_page=request.resolver_match.url_name %}
         <nav class="fw-bottom-nav" aria-label="التنقل الرئيسي">
+
             <a
-                class="fw-nav-item active"
+                class="fw-nav-item {% if current_page == 'dashboard' %}active{% endif %}"
                 href="{% url 'field_worker_portal:dashboard' %}"
             >
                 <span class="fw-nav-icon">
@@ -226,8 +228,11 @@
             </a>
 
             <a
-                class="fw-nav-item"
-                href="#assigned-tasks"
+                class="fw-nav-item
+                {% if current_page == 'tasks' or current_page == 'task_detail' %}
+                    active
+                {% endif %}"
+                href="{% url 'field_worker_portal:tasks' %}"
             >
                 <span class="fw-nav-icon">
                     <svg viewBox="0 0 24 24">
@@ -246,21 +251,25 @@
                 <span>المهام</span>
             </a>
 
-            <button
-                class="fw-nav-item"
-                type="button"
-                data-open-account
-            >
-                <span class="fw-nav-icon">
-                    <svg viewBox="0 0 24 24">
-                        <circle cx="12" cy="8" r="4"></circle>
-                        <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
-                    </svg>
-                </span>
-                <span>حسابي</span>
-            </button>
+            <a
+    class="fw-nav-item
+    {% if request.resolver_match.url_name == 'account' %}
+        active
+    {% endif %}"
+    href="{% url 'field_worker_portal:account' %}"
+>
+    <span class="fw-nav-icon">
+        <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="4"></circle>
+            <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+        </svg>
+    </span>
+    <span>حسابي</span>
+</a>
+
         </nav>
-    {% endif %}
+    {% endwith %}
+{% endif %}
 </div>
 
 {% block extra_js %}{% endblock %}

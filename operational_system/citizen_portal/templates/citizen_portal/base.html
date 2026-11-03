@@ -520,7 +520,7 @@
         {% block header %}
             <header class="app-header">
                 <div class="cv-header-brand">
-                    {% if request.resolver_match.url_name == "submit_complaint" %}
+                    {% if request.resolver_match.url_name == "submit_complaint" or request.resolver_match.url_name == "complaint_success" %}
                         <a
                             href="{% url 'citizen_portal:home' %}"
                             class="cv-header-back"
@@ -545,6 +545,7 @@
                             class="brand-logo"
                         >
                     </a>
+
                 </div>
 
                 <div class="user-welcome">

@@ -1,19 +1,933 @@
 {% extends "field_worker_portal/base.html" %}
 {% load static %}
 
-{% block title %}الرئيسية | بوابة العامل{% endblock %}
+{% block title %}
+    {% if tasks_page %}
+        المهام | بوابة العامل
+    {% else %}
+        الرئيسية | بوابة العامل
+    {% endif %}
+{% endblock %}
 
 {% block extra_css %}
-.worker-top{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:82px;margin:0 -16px;padding:14px 18px}.worker-brand{display:flex;align-items:center;gap:9px;min-width:0}.worker-logo{display:block;width:104px;max-height:48px;object-fit:contain}.worker-municipality{color:var(--muted);font-size:11px;white-space:nowrap}.notification-button{position:relative;display:grid;place-items:center;width:43px;height:43px;border:1px solid var(--line);border-radius:50%;background:var(--white);color:var(--green);cursor:pointer;box-shadow:0 6px 18px rgba(20,92,56,.06)}.notification-button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.notification-dot{position:absolute;top:-3px;right:-2px;display:grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border:2px solid #eef8f2;border-radius:999px;background:#dc5a55;color:#fff;font-size:9px;font-weight:800}.welcome-section{margin:4px 0 17px}.welcome-section h1{margin:0 0 5px;font-size:clamp(22px,7vw,29px);line-height:1.4}.welcome-section p{margin:0;color:var(--muted);font-size:13px;line-height:1.8}.statistics{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:24px}.stat-card{min-width:0;padding:14px 7px;border:1px solid #edf3ef;border-radius:18px;background:var(--white);text-align:center;box-shadow:0 8px 24px rgba(26,91,58,.045)}.stat-number{display:grid;place-items:center;width:38px;height:38px;margin:0 auto 9px;border-radius:50%;font-size:17px;font-weight:900}.stat-card--completed .stat-number{background:var(--green-soft);color:var(--green)}.stat-card--active .stat-number{background:var(--blue-soft);color:var(--blue)}.stat-card--new .stat-number{background:var(--orange-soft);color:var(--orange)}.stat-card strong{display:block;margin-bottom:3px;font-size:12px;white-space:nowrap}.stat-card small{display:block;overflow:hidden;color:var(--muted);font-size:9px;text-overflow:ellipsis;white-space:nowrap}.tasks-section{scroll-margin-top:20px}.tasks-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.tasks-heading h2{margin:0;font-size:19px}.tasks-heading span{color:var(--green);font-size:12px;font-weight:700}.task-filters{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:15px}.task-filter{display:flex;align-items:center;justify-content:center;min-height:38px;padding:7px 5px;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--muted);font-size:11px;text-align:center;text-decoration:none}.task-filter.active{border-color:var(--green);background:var(--green);color:#fff;font-weight:700}.task-list{display:grid;gap:11px}.task-card,.task-card:link,.task-card:visited,.task-card:hover,.task-card:active{color:var(--ink);text-decoration:none}.task-card{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) 25px;align-items:center;gap:11px;padding:14px 12px;border:1px solid #edf3ef;border-radius:18px;background:var(--white);box-shadow:0 8px 25px rgba(19,83,50,.05);cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.task-card:hover{border-color:#b9daca;box-shadow:0 12px 28px rgba(16,83,51,.1);transform:translateY(-2px)}.task-card:active{transform:scale(.985)}.task-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--orange-soft);color:var(--orange)}.task-card--accepted .task-icon,.task-card--in_progress .task-icon{background:var(--blue-soft);color:var(--blue)}.task-card--completed .task-icon{background:var(--green-soft);color:var(--green)}.task-icon svg,.task-arrow svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.task-icon svg{width:26px;height:26px}.task-content{min-width:0}.task-reference{display:block;margin-bottom:3px;overflow:hidden;color:var(--muted)!important;font-size:10px;text-overflow:ellipsis;white-space:nowrap}.task-title{margin:0 0 4px;overflow:hidden;color:var(--ink)!important;font-size:14px;line-height:1.5;text-overflow:ellipsis;white-space:nowrap}.task-location{margin:0 0 7px;overflow:hidden;color:var(--muted)!important;font-size:10px;text-overflow:ellipsis;white-space:nowrap}.task-tags{display:flex;flex-wrap:wrap;gap:5px}.task-tag{padding:4px 8px;border-radius:999px;background:#f0f5f2;color:#61746a;font-size:9px;font-weight:700}.task-tag--priority{background:var(--orange-soft);color:#bf651a}.task-tag--assigned{background:#fff3dc;color:#a66b00}.task-tag--accepted,.task-tag--in_progress{background:var(--blue-soft);color:var(--blue)}.task-tag--completed{background:var(--green-soft);color:var(--green)}.task-arrow{color:#7e9a8b}.task-arrow svg{width:23px;height:23px;transition:transform .18s ease}.task-card:hover .task-arrow svg{transform:translateX(-3px)}.empty-tasks{padding:38px 20px;border:1px dashed var(--line);border-radius:18px;background:rgba(255,255,255,.72);text-align:center}.empty-icon{display:grid;place-items:center;width:54px;height:54px;margin:0 auto 12px;border-radius:50%;background:var(--green-soft);color:var(--green);font-size:24px}.empty-tasks h3{margin:0 0 7px;font-size:16px}.empty-tasks p{margin:0;color:var(--muted);font-size:12px;line-height:1.7}.account-dialog{width:min(90%,390px);padding:0;border:0;border-radius:20px;color:var(--ink);box-shadow:0 22px 70px rgba(5,55,31,.24)}.account-dialog::backdrop{background:rgba(12,47,30,.48);backdrop-filter:blur(3px)}.account-content{padding:22px}.account-content h2{margin:0 0 6px;font-size:20px}.account-content p{margin:0 0 18px;color:var(--muted);font-size:13px}.account-actions{display:flex;gap:9px}.account-button{flex:1;min-height:42px;border:1px solid var(--line);border-radius:11px;background:var(--white);color:var(--green);cursor:pointer}.account-button--logout{border-color:var(--green);background:var(--green);color:#fff;font-weight:700}@media(max-width:390px){.worker-logo{width:92px}.statistics{gap:6px}.stat-card{padding-inline:4px}.stat-card strong{font-size:10px}.task-filters{gap:5px}.task-filter{padding-inline:3px;font-size:10px}}
+.tasks-page-intro {
+    margin: 20px 0 18px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #eef9f3 100%
+        );
+    box-shadow: 0 8px 25px rgba(19, 83, 50, .05);
+}
+
+.tasks-page-intro-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.tasks-page-intro-text {
+    min-width: 0;
+}
+
+.tasks-page-intro h1 {
+    margin: 0 0 6px;
+    color: var(--ink);
+    font-size: 23px;
+    line-height: 1.4;
+}
+
+.tasks-page-intro p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.tasks-page-icon {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 17px;
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.tasks-page-icon svg {
+    width: 27px;
+    height: 27px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.tasks-page-total {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--green-dark);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.worker-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 82px;
+    margin: 0 -16px;
+    padding: 14px 18px;
+}
+
+.worker-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.worker-logo {
+    display: block;
+    width: 104px;
+    max-height: 48px;
+    object-fit: contain;
+}
+
+.worker-municipality {
+    color: var(--muted);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.notification-button {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 43px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--green);
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(20, 92, 56, .06);
+}
+
+.notification-button:hover,
+.notification-button:focus,
+.notification-button:visited {
+    color: var(--green);
+    text-decoration: none;
+}
+
+.notification-button svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.notification-dot {
+    position: absolute;
+    top: -3px;
+    right: -2px;
+    display: grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border: 2px solid #eef8f2;
+    border-radius: 999px;
+    background: #dc5a55;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.welcome-section {
+    margin: 4px 0 17px;
+}
+
+.welcome-section h1 {
+    margin: 0 0 5px;
+    font-size: clamp(22px, 7vw, 29px);
+    line-height: 1.4;
+}
+
+.welcome-section p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.statistics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    min-width: 0;
+    padding: 14px 7px;
+    border: 1px solid #edf3ef;
+    border-radius: 18px;
+    background: var(--white);
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(26, 91, 58, .045);
+}
+
+.stat-number {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    margin: 0 auto 9px;
+    border-radius: 50%;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.stat-card--completed .stat-number {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.stat-card--active .stat-number {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.stat-card--new .stat-number {
+    background: var(--orange-soft);
+    color: var(--orange);
+}
+
+.stat-card strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.stat-card small {
+    display: block;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasks-section {
+    scroll-margin-top: 20px;
+}
+
+.tasks-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.tasks-heading h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.tasks-heading span {
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.task-filters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+    margin-bottom: 15px;
+}
+
+.task-filter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 7px 5px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.task-filter.active {
+    border-color: var(--green);
+    background: var(--green);
+    color: #fff;
+    font-weight: 700;
+}
+
+.task-list {
+    display: grid;
+    gap: 11px;
+}
+
+.task-card,
+.task-card:link,
+.task-card:visited,
+.task-card:hover,
+.task-card:active {
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.task-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 25px;
+    align-items: center;
+    gap: 11px;
+    padding: 14px 12px;
+    border: 1px solid #edf3ef;
+    border-radius: 18px;
+    background: var(--white);
+    box-shadow: 0 8px 25px rgba(19, 83, 50, .05);
+    cursor: pointer;
+    transition:
+        transform .18s ease,
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.task-card:hover {
+    border-color: #b9daca;
+    box-shadow: 0 12px 28px rgba(16, 83, 51, .1);
+    transform: translateY(-2px);
+}
+
+.task-card:active {
+    transform: scale(.985);
+}
+
+.task-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+    background: var(--orange-soft);
+    color: var(--orange);
+}
+
+.task-card--accepted .task-icon,
+.task-card--in_progress .task-icon {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.task-card--completed .task-icon {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.task-icon svg,
+.task-arrow svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.task-icon svg {
+    width: 26px;
+    height: 26px;
+}
+
+.task-content {
+    min-width: 0;
+}
+
+.task-reference {
+    display: block;
+    margin-bottom: 3px;
+    overflow: hidden;
+    color: var(--muted) !important;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.task-title {
+    margin: 0 0 4px;
+    overflow: hidden;
+    color: var(--ink) !important;
+    font-size: 14px;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.task-location {
+    margin: 0 0 7px;
+    overflow: hidden;
+    color: var(--muted) !important;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.task-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.task-tag {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f0f5f2;
+    color: #61746a;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.task-tag--priority {
+    background: var(--orange-soft);
+    color: #bf651a;
+}
+
+.task-tag--assigned {
+    background: #fff3dc;
+    color: #a66b00;
+}
+
+.task-tag--accepted,
+.task-tag--in_progress {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.task-tag--completed {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.task-arrow {
+    color: #7e9a8b;
+}
+
+.task-arrow svg {
+    width: 23px;
+    height: 23px;
+    transition: transform .18s ease;
+}
+
+.task-card:hover .task-arrow svg {
+    transform: translateX(-3px);
+}
+
+.empty-tasks {
+    padding: 38px 20px;
+    border: 1px dashed var(--line);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .72);
+    text-align: center;
+}
+
+.empty-icon {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: var(--green-soft);
+    color: var(--green);
+    font-size: 24px;
+}
+
+.empty-tasks h3 {
+    margin: 0 0 7px;
+    font-size: 16px;
+}
+
+.empty-tasks p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.account-dialog {
+    width: min(90%, 390px);
+    padding: 0;
+    border: 0;
+    border-radius: 20px;
+    color: var(--ink);
+    box-shadow: 0 22px 70px rgba(5, 55, 31, .24);
+}
+
+.account-dialog::backdrop {
+    background: rgba(12, 47, 30, .48);
+    backdrop-filter: blur(3px);
+}
+
+.account-content {
+    padding: 22px;
+}
+
+.account-content h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+}
+
+.account-content p {
+    margin: 0 0 18px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.account-actions {
+    display: flex;
+    gap: 9px;
+}
+
+.account-button {
+    flex: 1;
+    min-height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: var(--white);
+    color: var(--green);
+    cursor: pointer;
+}
+
+.account-button--logout {
+    border-color: var(--green);
+    background: var(--green);
+    color: #fff;
+    font-weight: 700;
+}
+
+@media (max-width: 390px) {
+    .tasks-page-intro {
+        margin-top: 14px;
+        padding: 16px;
+    }
+
+    .tasks-page-intro h1 {
+        font-size: 20px;
+    }
+
+    .tasks-page-icon {
+        width: 46px;
+        height: 46px;
+    }
+
+    .worker-logo {
+        width: 92px;
+    }
+
+    .statistics {
+        gap: 6px;
+    }
+
+    .stat-card {
+        padding-inline: 4px;
+    }
+
+    .stat-card strong {
+        font-size: 10px;
+    }
+
+    .task-filters {
+        gap: 5px;
+    }
+
+    .task-filter {
+        padding-inline: 3px;
+        font-size: 10px;
+    }
+}
 {% endblock %}
 
 {% block content %}
-<header class="worker-top"><div class="worker-brand"><img class="worker-logo" src="{% static 'citizen_portal/images/cityvoice-logo.png' %}" alt="CityVoice"><span class="worker-municipality">بلدية معين</span></div><button class="notification-button" type="button" aria-label="الإشعارات"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>{% if new_count %}<span class="notification-dot">{{ new_count }}</span>{% endif %}</button></header>
-<section class="welcome-section"><h1>مرحبًا {{ request.user.get_full_name|default:request.user.username }}</h1><p>هذه نظرة سريعة على مهام فريقك اليوم.</p></section>
-<section class="statistics" aria-label="إحصائيات المهام"><article class="stat-card stat-card--completed"><span class="stat-number">{{ completed_today_count }}</span><strong>مكتملة اليوم</strong><small>تم إنجازها</small></article><article class="stat-card stat-card--active"><span class="stat-number">{{ active_count }}</span><strong>قيد التنفيذ</strong><small>مهمة نشطة</small></article><article class="stat-card stat-card--new"><span class="stat-number">{{ new_count }}</span><strong>مهام جديدة</strong><small>بانتظار القبول</small></article></section>
-<section id="assigned-tasks" class="tasks-section"><div class="tasks-heading"><h2>المهام المعيّنة</h2><span>{{ work_orders|length }} مهمة</span></div><nav class="task-filters" aria-label="تصفية المهام"><a href="?status=all#assigned-tasks" class="task-filter {% if selected_status == 'all' %}active{% endif %}">الكل</a><a href="?status=new#assigned-tasks" class="task-filter {% if selected_status == 'new' %}active{% endif %}">جديدة</a><a href="?status=active#assigned-tasks" class="task-filter {% if selected_status == 'active' %}active{% endif %}">قيد التنفيذ</a><a href="?status=completed#assigned-tasks" class="task-filter {% if selected_status == 'completed' %}active{% endif %}">مكتملة</a></nav>
-{% if work_orders %}<div class="task-list">{% for order in work_orders %}<a class="task-card task-card--{{ order.status }}" href="{% url 'field_worker_portal:task_detail' order.pk %}"><div class="task-icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.4 2.4-3-3z"></path></svg></div><div class="task-content"><span class="task-reference">أمر العمل <bdi>WO-{{ order.pk|stringformat:"06d" }}</bdi></span><h3 class="task-title">{{ order.complaint.service.name_ar }}</h3><p class="task-location">مرجع البلاغ: <bdi>{{ order.complaint.reference_number }}</bdi>{% if order.complaint.neighborhood %} · {{ order.complaint.neighborhood }}{% elif order.complaint.address %} · {{ order.complaint.address }}{% endif %}</p><div class="task-tags"><span class="task-tag task-tag--{{ order.status }}">{{ order.get_status_display }}</span>{% if order.complaint.priority == "urgent" %}<span class="task-tag task-tag--priority">أولوية عاجلة</span>{% elif order.complaint.priority == "high" %}<span class="task-tag task-tag--priority">أولوية عالية</span>{% endif %}</div></div><span class="task-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></span></a>{% endfor %}</div>{% else %}<div class="empty-tasks"><div class="empty-icon">✓</div><h3>لا توجد مهام في هذا القسم</h3><p>ستظهر هنا أوامر العمل التي تسندها البلدية إلى حسابك.</p></div>{% endif %}</section>
-<dialog class="account-dialog" data-account-dialog><div class="account-content"><h2>{{ request.user.get_full_name|default:request.user.username }}</h2><p>حساب العامل الميداني</p><div class="account-actions"><button class="account-button" type="button" data-close-account>إغلاق</button><form method="post" action="{% url 'field_worker_portal:logout' %}" style="flex:1">{% csrf_token %}<button class="account-button account-button--logout" type="submit" style="width:100%">تسجيل الخروج</button></form></div></div></dialog>
+
+{% if not tasks_page %}
+    <header class="worker-top">
+        <div class="worker-brand">
+            <img
+                class="worker-logo"
+                src="{% static 'citizen_portal/images/cityvoice-logo.png' %}"
+                alt="CityVoice"
+            >
+
+            <span class="worker-municipality">
+                بلدية معين
+            </span>
+        </div>
+
+        <a
+    class="notification-button"
+    href="{% url 'field_worker_portal:notifications' %}"
+    aria-label="عرض الإشعارات"
+    title="عرض الإشعارات"
+>
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
+                ></path>
+                <path d="M10 21h4"></path>
+            </svg>
+
+            {% if new_count %}
+                <span class="notification-dot">
+                    {{ new_count }}
+                </span>
+            {% endif %}
+        </a>
+    </header>
+
+    <section class="welcome-section">
+        <h1>
+            مرحبًا
+            {{ request.user.get_full_name|default:request.user.username }}
+        </h1>
+
+        <p>
+            هذه نظرة سريعة على مهام فريقك اليوم.
+        </p>
+    </section>
+
+    <section
+        class="statistics"
+        aria-label="إحصائيات المهام"
+    >
+        <article class="stat-card stat-card--completed">
+            <span class="stat-number">
+                {{ completed_today_count }}
+            </span>
+            <strong>مكتملة اليوم</strong>
+            <small>تم إنجازها</small>
+        </article>
+
+        <article class="stat-card stat-card--active">
+            <span class="stat-number">
+                {{ active_count }}
+            </span>
+            <strong>قيد التنفيذ</strong>
+            <small>مهمة نشطة</small>
+        </article>
+
+        <article class="stat-card stat-card--new">
+            <span class="stat-number">
+                {{ new_count }}
+            </span>
+            <strong>مهام جديدة</strong>
+            <small>بانتظار القبول</small>
+        </article>
+    </section>
+{% endif %}
+
+{% if tasks_page %}
+    <section class="tasks-page-intro">
+        <div class="tasks-page-intro-row">
+            <div class="tasks-page-intro-text">
+                <h1>مهامي</h1>
+
+                <p>
+                    تابع المهام المسندة إليك وانتقل بين حالاتها.
+                </p>
+
+                {% with total=work_orders|length %}
+                    <span class="tasks-page-total">
+                        {% if total == 0 %}
+                            لا توجد مهام
+                        {% elif total == 1 %}
+                            مهمة واحدة
+                        {% elif total == 2 %}
+                            مهمتان
+                        {% elif total >= 3 and total <= 10 %}
+                            {{ total }} مهام
+                        {% else %}
+                            {{ total }} مهمة
+                        {% endif %}
+                    </span>
+                {% endwith %}
+            </div>
+
+            <div
+                class="tasks-page-icon"
+                aria-hidden="true"
+            >
+                <svg viewBox="0 0 24 24">
+                    <rect
+                        x="5"
+                        y="3"
+                        width="14"
+                        height="18"
+                        rx="2"
+                    ></rect>
+                    <path d="M9 8h6"></path>
+                    <path d="M9 12h6"></path>
+                    <path d="M9 16h4"></path>
+                </svg>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+<section
+    id="assigned-tasks"
+    class="tasks-section"
+>
+    <div class="tasks-heading">
+        <h2>
+            {% if tasks_page %}
+                قائمة المهام
+            {% else %}
+                المهام المعيّنة
+            {% endif %}
+        </h2>
+
+        {% if not tasks_page %}
+            {% with total=work_orders|length %}
+                <span class="tasks-page-total">
+                    {% if total == 0 %}
+                        لا توجد مهام
+                    {% elif total == 1 %}
+                        مهمة واحدة
+                    {% elif total == 2 %}
+                        مهمتان
+                    {% elif total >= 3 and total <= 10 %}
+                        {{ total }} مهام
+                    {% else %}
+                        {{ total }} مهمة
+                    {% endif %}
+                </span>
+            {% endwith %}
+        {% endif %}
+    </div>
+
+    <nav
+        class="task-filters"
+        aria-label="تصفية المهام"
+    >
+        <a
+            href="?status=all#assigned-tasks"
+            class="task-filter {% if selected_status == 'all' %}active{% endif %}"
+        >
+            الكل
+        </a>
+
+        <a
+            href="?status=new#assigned-tasks"
+            class="task-filter {% if selected_status == 'new' %}active{% endif %}"
+        >
+            جديدة
+        </a>
+
+        <a
+            href="?status=active#assigned-tasks"
+            class="task-filter {% if selected_status == 'active' %}active{% endif %}"
+        >
+            قيد التنفيذ
+        </a>
+
+        <a
+            href="?status=completed#assigned-tasks"
+            class="task-filter {% if selected_status == 'completed' %}active{% endif %}"
+        >
+            مكتملة
+        </a>
+    </nav>
+
+    {% if work_orders %}
+        <div class="task-list">
+            {% for order in work_orders %}
+                <a
+                    class="task-card task-card--{{ order.status }}"
+                    href="{% url 'field_worker_portal:task_detail' order.pk %}"
+                >
+                    <div class="task-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.4 2.4-3-3z"
+                            ></path>
+                        </svg>
+                    </div>
+
+                    <div class="task-content">
+                        <span class="task-reference">
+                            أمر العمل
+                            <bdi>
+                                WO-{{ order.pk|stringformat:"06d" }}
+                            </bdi>
+                        </span>
+
+                        <h3 class="task-title">
+                            {{ order.complaint.service.name_ar }}
+                        </h3>
+
+                        <p class="task-location">
+                            مرجع البلاغ:
+                            <bdi>
+                                {{ order.complaint.reference_number }}
+                            </bdi>
+
+                            {% if order.complaint.neighborhood %}
+                                · {{ order.complaint.neighborhood }}
+                            {% elif order.complaint.address %}
+                                · {{ order.complaint.address }}
+                            {% endif %}
+                        </p>
+
+                        <div class="task-tags">
+                            <span
+                                class="task-tag task-tag--{{ order.status }}"
+                            >
+                                {{ order.get_status_display }}
+                            </span>
+
+                            {% if order.complaint.priority == "urgent" %}
+                                <span
+                                    class="task-tag task-tag--priority"
+                                >
+                                    أولوية عاجلة
+                                </span>
+                            {% elif order.complaint.priority == "high" %}
+                                <span
+                                    class="task-tag task-tag--priority"
+                                >
+                                    أولوية عالية
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <span
+                        class="task-arrow"
+                        aria-hidden="true"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <path d="m15 18-6-6 6-6"></path>
+                        </svg>
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-tasks">
+            <div class="empty-icon">✓</div>
+            <h3>لا توجد مهام في هذا القسم</h3>
+            <p>
+                ستظهر هنا أوامر العمل التي تسندها البلدية إلى حسابك.
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+<dialog
+    class="account-dialog"
+    data-account-dialog
+>
+    <div class="account-content">
+        <h2>
+            {{ request.user.get_full_name|default:request.user.username }}
+        </h2>
+
+        <p>حساب العامل الميداني</p>
+
+        <div class="account-actions">
+            <button
+                class="account-button"
+                type="button"
+                data-close-account
+            >
+                إغلاق
+            </button>
+
+            <form
+                method="post"
+                action="{% url 'field_worker_portal:logout' %}"
+                style="flex: 1"
+            >
+                {% csrf_token %}
+
+                <button
+                    class="account-button account-button--logout"
+                    type="submit"
+                    style="width: 100%"
+                >
+                    تسجيل الخروج
+                </button>
+            </form>
+        </div>
+    </div>
+</dialog>
+
 {% endblock %}
 
-{% block extra_js %}<script>(function(){const d=document.querySelector('[data-account-dialog]'),o=document.querySelector('[data-open-account]'),c=document.querySelector('[data-close-account]');if(!d||!o)return;o.addEventListener('click',()=>typeof d.showModal==='function'&&d.showModal());c?.addEventListener('click',()=>d.close());d.addEventListener('click',e=>{if(e.target===d)d.close()})})();</script>{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+    const dialog = document.querySelector(
+        "[data-account-dialog]"
+    );
+
+    const openButton = document.querySelector(
+        "[data-open-account]"
+    );
+
+    const closeButton = document.querySelector(
+        "[data-close-account]"
+    );
+
+    if (!dialog || !openButton) {
+        return;
+    }
+
+    openButton.addEventListener("click", function () {
+        if (typeof dialog.showModal === "function") {
+            dialog.showModal();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener("click", function () {
+            dialog.close();
+        });
+    }
+
+    dialog.addEventListener("click", function (event) {
+        if (event.target === dialog) {
+            dialog.close();
+        }
+    });
+})();
+</script>
+{% endblock %}
