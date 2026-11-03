@@ -1,5 +1,5 @@
 from django import forms
-
+from accounts.models import User
 from maintenance.models import WorkOrder
 
 
@@ -82,3 +82,26 @@ class WorkOrderCompletionForm(forms.ModelForm):
             )
 
         return photo
+class WorkerAvatarForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = (
+            "avatar",
+        )
+        widgets = {
+            "avatar": forms.ClearableFileInput(
+                attrs={
+                    "accept": "image/*",
+                }
+            ),
+        }
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get("avatar")
+
+        if avatar and avatar.size > 5 * 1024 * 1024:
+            raise forms.ValidationError(
+                "يجب ألا يتجاوز حجم الصورة 5 ميجابايت."
+            )
+
+        return avatar

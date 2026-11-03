@@ -715,6 +715,59 @@ document.addEventListener("DOMContentLoaded", function () {
 
 {% block extra_css %}
 .task-page{padding:18px 0 100px}.task-back{display:inline-flex;align-items:center;gap:7px;margin-bottom:16px;color:var(--green);font-size:13px;font-weight:700;text-decoration:none}.task-hero,.task-section{margin-bottom:14px;padding:20px;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:var(--shadow)}.task-reference-detail,.detail-label{color:var(--muted);font-size:11px}.task-hero h1{margin:7px 0 11px;font-size:clamp(21px,5vw,28px);line-height:1.5}.task-status{display:inline-flex;padding:7px 12px;border-radius:999px;background:var(--green-soft);color:var(--green);font-size:11px;font-weight:800}.task-status--assigned{background:#fff3dc;color:#9d6808}.task-status--accepted,.task-status--in_progress{background:var(--blue-soft);color:var(--blue)}.task-section h2{margin:0 0 15px;font-size:17px}.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.detail-item{min-width:0}.detail-item--wide{grid-column:1/-1}.detail-label{display:block;margin-bottom:5px}.detail-value{display:block;overflow-wrap:anywhere;font-size:13px;font-weight:700;line-height:1.7}.instructions-box{padding:14px;border-radius:13px;background:var(--background);line-height:1.9}.task-primary-button{width:100%;min-height:52px;padding:11px 18px;border:0;border-radius:14px;background:var(--green);color:#fff;font-weight:800;cursor:pointer}.task-primary-button--start{background:var(--blue)}.task-input,.task-file-input{width:100%;margin-top:7px;border:1px solid var(--line);border-radius:13px;background:#fbfefc;color:var(--ink)}.task-input{min-height:125px;padding:13px;resize:vertical}.task-file-input{padding:12px}.form-field{margin-bottom:16px}.form-label{display:block;font-size:13px;font-weight:800}.form-help{display:block;margin-top:6px;color:var(--muted);font-size:10px;line-height:1.7}.form-error{margin-top:6px;color:var(--danger);font-size:11px}.form-general-errors{margin-bottom:14px;padding:11px;border-radius:10px;background:#fff0f2;color:var(--danger);font-size:11px}.completion-image{display:block;width:100%;max-height:420px;margin-top:13px;border-radius:15px;object-fit:cover}.completion-notes{margin:0;white-space:pre-wrap;line-height:1.9}.complaint-media{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:12px}.complaint-photo-card,.task-map-card{position:relative;overflow:hidden;min-height:230px;border:1px solid var(--line);border-radius:16px;background:var(--background)}.complaint-photo{display:block;width:100%;height:100%;min-height:230px;object-fit:cover}#task-map{width:100%;height:230px;z-index:1}.media-label{position:absolute;z-index:500;right:10px;bottom:10px;padding:6px 10px;border-radius:999px;background:rgba(13,70,42,.88);color:#fff;font-size:10px;font-weight:700;backdrop-filter:blur(5px)}.no-photo,.no-location{display:grid;place-items:center;min-height:230px;padding:20px;color:var(--muted);font-size:12px;line-height:1.8;text-align:center}.map-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.legend-item{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-size:11px;font-weight:700}.legend-dot{width:12px;height:12px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.12)}.legend-dot--problem{background:var(--orange)}.legend-dot--worker{background:var(--green)}.map-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}.map-button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 13px;border:1px solid var(--green);border-radius:13px;background:#fff;color:var(--green);font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}.map-button:disabled{opacity:.65;cursor:wait}.map-button--primary{background:var(--green);color:#fff}.location-message{margin:10px 0 0;color:var(--muted);font-size:11px;line-height:1.7}.location-message.is-error{color:var(--danger)}.complaint-pin,.worker-pin{display:grid;place-items:center;width:34px;height:34px;border:3px solid #fff;box-shadow:0 5px 15px rgba(14,62,39,.25);font-size:16px}.complaint-pin{border-radius:50% 50% 50% 8px;background:var(--orange);transform:rotate(-45deg);color:#fff}.complaint-pin span{transform:rotate(45deg)}.worker-pin{border-radius:50%;background:var(--green);color:#fff}@media(max-width:600px){.task-hero,.task-section{padding:16px;border-radius:17px}.detail-grid,.complaint-media{grid-template-columns:1fr}.detail-item--wide{grid-column:auto}.complaint-photo-card,.task-map-card,.complaint-photo,.no-photo,.no-location{min-height:200px}#task-map{height:220px}}@media(max-width:390px){.map-actions{grid-template-columns:1fr}}
+
+.task-completion-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.task-completion-content {
+    min-width: 0;
+}
+
+.task-completion-action h2 {
+    margin-bottom: 6px;
+}
+
+.task-completion-action p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.task-completion-link {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 20px;
+    border-radius: 14px;
+    background: var(--green);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.task-completion-link:hover {
+    background: var(--green-dark);
+}
+
+@media (max-width: 500px) {
+    .task-completion-action {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .task-completion-link {
+        width: 100%;
+    }
+}
+
 {% endblock %}
 
 {% block content %}
@@ -779,20 +832,23 @@ document.addEventListener("DOMContentLoaded", function () {
 <section class="task-section"><h2>بيانات المهمة</h2><div class="detail-grid"><div class="detail-item"><span class="detail-label">مرجع البلاغ</span><span class="detail-value"><bdi>{{ work_order.complaint.reference_number }}</bdi></span></div><div class="detail-item"><span class="detail-label">الأولوية</span><span class="detail-value">{{ work_order.complaint.get_priority_display }}</span></div><div class="detail-item"><span class="detail-label">تصنيف المشكلة</span><span class="detail-value">{{ work_order.complaint.category }}</span></div><div class="detail-item"><span class="detail-label">الحي</span><span class="detail-value">{{ work_order.complaint.neighborhood|default:"غير محدد" }}</span></div><div class="detail-item detail-item--wide"><span class="detail-label">العنوان</span><span class="detail-value">{{ work_order.complaint.address|default:"غير محدد" }}</span></div><div class="detail-item detail-item--wide"><span class="detail-label">وصف البلاغ</span><span class="detail-value">{{ work_order.complaint.description }}</span></div></div></section>
 <section class="task-section"><h2>الصورة والموقع</h2><div class="complaint-media"><div class="complaint-photo-card">{% if work_order.complaint.photo %}<img class="complaint-photo" src="{{ work_order.complaint.photo.url }}" alt="صورة المشكلة"><span class="media-label">صورة البلاغ</span>{% else %}<div class="no-photo">لم يرفق المواطن صورة مع هذا البلاغ.</div>{% endif %}</div><div class="task-map-card">{% if complaint_latitude and complaint_longitude %}<div id="task-map" aria-label="خريطة موقع البلاغ"></div><span class="media-label">خريطة المهمة</span>{% else %}<div class="no-location">لم يتم تحديد إحداثيات موقع المشكلة.</div>{% endif %}</div></div>{% if complaint_latitude and complaint_longitude %}<div class="map-legend" aria-label="دليل علامات الخريطة"><span class="legend-item"><span class="legend-dot legend-dot--problem"></span>البرتقالي: موقع المشكلة</span><span class="legend-item"><span class="legend-dot legend-dot--worker"></span>الأخضر: موقعي الحالي</span></div><div class="map-actions"><button id="track-worker-button" class="map-button" type="button">إظهار موقعي الحالي</button><a id="navigation-button" class="map-button map-button--primary" href="#" target="_blank" rel="noopener noreferrer">بدء الاتجاه إلى المشكلة</a></div><p id="location-message" class="location-message" aria-live="polite">علامة المشكلة ظاهرة بالبرتقالي. اضغط «إظهار موقعي الحالي» لإضافة العلامة الخضراء.</p>{% endif %}</section>
 <section class="task-section"><h2>تعليمات البلدية</h2><div class="instructions-box">{{ work_order.instructions|default:"لا توجد تعليمات إضافية."|linebreaksbr }}</div></section>
-{% if work_order.status == "in_progress" and completion_form.errors %}
-<div class="form-general-errors" role="alert">
-    <strong>تعذر إكمال المهمة:</strong>
-    {% for field in completion_form %}
-        {% for error in field.errors %}
-            <div>{{ error }}</div>
-        {% endfor %}
-    {% endfor %}
-    {% for error in completion_form.non_field_errors %}
-        <div>{{ error }}</div>
-    {% endfor %}
-</div>
-{% endif %}
-{% if work_order.status == "assigned" %}<section class="task-section"><h2>قبول المهمة</h2><form method="post" data-accept-task action="{% url 'field_worker_portal:accept_task' work_order.pk %}">{% csrf_token %}<button class="task-primary-button" type="submit">قبول المهمة</button></form></section>{% elif work_order.status == "accepted" %}<section class="task-section"><h2>بدء التنفيذ</h2><form method="post" action="{% url 'field_worker_portal:start_task' work_order.pk %}">{% csrf_token %}<button class="task-primary-button task-primary-button--start" type="submit">بدء تنفيذ المهمة</button></form></section>{% elif work_order.status == "in_progress" %}<section class="task-section"><h2>تسجيل الإنجاز</h2><form method="post" enctype="multipart/form-data" action="{% url 'field_worker_portal:complete_task' work_order.pk %}">{% csrf_token %}{% if completion_form.non_field_errors %}<div class="form-general-errors">{{ completion_form.non_field_errors }}</div>{% endif %}<div class="completion-fields"><div class="form-field"><label class="form-label" for="{{ completion_form.completion_notes.id_for_label }}">ملاحظات الإنجاز</label>{{ completion_form.completion_notes }}{% for error in completion_form.completion_notes.errors %}<div class="form-error">{{ error }}</div>{% endfor %}</div><div class="form-field"><span class="form-label">صورة بعد الإنجاز</span><div class="completion-upload-box"><img id="completion-photo-preview" class="completion-photo-preview" alt="معاينة صورة الإنجاز"><div class="completion-upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8a2 2 0 0 1 2-2h2l1.4-2h5.2L16 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"></path><circle cx="12" cy="12.5" r="3.5"></circle></svg></div>{{ completion_form.completion_photo }}<p id="completion-file-name" class="completion-file-name">لم يتم اختيار صورة</p><div class="completion-upload-actions"><button id="completion-camera-button" class="completion-upload-button completion-upload-button--camera" type="button">التقاط صورة</button><button id="completion-gallery-button" class="completion-upload-button" type="button">اختيار من المعرض</button></div></div><small class="form-help">صورة واضحة بعد تنفيذ العمل، بحد أقصى 5 ميجابايت.</small>{% for error in completion_form.completion_photo.errors %}<div class="form-error">{{ error }}</div>{% endfor %}</div></div><button class="task-primary-button" type="submit">تأكيد إكمال المهمة</button></form><dialog id="completion-camera-dialog" class="camera-dialog"><div class="camera-dialog-header"><h3>التقاط صورة الإنجاز</h3><button class="camera-close-button" type="button" data-close-completion-camera aria-label="إغلاق">×</button></div><video id="completion-camera-video" class="camera-video" autoplay playsinline muted></video><p id="completion-camera-error" class="camera-error"></p><div class="camera-dialog-actions"><button id="completion-capture-button" class="camera-dialog-action camera-dialog-action--capture" type="button">التقاط الصورة</button><button class="camera-dialog-action" type="button" data-close-completion-camera>إلغاء</button></div></dialog></section>{% elif work_order.status == "completed" %}<section class="task-section"><h2>نتيجة الإنجاز</h2><p class="completion-notes">{{ work_order.completion_notes }}</p>{% if work_order.completion_photo %}<img class="completion-image" src="{{ work_order.completion_photo.url }}" alt="صورة إنجاز أمر العمل">{% endif %}</section>{% endif %}</div>
+{% if work_order.status == "assigned" %}<section class="task-section"><h2>قبول المهمة</h2><form method="post" data-accept-task action="{% url 'field_worker_portal:accept_task' work_order.pk %}">{% csrf_token %}<button class="task-primary-button" type="submit">قبول المهمة</button></form></section>{% elif work_order.status == "accepted" %}<section class="task-section"><h2>بدء التنفيذ</h2><form method="post" action="{% url 'field_worker_portal:start_task' work_order.pk %}">{% csrf_token %}<button class="task-primary-button task-primary-button--start" type="submit">بدء تنفيذ المهمة</button></form></section>{% elif work_order.status == "in_progress" %}
+<section class="task-section task-completion-action">
+    <div class="task-completion-content">
+        <h2>إنجاز المهمة</h2>
+        <p>
+            بعد الانتهاء من تنفيذ العمل، انتقل إلى صفحة الإنجاز
+            لإضافة الملاحظات وصورة ما بعد التنفيذ.
+        </p>
+    </div>
+    <a
+        class="task-completion-link"
+        href="{% url 'field_worker_portal:complete_task' work_order.pk %}"
+    >
+        تسجيل الإنجاز
+    </a>
+</section>
+{% elif work_order.status == "completed" %}<section class="task-section"><h2>نتيجة الإنجاز</h2><p class="completion-notes">{{ work_order.completion_notes }}</p>{% if work_order.completion_photo %}<img class="completion-image" src="{{ work_order.completion_photo.url }}" alt="صورة إنجاز أمر العمل">{% endif %}</section>{% endif %}</div>
 {% endblock %}
 
 {% block extra_js %}{% if complaint_latitude and complaint_longitude %}<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script><script>document.addEventListener('DOMContentLoaded',function(){const lat=Number('{{ complaint_latitude|escapejs }}'),lng=Number('{{ complaint_longitude|escapejs }}'),el=document.getElementById('task-map'),track=document.getElementById('track-worker-button'),nav=document.getElementById('navigation-button'),msg=document.getElementById('location-message');if(!el||!Number.isFinite(lat)||!Number.isFinite(lng)||typeof L==='undefined')return;const target=[lat,lng],map=L.map('task-map').setView(target,16);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);const targetIcon=L.divIcon({className:'',html:'<div class="complaint-pin"><span>!</span></div>',iconSize:[34,34],iconAnchor:[17,30]}),workerIcon=L.divIcon({className:'',html:'<div class="worker-pin">●</div>',iconSize:[34,34],iconAnchor:[17,17]});const problemMarker=L.marker(target,{icon:targetIcon,title:'موقع المشكلة'}).addTo(map).bindPopup(`<strong>موقع المشكلة</strong><br>${lat.toFixed(6)}, ${lng.toFixed(6)}`);problemMarker.openPopup();let marker=null,circle=null,line=null,first=true;function directions(origin){const destination=`${lat.toFixed(7)},${lng.toFixed(7)}`;let url='https://www.google.com/maps/dir/?api=1';if(origin)url+=`&origin=${encodeURIComponent(origin)}`;url+=`&destination=${encodeURIComponent(destination)}&travelmode=driving`;return url}nav.href=directions();function message(text,error=false){msg.textContent=text;msg.classList.toggle('is-error',error)}function success(p){const here=[p.coords.latitude,p.coords.longitude],accuracy=p.coords.accuracy||0;if(!marker)marker=L.marker(here,{icon:workerIcon,title:'موقعي الحالي'}).addTo(map).bindPopup(`<strong>موقعي الحالي</strong><br>${here[0].toFixed(6)}, ${here[1].toFixed(6)}`);else{marker.setLatLng(here);marker.setPopupContent(`<strong>موقعي الحالي</strong><br>${here[0].toFixed(6)}, ${here[1].toFixed(6)}`)}if(!circle)circle=L.circle(here,{radius:accuracy,color:'#16824f',fillColor:'#8ed5ad',fillOpacity:.14,weight:1}).addTo(map);else{circle.setLatLng(here);circle.setRadius(accuracy)}if(!line)line=L.polyline([here,target],{color:'#16824f',weight:3,opacity:.75,dashArray:'8 9'}).addTo(map);else line.setLatLngs([here,target]);const origin=`${here[0].toFixed(7)},${here[1].toFixed(7)}`;nav.href=directions(origin);if(first){map.fitBounds(L.latLngBounds([here,target]),{padding:[45,45],maxZoom:17});marker.openPopup();first=false}message(`الأخضر هو موقعك، والبرتقالي هو موقع المشكلة. دقة GPS تقارب ${Math.round(accuracy)} مترًا.`);track.textContent='تحديث موقعي';track.disabled=false}function fail(e){const texts={1:'تم رفض إذن الموقع. اسمح باستخدام GPS من إعدادات المتصفح.',2:'موقع الجهاز غير متاح. تأكد من تشغيل GPS.',3:'استغرق تحديد الموقع وقتًا طويلًا. حاول مجددًا.'};message(texts[e.code]||'تعذر تحديد موقعك الحالي.',true);track.disabled=false;track.textContent='إعادة محاولة تحديد موقعي'}track.addEventListener('click',function(){if(!navigator.geolocation){message('هذا المتصفح لا يدعم تحديد الموقع.',true);return}track.disabled=true;track.textContent='جارٍ تحديد موقعك…';navigator.geolocation.getCurrentPosition(success,fail,{enableHighAccuracy:true,maximumAge:3000,timeout:15000})});setTimeout(()=>map.invalidateSize(),250)});</script>{% endif %}{% endblock %}

@@ -8,10 +8,11 @@ from .models import User
 class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         (
-            "CityVoice information",
+            "معلومات CityVoice",
             {
                 "fields": (
                     "role",
+                    "worker_service",
                     "phone_number",
                 )
             },
@@ -20,10 +21,11 @@ class CustomUserAdmin(UserAdmin):
 
     add_fieldsets = UserAdmin.add_fieldsets + (
         (
-            "CityVoice information",
+            "معلومات CityVoice",
             {
                 "fields": (
                     "role",
+                    "worker_service",
                     "phone_number",
                 )
             },
@@ -34,12 +36,14 @@ class CustomUserAdmin(UserAdmin):
         "username",
         "email",
         "role",
+        "worker_service",
         "is_staff",
         "is_active",
     )
 
     list_filter = (
         "role",
+        "worker_service",
         "is_staff",
         "is_active",
     )

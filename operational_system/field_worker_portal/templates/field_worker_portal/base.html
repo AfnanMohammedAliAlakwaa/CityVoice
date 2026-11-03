@@ -112,7 +112,7 @@
             bottom: 0;
             z-index: 100;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             width: min(100%, 640px);
             min-height: 70px;
             padding:
@@ -212,62 +212,84 @@ backdrop-filter: none;
     {% if request.user.is_authenticated %}
     {% with current_page=request.resolver_match.url_name %}
         <nav class="fw-bottom-nav" aria-label="التنقل الرئيسي">
+    <a
+        class="fw-nav-item
+        {% if request.resolver_match.url_name == 'dashboard' %}
+            active
+        {% endif %}"
+        href="{% url 'field_worker_portal:dashboard' %}"
+    >
+        <span class="fw-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 11.5 12 4l9 7.5"></path>
+                <path d="M5.5 10v10h13V10"></path>
+                <path d="M9.5 20v-6h5v6"></path>
+            </svg>
+        </span>
 
-            <a
-                class="fw-nav-item {% if current_page == 'dashboard' %}active{% endif %}"
-                href="{% url 'field_worker_portal:dashboard' %}"
-            >
-                <span class="fw-nav-icon">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M3 11.5 12 4l9 7.5"></path>
-                        <path d="M5.5 10v10h13V10"></path>
-                        <path d="M9.5 20v-6h5v6"></path>
-                    </svg>
-                </span>
-                <span>الرئيسية</span>
-            </a>
+        <span>الرئيسية</span>
+    </a>
 
-            <a
-                class="fw-nav-item
-                {% if current_page == 'tasks' or current_page == 'task_detail' %}
-                    active
-                {% endif %}"
-                href="{% url 'field_worker_portal:tasks' %}"
-            >
-                <span class="fw-nav-icon">
-                    <svg viewBox="0 0 24 24">
-                        <rect
-                            x="5"
-                            y="3"
-                            width="14"
-                            height="18"
-                            rx="2"
-                        ></rect>
-                        <path d="M9 8h6"></path>
-                        <path d="M9 12h6"></path>
-                        <path d="M9 16h4"></path>
-                    </svg>
-                </span>
-                <span>المهام</span>
-            </a>
-
-            <a
+    <a
     class="fw-nav-item
-    {% if request.resolver_match.url_name == 'account' %}
+    {% if request.path == '/worker/tasks/' or request.resolver_match.url_name == 'task_detail' %}
         active
     {% endif %}"
-    href="{% url 'field_worker_portal:account' %}"
+    href="{% url 'field_worker_portal:task_list' %}"
 >
     <span class="fw-nav-icon">
-        <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="8" r="4"></circle>
-            <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect
+                x="5"
+                y="3"
+                width="14"
+                height="18"
+                rx="2"
+            ></rect>
+
+            <path d="M9 8h6"></path>
+            <path d="M9 12h6"></path>
+            <path d="M9 16h4"></path>
         </svg>
     </span>
-    <span>حسابي</span>
+
+    <span>المهام</span>
 </a>
 
-        </nav>
+    <a
+        class="fw-nav-item
+        {% if request.resolver_match.url_name == 'achievements' or request.resolver_match.url_name == 'complete_task' %}
+            active
+        {% endif %}"
+        href="{% url 'field_worker_portal:achievements' %}"
+    >
+        <span class="fw-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="m8 12 2.5 2.5L16 9"></path>
+            </svg>
+        </span>
+
+        <span>الإنجاز</span>
+    </a>
+
+    <a
+        class="fw-nav-item
+        {% if request.resolver_match.url_name == 'account' %}
+            active
+        {% endif %}"
+        href="{% url 'field_worker_portal:account' %}"
+    >
+        <span class="fw-nav-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+            </svg>
+        </span>
+
+        <span>حسابي</span>
+    </a>
+</nav>
     {% endwith %}
 {% endif %}
 </div>

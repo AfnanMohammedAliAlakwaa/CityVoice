@@ -1,0 +1,333 @@
+{% extends "field_worker_portal/base.html" %}
+
+{% block title %}
+نتيجة الإنجاز | بوابة العامل
+{% endblock %}
+
+{% block extra_css %}
+.achievement-detail-page {
+    padding: 20px 0 100px;
+}
+
+.achievement-detail-header {
+    margin-bottom: 16px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #eef9f3 100%
+        );
+    box-shadow: var(--shadow);
+}
+
+.achievement-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.achievement-back {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--green);
+    text-decoration: none;
+}
+
+.achievement-back svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.achievement-detail-header h1 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.achievement-detail-header p {
+    margin: 8px 48px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.achievement-summary {
+    display: grid;
+    gap: 7px;
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .9);
+}
+
+.achievement-summary-reference {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.achievement-summary h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.achievement-completed-status {
+    display: inline-flex;
+    width: fit-content;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--green-soft);
+    color: var(--green);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.achievement-result-card {
+    margin-bottom: 14px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+}
+
+.achievement-result-card h2 {
+    margin: 0 0 15px;
+    font-size: 18px;
+}
+
+.achievement-result-label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.achievement-notes {
+    min-height: 110px;
+    margin: 0;
+    padding: 15px;
+    border-radius: 15px;
+    background: var(--background);
+    font-size: 13px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+}
+
+.achievement-photo {
+    display: block;
+    width: 100%;
+    max-height: 460px;
+    border-radius: 16px;
+    background: var(--background);
+    object-fit: contain;
+}
+
+.achievement-no-photo {
+    padding: 35px 20px;
+    border: 1px dashed var(--line);
+    border-radius: 16px;
+    background: var(--background);
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+.achievement-data {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.achievement-data-item {
+    padding: 13px;
+    border-radius: 14px;
+    background: var(--background);
+}
+
+.achievement-data-item span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.achievement-data-item strong {
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.achievement-detail-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.achievement-detail-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--white);
+    color: var(--green-dark);
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.achievement-detail-button--primary {
+    border-color: var(--green);
+    background: var(--green);
+    color: var(--white);
+}
+
+@media (max-width: 450px) {
+    .achievement-detail-header,
+    .achievement-result-card {
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .achievement-detail-header p {
+        margin-right: 0;
+    }
+
+    .achievement-data,
+    .achievement-detail-actions {
+        grid-template-columns: 1fr;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<section class="achievement-detail-page">
+    <header class="achievement-detail-header">
+        <div class="achievement-title-row">
+            <a
+                class="achievement-back"
+                href="{% url 'field_worker_portal:achievements' %}"
+                aria-label="العودة إلى الإنجاز"
+            >
+                <svg viewBox="0 0 24 24">
+                    <path d="m9 18 6-6-6-6"></path>
+                </svg>
+            </a>
+
+            <h1>نتيجة الإنجاز</h1>
+        </div>
+
+        <p>
+            تفاصيل الأعمال التي تم تنفيذها لإكمال أمر العمل.
+        </p>
+
+        <div class="achievement-summary">
+            <span class="achievement-summary-reference">
+                أمر العمل
+                <bdi>
+                    WO-{{ work_order.pk|stringformat:"06d" }}
+                </bdi>
+            </span>
+
+            <h2>
+                {{ work_order.complaint.service.name_ar }}
+            </h2>
+
+            <span class="achievement-summary-reference">
+                مرجع البلاغ:
+                <bdi>
+                    {{ work_order.complaint.reference_number }}
+                </bdi>
+            </span>
+
+            <span class="achievement-completed-status">
+                مكتملة
+            </span>
+        </div>
+    </header>
+
+    <section class="achievement-result-card">
+        <h2>تفاصيل العمل المنفذ</h2>
+
+        <span class="achievement-result-label">
+            ملاحظات الإنجاز
+        </span>
+
+        <p class="achievement-notes">
+            {{ work_order.completion_notes|default:"لم تتم إضافة ملاحظات للإنجاز." }}
+        </p>
+    </section>
+
+    <section class="achievement-result-card">
+        <h2>صورة ما بعد الإنجاز</h2>
+
+        {% if work_order.completion_photo %}
+            <img
+                class="achievement-photo"
+                src="{{ work_order.completion_photo.url }}"
+                alt="صورة ما بعد إنجاز المهمة"
+            >
+        {% else %}
+            <div class="achievement-no-photo">
+                لم تتم إضافة صورة بعد إنجاز المهمة.
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="achievement-result-card">
+        <h2>معلومات الإنجاز</h2>
+
+        <div class="achievement-data">
+            <div class="achievement-data-item">
+                <span>حالة المهمة</span>
+                <strong>
+                    {{ work_order.get_status_display }}
+                </strong>
+            </div>
+
+            <div class="achievement-data-item">
+                <span>تاريخ الإنجاز</span>
+
+                <strong>
+                    {% if work_order.completed_at %}
+                        {{ work_order.completed_at|date:"Y/m/d - H:i" }}
+                    {% else %}
+                        غير محدد
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+    </section>
+
+    <div class="achievement-detail-actions">
+        <a
+            class="achievement-detail-button achievement-detail-button--primary"
+            href="{% url 'field_worker_portal:task_detail' work_order.pk %}"
+        >
+            عرض تفاصيل المهمة
+        </a>
+
+        <a
+            class="achievement-detail-button"
+            href="{% url 'field_worker_portal:achievements' %}"
+        >
+            العودة إلى الإنجاز
+        </a>
+    </div>
+</section>
+{% endblock %}

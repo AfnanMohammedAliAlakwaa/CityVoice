@@ -18,6 +18,17 @@ class User(AbstractUser):
         choices=Role.choices,
         default=Role.CITIZEN,
     )
+    worker_service = models.ForeignKey(
+        "municipal_services.MunicipalService",
+        on_delete=models.PROTECT,
+        related_name="field_workers",
+        null=True,
+        blank=True,
+        limit_choices_to={
+            "is_active": True,
+        },
+        verbose_name="فريق العمل",
+    )
 
     phone_number = models.CharField(
         max_length=20,

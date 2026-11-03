@@ -38,6 +38,26 @@ urlpatterns = [
     name="notifications",
 ),
     path(
+    "achievements/",
+    views.achievements,
+    name="achievements",
+),
+    path(
+    "achievements/<int:order_id>/",
+    views.achievement_detail,
+    name="achievement_detail",
+),
+    path(
+    "tasks/",
+    views.task_list,
+    name="task_list",
+),
+        path(
+        "tasks/<int:order_id>/completion/success/",
+        views.completion_success,
+        name="completion_success",
+    ),
+    path(
         "tasks/<int:order_id>/",
         views.task_detail,
         name="task_detail",
@@ -53,8 +73,8 @@ urlpatterns = [
         name="start_task",
     ),
     path(
-        "tasks/<int:order_id>/complete/",
-        views.complete_task,
-        name="complete_task",
-    ),
+    "tasks/<int:order_id>/completion/",
+    views.complete_task,
+    name="complete_task",
+),
 ]

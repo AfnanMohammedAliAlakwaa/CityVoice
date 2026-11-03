@@ -1,0 +1,257 @@
+{% extends "field_worker_portal/base.html" %}
+
+{% block title %}
+تم إكمال المهمة | بوابة العامل
+{% endblock %}
+
+{% block extra_css %}
+.completion-success-page {
+    padding-top: 24px;
+}
+
+.completion-success-card {
+    padding: 30px 22px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #f4fbf7 100%
+        );
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.success-icon {
+    display: grid;
+    place-items: center;
+    width: 104px;
+    height: 104px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--green-soft);
+}
+
+.success-icon-inner {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: var(--green);
+    color: var(--white);
+}
+
+.success-icon svg {
+    width: 44px;
+    height: 44px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.completion-success-card h1 {
+    margin: 0 0 8px;
+    font-size: 25px;
+    line-height: 1.5;
+}
+
+.success-description {
+    margin: 0 auto 22px;
+    max-width: 410px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.success-order {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    margin-top: 18px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--line);
+    text-align: right;
+}
+
+.success-order-item {
+    padding: 15px;
+    background: var(--white);
+}
+
+.success-order-item--wide {
+    grid-column: 1 / -1;
+}
+
+.success-order-item span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.success-order-item strong {
+    display: block;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.success-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--green-soft);
+    color: var(--green-dark);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.success-status::before {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    content: "";
+}
+
+.success-notice {
+    margin: 16px 0 0;
+    padding: 12px;
+    border-radius: 14px;
+    background: var(--green-soft);
+    color: var(--green-dark);
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.success-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.success-primary,
+.success-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.success-primary {
+    border: 1px solid var(--green);
+    background: var(--green);
+    color: var(--white);
+}
+
+.success-secondary {
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--green-dark);
+}
+
+@media (max-width: 390px) {
+    .completion-success-card {
+        padding: 24px 16px;
+    }
+
+    .completion-success-card h1 {
+        font-size: 21px;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<section class="completion-success-page">
+    <div class="completion-success-card">
+        <div class="success-icon">
+            <div class="success-icon-inner">
+                <svg viewBox="0 0 24 24">
+                    <path d="m5 12 4 4L19 6"></path>
+                </svg>
+            </div>
+        </div>
+
+        <h1>تم إكمال المهمة بنجاح</h1>
+
+        <p class="success-description">
+            تم حفظ حالة المهمة وصورة الإنجاز
+            وملاحظات الأعمال المنفذة بنجاح.
+        </p>
+
+        <div class="success-order">
+            <div class="success-order-item">
+                <span>أمر العمل</span>
+
+                <strong>
+                    <bdi>
+                        WO-{{ work_order.pk|stringformat:"06d" }}
+                    </bdi>
+                </strong>
+            </div>
+
+            <div class="success-order-item">
+                <span>مرجع البلاغ</span>
+
+                <strong>
+                    <bdi>
+                        {{ work_order.complaint.reference_number }}
+                    </bdi>
+                </strong>
+            </div>
+
+            <div class="success-order-item">
+                <span>الخدمة</span>
+
+                <strong>
+                    {{ work_order.complaint.service.name_ar }}
+                </strong>
+            </div>
+
+            <div class="success-order-item">
+                <span>الحالة</span>
+                <span class="success-status">مكتملة</span>
+            </div>
+
+            <div class="success-order-item success-order-item--wide">
+                <span>وقت الإكمال</span>
+
+                <strong>
+                    {{ work_order.completed_at|date:"Y/m/d - H:i" }}
+                </strong>
+            </div>
+        </div>
+
+        <div class="success-notice">
+            أصبحت المهمة مكتملة وتمت إضافتها إلى سجل الإنجاز.
+        </div>
+
+        <div class="success-actions">
+            <a
+                class="success-primary"
+                href="{% url 'field_worker_portal:tasks' %}"
+            >
+                العودة إلى المهام
+            </a>
+
+            <a
+                class="success-secondary"
+                href="{% url 'field_worker_portal:achievement_detail' work_order.pk %}"
+            >
+                عرض نتيجة الإنجاز
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

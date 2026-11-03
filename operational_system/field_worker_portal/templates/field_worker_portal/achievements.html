@@ -1,0 +1,274 @@
+{% extends "field_worker_portal/base.html" %}
+
+{% block title %}
+الإنجاز | بوابة العامل
+{% endblock %}
+
+{% block extra_css %}
+.achievements-page {
+    padding: 20px 0 100px;
+}
+
+.achievements-header {
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #eef9f3 100%
+        );
+    box-shadow: var(--shadow);
+}
+
+.achievements-header h1 {
+    margin: 0 0 7px;
+    font-size: 23px;
+}
+
+.achievements-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.achievements-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.achievement-stat {
+    padding: 13px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .9);
+    text-align: center;
+}
+
+.achievement-stat strong {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--green);
+    font-size: 21px;
+}
+
+.achievement-stat span {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.achievements-title {
+    margin: 0 0 13px;
+    font-size: 18px;
+}
+
+.achievements-list {
+    display: grid;
+    gap: 12px;
+}
+
+.achievement-card {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+}
+
+.achievement-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.achievement-card h2 {
+    margin: 4px 0 5px;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.achievement-reference {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.achievement-status {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.achievement-status--completed {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.achievement-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 9px;
+    margin-top: 15px;
+}
+
+.achievement-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 43px;
+    padding: 9px 15px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: var(--white);
+    color: var(--green-dark);
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.achievement-button--primary {
+    border-color: var(--green);
+    background: var(--green);
+    color: var(--white);
+}
+
+.achievements-empty {
+    padding: 45px 20px;
+    border: 1px dashed var(--line);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, .75);
+    text-align: center;
+}
+
+.achievements-empty h2 {
+    margin: 0 0 7px;
+    font-size: 17px;
+}
+
+.achievements-empty p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+@media (max-width: 400px) {
+    .achievements-header {
+        padding: 16px;
+    }
+
+    .achievement-card-header {
+        flex-direction: column;
+    }
+
+    .achievement-actions {
+        grid-template-columns: 1fr;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<section class="achievements-page">
+    <header class="achievements-header">
+        <h1>الإنجاز</h1>
+
+        <p>
+            سجّل تفاصيل إنجاز المهام قيد التنفيذ،
+            وراجع الأعمال التي تم إكمالها.
+        </p>
+
+        <div class="achievements-stats">
+            <div class="achievement-stat">
+                <strong>{{ in_progress_count }}</strong>
+                <span>بانتظار تسجيل الإنجاز</span>
+            </div>
+
+            <div class="achievement-stat">
+                <strong>{{ completed_count }}</strong>
+                <span>مهام مكتملة</span>
+            </div>
+        </div>
+    </header>
+
+    <h2 class="achievements-title">مهام الإنجاز</h2>
+
+    {% if achievement_orders %}
+        <div class="achievements-list">
+            {% for order in achievement_orders %}
+                <article class="achievement-card">
+                    <div class="achievement-card-header">
+                        <div>
+                            <span class="achievement-reference">
+                                أمر العمل
+                                <bdi>
+                                    WO-{{ order.pk|stringformat:"06d" }}
+                                </bdi>
+                            </span>
+
+                            <h2>
+                                {{ order.complaint.service.name_ar }}
+                            </h2>
+
+                            <span class="achievement-reference">
+                                البلاغ:
+                                <bdi>
+                                    {{ order.complaint.reference_number }}
+                                </bdi>
+                            </span>
+                        </div>
+
+                        <span class="achievement-status
+                            {% if order.status == 'completed' %}
+                                achievement-status--completed
+                            {% endif %}
+                        ">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="achievement-actions">
+                        {% if order.status == "in_progress" %}
+                            <a
+                                class="achievement-button achievement-button--primary"
+                                href="{% url 'field_worker_portal:complete_task' order.pk %}"
+                            >
+                                تسجيل الإنجاز
+                            </a>
+                        {% else %}
+                            <a
+    class="achievement-button achievement-button--primary"
+    href="{% url 'field_worker_portal:achievement_detail' order.pk %}"
+>
+    عرض نتيجة الإنجاز
+</a>
+                        {% endif %}
+
+                        <a
+                            class="achievement-button"
+                            href="{% url 'field_worker_portal:task_detail' order.pk %}"
+                        >
+                            تفاصيل المهمة
+                        </a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="achievements-empty">
+            <h2>لا توجد مهام إنجاز</h2>
+
+            <p>
+                ستظهر هنا المهام قيد التنفيذ والأعمال المكتملة.
+            </p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

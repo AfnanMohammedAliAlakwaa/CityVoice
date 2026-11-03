@@ -202,6 +202,55 @@
         padding: 13px 5px;
     }
 }
+.account-avatar-form {
+    margin: 0;
+}
+
+.account-avatar {
+    position: relative;
+    overflow: visible;
+    border: 0;
+    cursor: pointer;
+}
+
+.account-avatar:hover {
+    box-shadow: 0 0 0 4px rgba(22, 130, 79, .10);
+}
+
+.account-avatar-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.account-avatar-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.account-avatar-edit {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border: 2px solid var(--white);
+    border-radius: 50%;
+    background: var(--green);
+    color: var(--white);
+}
+
+.account-avatar-edit svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2;
+}
 {% endblock %}
 
 {% block content %}
@@ -225,12 +274,48 @@
     </header>
 
     <div class="account-profile">
-        <div class="account-avatar">
+        <form
+    class="account-avatar-form"
+    method="post"
+    enctype="multipart/form-data"
+    id="avatar-form"
+>
+    {% csrf_token %}
+
+    <label
+        class="account-avatar"
+        for="account-avatar-input"
+        title="تغيير الصورة الشخصية"
+    >
+        {% if request.user.avatar %}
+            <img
+                class="account-avatar-image"
+                src="{{ request.user.avatar.url }}"
+                alt="الصورة الشخصية"
+            >
+        {% else %}
             <svg viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4"></circle>
                 <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
             </svg>
-        </div>
+        {% endif %}
+
+        <span class="account-avatar-edit">
+            <svg viewBox="0 0 24 24">
+                <path d="M14.5 5 13 3h-2L9.5 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"></path>
+                <circle cx="12" cy="12.5" r="3.5"></circle>
+            </svg>
+        </span>
+    </label>
+
+    <input
+        class="account-avatar-input"
+        id="account-avatar-input"
+        type="file"
+        name="avatar"
+        accept="image/*"
+    >
+</form>
 
         <h2 class="account-name">
             {% if request.user.get_full_name %}
@@ -261,48 +346,88 @@
     </div>
 
     <div class="account-details">
-        <h2>معلومات الحساب</h2>
+    <h2>معلومات الحساب</h2>
 
-        <div class="account-detail">
-            <span>اسم المستخدم</span>
-            <strong>{{ request.user.username }}</strong>
-        </div>
-
-        <div class="account-detail">
-            <span>الاسم الكامل</span>
-            <strong>
-                {% if request.user.get_full_name %}
-                    {{ request.user.get_full_name }}
-                {% else %}
-                    غير محدد
-                {% endif %}
-            </strong>
-        </div>
-
-        <div class="account-detail">
-            <span>البريد الإلكتروني</span>
-            <strong>
-                {% if request.user.email %}
-                    {{ request.user.email }}
-                {% else %}
-                    غير محدد
-                {% endif %}
-            </strong>
-        </div>
-
-        <div class="account-detail">
-            <span>نوع الحساب</span>
-            <strong>عامل ميداني</strong>
-        </div>
+    <div class="account-detail">
+        <span>اسم المستخدم</span>
+        <strong>{{ request.user.username }}</strong>
     </div>
 
-    <form
-        class="account-logout"
-        method="post"
-        action="{% url 'field_worker_portal:logout' %}"
-    >
-        {% csrf_token %}
-        <button type="submit">تسجيل الخروج</button>
-    </form>
+    <div class="account-detail">
+        <span>الاسم الكامل</span>
+
+        <strong>
+            {% if request.user.get_full_name %}
+                {{ request.user.get_full_name }}
+            {% else %}
+                غير محدد
+            {% endif %}
+        </strong>
+    </div>
+
+    <div class="account-detail">
+        <span>البريد الإلكتروني</span>
+
+        <strong>
+            {% if request.user.email %}
+                {{ request.user.email }}
+            {% else %}
+                غير محدد
+            {% endif %}
+        </strong>
+    </div>
+
+    <div class="account-detail">
+        <span>نوع الحساب</span>
+        <strong>عامل ميداني</strong>
+    </div>
+
+    <div class="account-detail">
+        <span>فريق العمل</span>
+
+        <strong>
+            {% if request.user.worker_service %}
+                {{ request.user.worker_service.name_ar }}
+            {% else %}
+                غير محدد
+            {% endif %}
+        </strong>
+    </div>
+</div>
+
+<form
+    class="account-logout"
+    method="post"
+    action="{% url 'field_worker_portal:logout' %}"
+>
+    {% csrf_token %}
+
+    <button type="submit">
+        تسجيل الخروج
+    </button>
+</form>
 </section>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const avatarInput = document.getElementById(
+        "account-avatar-input"
+    );
+
+    const avatarForm = document.getElementById(
+        "avatar-form"
+    );
+
+    if (!avatarInput || !avatarForm) {
+        return;
+    }
+
+    avatarInput.addEventListener("change", function () {
+        if (avatarInput.files.length > 0) {
+            avatarForm.submit();
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -1,0 +1,824 @@
+{% extends "field_worker_portal/base.html" %}
+
+{% block title %}
+تسجيل الإنجاز | بوابة العامل
+{% endblock %}
+
+{% block extra_css %}
+.completion-page {
+    padding-top: 20px;
+}
+
+.completion-header {
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #eef9f3 100%
+        );
+    box-shadow: var(--shadow);
+}
+
+.completion-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.completion-back {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--white);
+    color: var(--green);
+    text-decoration: none;
+}
+
+.completion-back svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.completion-header h1 {
+    margin: 0;
+    font-size: 23px;
+    line-height: 1.4;
+}
+
+.completion-header p {
+    margin: 8px 48px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.completion-order {
+    display: grid;
+    gap: 5px;
+    margin-top: 16px;
+    padding: 13px 15px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .85);
+}
+
+.completion-order-label {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.completion-order-title {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.completion-reference {
+    color: var(--green-dark);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.completion-card {
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+}
+
+.completion-card-title {
+    margin: 0 0 5px;
+    font-size: 19px;
+}
+
+.completion-card-description {
+    margin: 0 0 20px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.completion-fields {
+    display: grid;
+    gap: 17px;
+}
+
+.completion-field {
+    display: grid;
+    gap: 8px;
+}
+
+.completion-field label {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.completion-field input,
+.completion-field select,
+.completion-field textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    outline: none;
+    background: #fbfdfc;
+    color: var(--ink);
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.completion-field input,
+.completion-field select {
+    min-height: 50px;
+    padding: 12px 14px;
+}
+
+.completion-field textarea {
+    min-height: 150px;
+    padding: 14px;
+    resize: vertical;
+    line-height: 1.8;
+}
+
+.completion-field input[type="file"] {
+    min-height: auto;
+    padding: 15px;
+    border-style: dashed;
+    background: #f4fbf7;
+    cursor: pointer;
+}
+
+.completion-field input:focus,
+.completion-field select:focus,
+.completion-field textarea:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(22, 130, 79, .09);
+}
+
+.completion-help {
+    margin: 0;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.7;
+}
+
+.completion-error {
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #fff1f3;
+    color: var(--danger);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.completion-form-errors {
+    margin-bottom: 16px;
+    padding: 12px;
+    border: 1px solid #efcbd0;
+    border-radius: 13px;
+    background: #fff7f8;
+    color: var(--danger);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.completion-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.completion-submit,
+.completion-cancel {
+    min-height: 52px;
+    border-radius: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.completion-submit {
+    border: 1px solid var(--green);
+    background: var(--green);
+    color: var(--white);
+}
+
+.completion-submit:hover {
+    background: var(--green-dark);
+    border-color: var(--green-dark);
+}
+
+.completion-cancel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 22px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--green-dark);
+    text-decoration: none;
+}
+
+.completion-warning {
+    margin-top: 14px;
+    padding: 11px 13px;
+    border-radius: 13px;
+    background: var(--orange-soft);
+    color: #8d591b;
+    font-size: 10px;
+    line-height: 1.8;
+}
+
+@media (max-width: 450px) {
+    .completion-page {
+        padding-top: 12px;
+    }
+
+    .completion-header,
+    .completion-card {
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .completion-header h1 {
+        font-size: 20px;
+    }
+
+    .completion-header p {
+        margin-right: 0;
+    }
+
+    .completion-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .completion-cancel {
+        min-height: 48px;
+    }
+}
+.completion-photo-box {
+    padding: 18px;
+    border: 1px dashed #b9daca;
+    border-radius: 16px;
+    background: #f4fbf7;
+    text-align: center;
+}
+
+.completion-photo-input {
+    display: none;
+}
+
+.completion-photo-icon {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 10px;
+    border-radius: 18px;
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.completion-photo-icon svg {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.completion-photo-message {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.completion-photo-actions {
+    display: flex;
+    justify-content: center;
+    gap: 9px;
+}
+
+.completion-camera-button,
+.completion-gallery-button {
+    min-height: 42px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.completion-camera-button {
+    border: 1px solid var(--green);
+    background: var(--green);
+    color: var(--white);
+}
+
+.completion-gallery-button {
+    border: 1px solid var(--green);
+    background: var(--white);
+    color: var(--green);
+}
+
+.completion-photo-preview {
+    display: none;
+    width: 100%;
+    max-height: 230px;
+    margin: 0 auto 14px;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+.completion-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 9px;
+    margin-top: 18px;
+}
+
+.completion-submit,
+.completion-cancel {
+    min-height: 44px;
+    border-radius: 13px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.completion-submit {
+    flex: 0 1 260px;
+    padding: 8px 20px;
+}
+
+.completion-cancel {
+    flex: 0 0 auto;
+    min-width: 88px;
+    padding: 8px 18px;
+}
+
+@media (max-width: 450px) {
+    .completion-photo-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .completion-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .completion-submit {
+        width: 100%;
+    }
+}
+.completion-dialog {
+    width: min(calc(100% - 32px), 420px);
+    padding: 26px 22px 22px;
+    border: 0;
+    border-radius: 22px;
+    background: var(--white);
+    color: var(--ink);
+    text-align: center;
+    box-shadow: 0 24px 70px rgba(8, 55, 34, .24);
+}
+
+.completion-dialog::backdrop {
+    background: rgba(12, 45, 30, .58);
+    backdrop-filter: blur(4px);
+}
+
+.completion-dialog-icon {
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.completion-dialog-icon svg {
+    width: 34px;
+    height: 34px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.completion-dialog h2 {
+    margin: 0 0 9px;
+    font-size: 20px;
+    line-height: 1.5;
+}
+
+.completion-dialog p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.9;
+}
+
+.completion-dialog-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 9px;
+    margin-top: 21px;
+}
+
+.completion-dialog-confirm,
+.completion-dialog-cancel {
+    min-height: 45px;
+    padding: 9px 16px;
+    border-radius: 13px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.completion-dialog-confirm {
+    border: 1px solid var(--green);
+    background: var(--green);
+    color: var(--white);
+}
+
+.completion-dialog-confirm:hover {
+    border-color: var(--green-dark);
+    background: var(--green-dark);
+}
+
+.completion-dialog-cancel {
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--green-dark);
+}
+
+@media (max-width: 390px) {
+    .completion-dialog {
+        padding: 22px 16px 18px;
+    }
+
+    .completion-dialog-actions {
+        grid-template-columns: 1fr;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<section class="completion-page">
+    <header class="completion-header">
+        <div class="completion-title-row">
+            <a
+                class="completion-back"
+                href="{% url 'field_worker_portal:task_detail' work_order.pk %}"
+                aria-label="العودة إلى تفاصيل المهمة"
+                title="العودة إلى تفاصيل المهمة"
+            >
+                <svg viewBox="0 0 24 24">
+                    <path d="m9 18 6-6-6-6"></path>
+                </svg>
+            </a>
+
+            <h1>تسجيل الإنجاز</h1>
+        </div>
+
+        <p>
+            أدخل تفاصيل الأعمال المنفذة وأرفق صورة واضحة
+            بعد إنجاز المهمة.
+        </p>
+
+        <div class="completion-order">
+            <span class="completion-order-label">
+                أمر العمل
+            </span>
+
+            <h2 class="completion-order-title">
+                {% if work_order.complaint.service %}
+                    {{ work_order.complaint.service.name_ar }}
+                {% else %}
+                    المهمة رقم {{ work_order.pk }}
+                {% endif %}
+            </h2>
+
+            <bdi class="completion-reference">
+                WO-{{ work_order.pk|stringformat:"06d" }}
+            </bdi>
+        </div>
+    </header>
+
+    <form
+        id="completion-form"
+        class="completion-card"
+        method="post"
+        enctype="multipart/form-data"
+    >
+        {% csrf_token %}
+
+        <h2 class="completion-card-title">
+            تفاصيل الإنجاز
+        </h2>
+
+        <p class="completion-card-description">
+            وضّح الأعمال التي تم تنفيذها والنتيجة النهائية.
+        </p>
+
+        {% if completion_form.non_field_errors %}
+            <div class="completion-form-errors">
+                {% for error in completion_form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="completion-fields">
+            {% for field in completion_form %}
+    <div class="completion-field">
+        <label for="{{ field.id_for_label }}">
+            {{ field.label }}
+
+            {% if field.field.required %}
+                <span aria-hidden="true">*</span>
+            {% endif %}
+        </label>
+
+        {% if field.name == "completion_photo" %}
+            <div class="completion-photo-box">
+                <img
+                    class="completion-photo-preview"
+                    id="completion-photo-preview"
+                    alt="معاينة صورة الإنجاز"
+                >
+
+                <div
+                    class="completion-photo-icon"
+                    id="completion-photo-icon"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M14.5 5 13 3h-2L9.5 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"
+                        ></path>
+                        <circle cx="12" cy="12.5" r="3.5"></circle>
+                    </svg>
+                </div>
+
+                <p
+                    class="completion-photo-message"
+                    id="completion-photo-message"
+                >
+                    لم يتم اختيار صورة
+                </p>
+
+                <div class="completion-photo-actions">
+                    <button
+                        class="completion-camera-button"
+                        type="button"
+                        id="take-completion-photo"
+                    >
+                        التقاط صورة
+                    </button>
+
+                    <button
+                        class="completion-gallery-button"
+                        type="button"
+                        id="choose-completion-photo"
+                    >
+                        اختيار من المعرض
+                    </button>
+                </div>
+
+                <div class="completion-photo-input">
+                    {{ field }}
+                </div>
+            </div>
+        {% else %}
+            {{ field }}
+        {% endif %}
+
+        {% if field.help_text %}
+            <p class="completion-help">
+                {{ field.help_text }}
+            </p>
+        {% endif %}
+
+        {% for error in field.errors %}
+            <p class="completion-error">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+{% endfor %}
+        </div>
+
+        <div class="completion-warning">
+            بعد تأكيد الإكمال ستتغير حالة المهمة إلى
+            «مكتملة»، ولن تظهر ضمن المهام قيد التنفيذ.
+        </div>
+
+        <div class="completion-actions">
+            <button
+                class="completion-submit"
+                type="submit"
+            >
+                تأكيد إكمال المهمة
+            </button>
+
+            <a
+                class="completion-cancel"
+                href="{% url 'field_worker_portal:task_detail' work_order.pk %}"
+            >
+                إلغاء
+            </a>
+        </div>
+    </form>
+    <dialog
+    class="completion-dialog"
+    id="completion-dialog"
+    aria-labelledby="completion-dialog-title"
+>
+    <div class="completion-dialog-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="m5 12 4 4L19 6"></path>
+        </svg>
+    </div>
+
+    <h2 id="completion-dialog-title">
+        تأكيد إكمال المهمة
+    </h2>
+
+    <p>
+        هل أنت متأكد من إكمال هذه المهمة؟
+        بعد التأكيد ستتغير حالتها إلى «مكتملة»
+        وسيتم حفظ ملاحظات وصورة الإنجاز.
+    </p>
+
+    <div class="completion-dialog-actions">
+        <button
+            class="completion-dialog-confirm"
+            id="confirm-completion"
+            type="button"
+        >
+            نعم، إكمال المهمة
+        </button>
+
+        <button
+            class="completion-dialog-cancel"
+            id="cancel-completion"
+            type="button"
+        >
+            رجوع
+        </button>
+    </div>
+</dialog>
+</section>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const photoInput = document.getElementById(
+        "id_completion_photo"
+    );
+
+    const cameraButton = document.getElementById(
+        "take-completion-photo"
+    );
+
+    const galleryButton = document.getElementById(
+        "choose-completion-photo"
+    );
+
+    const preview = document.getElementById(
+        "completion-photo-preview"
+    );
+
+    const message = document.getElementById(
+        "completion-photo-message"
+    );
+
+    const icon = document.getElementById(
+        "completion-photo-icon"
+    );
+
+    if (
+        !photoInput ||
+        !cameraButton ||
+        !galleryButton
+    ) {
+        return;
+    }
+
+    photoInput.setAttribute("accept", "image/*");
+
+    cameraButton.addEventListener("click", function () {
+        photoInput.setAttribute(
+            "capture",
+            "environment"
+        );
+
+        photoInput.click();
+    });
+
+    galleryButton.addEventListener("click", function () {
+        photoInput.removeAttribute("capture");
+        photoInput.click();
+    });
+
+    photoInput.addEventListener("change", function () {
+        const file = photoInput.files[0];
+
+        if (!file) {
+            preview.removeAttribute("src");
+            preview.style.display = "none";
+            icon.style.display = "grid";
+            message.textContent = "لم يتم اختيار صورة";
+            return;
+        }
+
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+        icon.style.display = "none";
+        message.textContent = file.name;
+    });
+});
+const completionForm = document.getElementById(
+    "completion-form"
+);
+
+const completionDialog = document.getElementById(
+    "completion-dialog"
+);
+
+const confirmCompletion = document.getElementById(
+    "confirm-completion"
+);
+
+const cancelCompletion = document.getElementById(
+    "cancel-completion"
+);
+
+let completionConfirmed = false;
+
+if (
+    completionForm &&
+    completionDialog &&
+    confirmCompletion &&
+    cancelCompletion
+) {
+    completionForm.addEventListener(
+        "submit",
+        function (event) {
+            if (completionConfirmed) {
+                return;
+            }
+
+            event.preventDefault();
+            completionDialog.showModal();
+        }
+    );
+
+    confirmCompletion.addEventListener(
+        "click",
+        function () {
+            completionConfirmed = true;
+            completionDialog.close();
+            completionForm.requestSubmit();
+        }
+    );
+
+    cancelCompletion.addEventListener(
+        "click",
+        function () {
+            completionDialog.close();
+        }
+    );
+
+    completionDialog.addEventListener(
+        "click",
+        function (event) {
+            if (event.target === completionDialog) {
+                completionDialog.close();
+            }
+        }
+    );
+}
+</script>
+{% endblock %}
